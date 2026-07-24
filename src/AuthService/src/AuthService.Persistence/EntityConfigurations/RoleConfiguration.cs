@@ -1,4 +1,4 @@
-using AuthService.Application.Validations;
+using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -12,7 +12,7 @@ namespace AuthService.Persistence.EntityConfigurations
             builder.HasIndex(r => r.Name);
 
             builder.Property(r => r.Name)
-                .HasMaxLength(RoleValidations.NameMaxLength);
+                .HasMaxLength(RoleConstraints.NameMaxLength);
         }
     }
 }
