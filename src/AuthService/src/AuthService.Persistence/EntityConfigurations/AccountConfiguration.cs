@@ -1,4 +1,4 @@
-using AuthService.Application.Validations;
+using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using AuthService.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +13,11 @@ namespace AuthService.Persistence.EntityConfigurations
             builder.HasIndex(a => a.Email);
 
             builder.Property(a => a.Email)
-                .HasMaxLength(AccountValidations.EmailMaxLength)
+                .HasMaxLength(AccountConstraints.EmailMaxLength)
                 .HasConversion<ToLowerConverter>();
 
             builder.Property(a => a.NewEmail)
-                .HasMaxLength(AccountValidations.EmailMaxLength)
+                .HasMaxLength(AccountConstraints.EmailMaxLength)
                 .HasConversion<ToLowerConverter>();
 
             // Relationships
