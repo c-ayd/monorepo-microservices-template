@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using AuthService.Application.Dtos.Crypto;
 using AuthService.Infrastructure.Crypto;
-using Cayd.Test.Generators;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Infrastructure.Crypto
 {

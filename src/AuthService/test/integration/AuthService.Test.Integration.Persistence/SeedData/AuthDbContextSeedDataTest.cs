@@ -3,10 +3,10 @@ using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.SeedData;
 using AuthService.Persistence.Settings;
 using AuthService.Test.Utility;
-using Cayd.Test.Generators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.TestGenerators;
 using Testcontainers.PostgreSql;
 
 namespace AuthService.Test.Integration.Persistence.SeedData

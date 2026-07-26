@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
-using Cayd.Test.Generators;
 using Shared.Crypto;
 using Shared.Crypto.Exceptions;
 using Shared.Crypto.Options;
+using Shared.TestGenerators;
 
 namespace Shared.Test.Unit.Crypto
 {
@@ -31,7 +31,7 @@ namespace Shared.Test.Unit.Crypto
         public void Hash_WhenParametersAreValid_ShouldHashValue()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
 
             // Act
@@ -49,7 +49,7 @@ namespace Shared.Test.Unit.Crypto
         public void Verify_WhenHashedValueIsInvalid_ShouldThrowException(string? valueHashed)
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
 
             // Act
@@ -69,7 +69,7 @@ namespace Shared.Test.Unit.Crypto
         public void Verify_WhenPlainValueIsInvalid_ShouldThrowException(string? valuePlain)
         {
             // Arrange
-            var valueHashed = StringGenerator.GenerateUsingAsciiChars(10);
+            var valueHashed = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
 
             // Act
@@ -87,7 +87,7 @@ namespace Shared.Test.Unit.Crypto
         public void Verify_WhenNumberOfBytesDoesNotMatchVersion_ShouldThrowException()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
             var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
 
@@ -106,7 +106,7 @@ namespace Shared.Test.Unit.Crypto
         public void Verify_WhenValuesAreDifferent_ShouldReturnFalse()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
             var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
 
@@ -121,7 +121,7 @@ namespace Shared.Test.Unit.Crypto
         public void Verify_WhenValuesAreSame_ShouldReturnTrue()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
             var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
 

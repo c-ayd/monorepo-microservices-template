@@ -3,10 +3,10 @@ using System.Security.Claims;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Infrastructure.Settings;
 using AuthService.Test.Utility;
-using Cayd.Test.Generators;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
@@ -109,7 +109,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void GenerateJwtToken_WhenClaimsAreGivenButNotBeforeDateTimeIsNotGiven_ShouldGenerateToken()
         {
             // Arrange
-            var nameIdentifier = StringGenerator.GenerateUsingAsciiChars(10);
+            var nameIdentifier = StringGenerator.GeneratePrintableAscii();
             var email = EmailGenerator.Generate();
 
             var claims = new List<Claim>()
@@ -145,7 +145,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void GenerateJwtToken_WhenClaimsAndNotBeforeDateTimeAreGiven_ShouldGenerateToken()
         {
             // Arrange
-            var nameIdentifier = StringGenerator.GenerateUsingAsciiChars(10);
+            var nameIdentifier = StringGenerator.GeneratePrintableAscii();
             var email = EmailGenerator.Generate();
 
             var claims = new List<Claim>()

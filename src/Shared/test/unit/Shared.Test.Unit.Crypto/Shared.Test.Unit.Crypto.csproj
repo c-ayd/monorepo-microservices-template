@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Shared.Test.Utility\Shared.Test.Utility.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.Crypto\Shared.Crypto.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.TestGenerators\Shared.TestGenerators.csproj" />
   </ItemGroup>
 
 </Project>

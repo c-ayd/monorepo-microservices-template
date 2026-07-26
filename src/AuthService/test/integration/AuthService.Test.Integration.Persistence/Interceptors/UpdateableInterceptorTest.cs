@@ -4,7 +4,7 @@ using AuthService.Domain.SeedWork;
 using AuthService.Persistence.Exceptions;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
-using Cayd.Test.Generators;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {
@@ -25,7 +25,8 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
             var now = DateTimeOffset.UtcNow;
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(6));
+            var passwordLength = 10;
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(length: passwordLength));
             var accountId = account.Id;
 
             await authDbContext.Accounts.AddAsync(account);
@@ -35,7 +36,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
                 Assert.Fail($"The {nameof(IUpdateable.UpdatedDate)} property was set while creating the entity in the database");
 
             // Act
-            account.PasswordHashed = PasswordGenerator.Generate(7);
+            account.PasswordHashed = PasswordGenerator.Generate(length: passwordLength + 1);
             await authDbContext.SaveChangesAsync();
 
             // Assert
@@ -53,15 +54,16 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             // Arrange
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(6));
-            var token = new Token(account.Id, ETokenPurpose.EmailVerification, StringGenerator.GenerateUsingAsciiChars(10), DateTimeOffset.UtcNow);
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
+            var tokenLength = 10;
+            var token = new Token(account.Id, ETokenPurpose.EmailVerification, StringGenerator.GeneratePrintableAscii(length: tokenLength), DateTimeOffset.UtcNow);
 
             account.Tokens.Add(token);
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
             // Act
-            token.ValueHashed = StringGenerator.GenerateUsingAsciiChars(5);
+            token.ValueHashed = StringGenerator.GeneratePrintableAscii(length: tokenLength + 1);
             var exception = await Record.ExceptionAsync(async () =>
             {
                 await authDbContext.SaveChangesAsync();

@@ -1,7 +1,7 @@
 using System.Reflection;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Application.Validations.Shared;
-using Cayd.Test.Generators;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Application.Validations.Shared
 {
@@ -34,7 +34,7 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
             // Arrange
             var maxLengthCode = (string)typeof(EmailValidator).GetField("_maxLengthCode", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
             
-            var email = EmailGenerator.GenerateCustomLength(AccountConstraints.EmailMaxLength + 1, 3, 3);
+            var email = EmailGenerator.Generate(AccountConstraints.EmailMaxLength + 1, 3, 3);
 
             // Act
             var errors = _validator.Validate(email);

@@ -1,8 +1,6 @@
-using System.Reflection;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Infrastructure.Settings;
 using AuthService.Test.Utility;
-using Cayd.Test.Generators;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
