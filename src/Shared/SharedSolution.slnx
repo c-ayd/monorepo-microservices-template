@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Shared.AspNetCore.Helpers/Shared.AspNetCore.Helpers.csproj" />
     <Project Path="src/Shared.Crypto/Shared.Crypto.csproj" />
   </Folder>
   <Folder Name="/test/">
