@@ -6,6 +6,9 @@
   <Folder Name="/test/">
     <Project Path="test/Shared.Test.Utility/Shared.Test.Utility.csproj" />
   </Folder>
+  <Folder Name="/test/integration/">
+    <Project Path="test/integration/Shared.Test.Integration.AspNetCore.Helpers/Shared.Test.Integration.AspNetCore.Helpers.csproj" />
+  </Folder>
   <Folder Name="/test/unit/">
     <Project Path="test/unit/Shared.Test.Unit.Crypto/Shared.Test.Unit.Crypto.csproj" />
   </Folder>
