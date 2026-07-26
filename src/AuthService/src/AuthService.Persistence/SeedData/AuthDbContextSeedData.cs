@@ -1,7 +1,7 @@
 using AuthService.Domain.Entities;
 using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.Exceptions;
-using AuthService.Persistence.Settings;
+using AuthService.Persistence.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,20 +15,20 @@ namespace AuthService.Persistence.SeedData
             using var scope = services.CreateAsyncScope();
             using var authDbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
 
-            var seedDataSettings = configuration.GetSection(SeedDataSettings.SettingsKey).Get<SeedDataSettings>()!;
+            var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             await authDbContext.Database.MigrateAsync();
 
-            await AddDefaultRolesAsync(authDbContext, seedDataSettings);
-            await AddDefaultAccountsAsync(authDbContext, seedDataSettings);
+            await AddDefaultRolesAsync(authDbContext, seedDataOptions);
+            await AddDefaultAccountsAsync(authDbContext, seedDataOptions);
         }
 
-        private static async Task AddDefaultRolesAsync(AuthDbContext authDbContext, SeedDataSettings settings)
+        private static async Task AddDefaultRolesAsync(AuthDbContext authDbContext, SeedDataOptions options)
         {
             if (await authDbContext.Roles.AnyAsync())
                 return;
 
-            foreach (var role in settings.AuthDb.Roles)
+            foreach (var role in options.AuthDb.Roles)
             {
                 await authDbContext.Roles.AddAsync(new Role(role));
             }
@@ -36,12 +36,12 @@ namespace AuthService.Persistence.SeedData
             await authDbContext.SaveChangesAsync();
         }
 
-        private static async Task AddDefaultAccountsAsync(AuthDbContext authDbContext, SeedDataSettings settings)
+        private static async Task AddDefaultAccountsAsync(AuthDbContext authDbContext, SeedDataOptions options)
         {
             if (await authDbContext.Accounts.AnyAsync())
                 return;
 
-            foreach (var accountRolePair in settings.AuthDb.Accounts)
+            foreach (var accountRolePair in options.AuthDb.Accounts)
             {
                 var role = await authDbContext.Roles.FirstOrDefaultAsync(r => r.Name == accountRolePair.Role);
                 if (role == null)

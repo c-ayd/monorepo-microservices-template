@@ -1,7 +1,7 @@
 using AuthService.Domain.Entities;
 using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.SeedData;
-using AuthService.Persistence.Settings;
+using AuthService.Persistence.Options;
 using AuthService.Test.Utility;
 using Cayd.Test.Generators;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +46,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         {
             // Arrange
             var configuration = ConfigurationHelper.CreateConfiguration();
-            var seedDataSettings = configuration.GetSection(SeedDataSettings.SettingsKey).Get<SeedDataSettings>()!;
+            var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             // Act
             await _services.SeedDataAuthDbContextAsync(configuration);
@@ -66,13 +66,13 @@ namespace AuthService.Test.Integration.Persistence.SeedData
                 })
                 .ToListAsync();
 
-            foreach (var role in seedDataSettings.AuthDb.Roles)
+            foreach (var role in seedDataOptions.AuthDb.Roles)
             {
                 if (!roles.Contains(role))
                     Assert.Fail($"The Roles table does not contain a role called {role}.");
             }
 
-            foreach (var accountRolePair in seedDataSettings.AuthDb.Accounts)
+            foreach (var accountRolePair in seedDataOptions.AuthDb.Accounts)
             {
                 var account = accounts.FirstOrDefault(a => a.Email == accountRolePair.Email);
                 if (account == null)
@@ -91,15 +91,15 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         {
             // Arrange
             var configuration = ConfigurationHelper.CreateConfiguration();
-            var seedDataSettings = configuration.GetSection(SeedDataSettings.SettingsKey).Get<SeedDataSettings>()!;
+            var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             using var authDbContext = CreateAuthDbContext();
             await authDbContext.Database.MigrateAsync();
 
-            await authDbContext.Roles.AddAsync(new Role(seedDataSettings.AuthDb.Roles[0] + "a"));
+            await authDbContext.Roles.AddAsync(new Role(seedDataOptions.AuthDb.Roles[0] + "a"));
             await authDbContext.SaveChangesAsync();
 
-            await authDbContext.Accounts.AddAsync(new Account(seedDataSettings.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate()));
+            await authDbContext.Accounts.AddAsync(new Account(seedDataOptions.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate()));
             await authDbContext.SaveChangesAsync();
 
             // Act
@@ -115,13 +115,13 @@ namespace AuthService.Test.Integration.Persistence.SeedData
                 .Select(a => a.Email)
                 .ToListAsync();
 
-            foreach (var role in seedDataSettings.AuthDb.Roles)
+            foreach (var role in seedDataOptions.AuthDb.Roles)
             {
                 if (roles.Contains(role))
                     Assert.Fail($"The Roles table contains a role called {role}.");
             }
 
-            foreach (var accountRolePair in seedDataSettings.AuthDb.Accounts)
+            foreach (var accountRolePair in seedDataOptions.AuthDb.Accounts)
             {
                 var account = accountEmails.FirstOrDefault(e => e == accountRolePair.Email);
                 if (account != null)

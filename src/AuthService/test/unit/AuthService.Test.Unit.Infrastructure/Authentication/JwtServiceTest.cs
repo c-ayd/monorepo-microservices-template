@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AuthService.Infrastructure.Authentication;
-using AuthService.Infrastructure.Settings;
+using AuthService.Infrastructure.Options;
 using AuthService.Test.Utility;
 using Cayd.Test.Generators;
 using Microsoft.Extensions.Configuration;
@@ -12,17 +12,17 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
     public class JwtServiceTest
     {
-        private readonly JwtSettings _jwtSettings;
+        private readonly JwtOptions _jwtOptions;
         private readonly JwtKeyService _jwtKeyService;
         private readonly JwtService _jwtService;
 
         public JwtServiceTest()
         {
-            _jwtSettings = ConfigurationHelper.CreateConfiguration().GetSection(JwtSettings.SettingsKey).Get<JwtSettings>()!;
-            var jwtOptions = Options.Create(_jwtSettings);
+            _jwtOptions = ConfigurationHelper.CreateConfiguration().GetSection(JwtOptions.Key).Get<JwtOptions>()!;
+            var jwtOptionsPattern = Options.Create(_jwtOptions);
 
-            _jwtKeyService = new JwtKeyService(jwtOptions);
-            _jwtService = new JwtService(jwtOptions, _jwtKeyService);
+            _jwtKeyService = new JwtKeyService(jwtOptionsPattern);
+            _jwtService = new JwtService(jwtOptionsPattern, _jwtKeyService);
         }
 
         private (List<Claim>?, DateTime?, DateTime?) DecodeAccessToken(string accessToken)
@@ -35,8 +35,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
                 ValidateIssuerSigningKey = true,
                 ValidateLifetime = true,
 
-                ValidAudience = _jwtSettings.Audience,
-                ValidIssuer = _jwtSettings.Issuer,
+                ValidAudience = _jwtOptions.Audience,
+                ValidIssuer = _jwtOptions.Issuer,
                 IssuerSigningKey = _jwtKeyService.PublicKey
             };
 
@@ -62,8 +62,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void GenerateToken_WhenClaimsAndNotBeforeDateTimeAreNotGiven_ShouldGenerateToken()
         {
             // Arrange
-            var accessTokenLifespan = _jwtSettings.AccessTokenLifespanInMinutes;
-            var refreshTokenLifespan = _jwtSettings.RefreshTokenLifespanInDays * 24 * 60;
+            var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
+            var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
             var now = DateTime.UtcNow;
 
             // Act
@@ -83,8 +83,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void GenerateJwtToken_WhenClaimsAreNotGivenButNotBeforeDateTimeIsGiven_ShouldGenerateToken()
         {
             // Arrange
-            var accessTokenLifespan = _jwtSettings.AccessTokenLifespanInMinutes;
-            var refreshTokenLifespan = _jwtSettings.RefreshTokenLifespanInDays * 24 * 60;
+            var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
+            var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
             var now = DateTime.UtcNow;
 
             var notBefore = now.AddMinutes(1);
@@ -118,8 +118,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
                 new Claim(ClaimTypes.Email, email)
             };
 
-            var accessTokenLifespan = _jwtSettings.AccessTokenLifespanInMinutes;
-            var refreshTokenLifespan = _jwtSettings.RefreshTokenLifespanInDays * 24 * 60;
+            var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
+            var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
             var now = DateTime.UtcNow;
 
             // Act
@@ -154,8 +154,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
                 new Claim(ClaimTypes.Email, email)
             };
 
-            var accessTokenLifespan = _jwtSettings.AccessTokenLifespanInMinutes;
-            var refreshTokenLifespan = _jwtSettings.RefreshTokenLifespanInDays * 24 * 60;
+            var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
+            var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
             var now = DateTime.UtcNow;
 
             var notBefore = now.AddMinutes(1);
