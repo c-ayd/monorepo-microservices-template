@@ -1,5 +1,5 @@
 using AuthService.Domain.SeedWork;
-using Cayd.Test.Generators;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Domain.SeedWork
 {
@@ -21,7 +21,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
         public void Equals_WhenTwoValueObjectsHaveSameValues_ShouldReturnTrue()
         {
             // Arrange
-            var str = StringGenerator.GenerateUsingAsciiChars(10);
+            var str = StringGenerator.GeneratePrintableAscii();
             var number = Random.Shared.Next();
 
             var vo1 = new TestValueObject()
@@ -51,12 +51,12 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             var number = Random.Shared.Next();
             var vo1 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(10),
                 MyInt = number
             };
             var vo2 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(5),
+                MyString = StringGenerator.GeneratePrintableAscii(5),
                 MyInt = number
             };
 
@@ -75,7 +75,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             // Arrange
             var vo = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(),
                 MyInt = Random.Shared.Next()
             };
 
@@ -96,7 +96,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
         public void EqualOperator_WhenTwoValueObjectsHaveSameValues_ShouldReturnTrue()
         {
             // Arrange
-            var str = StringGenerator.GenerateUsingAsciiChars(10);
+            var str = StringGenerator.GeneratePrintableAscii();
             var number = Random.Shared.Next();
 
             var vo1 = new TestValueObject()
@@ -124,12 +124,12 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             var number = Random.Shared.Next();
             var vo1 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(10),
                 MyInt = number
             };
             var vo2 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(5),
+                MyString = StringGenerator.GeneratePrintableAscii(5),
                 MyInt = number
             };
 
@@ -146,7 +146,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             // Arrange
             var vo = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(),
                 MyInt = Random.Shared.Next()
             };
 
@@ -161,7 +161,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
         public void NotEqualOperator_WhenTwoValueObjectsHaveValues_ShouldReturnFalse()
         {
             // Arrange
-            var str = StringGenerator.GenerateUsingAsciiChars(10);
+            var str = StringGenerator.GeneratePrintableAscii();
             var number = Random.Shared.Next();
 
             var vo1 = new TestValueObject()
@@ -189,12 +189,12 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             var number = Random.Shared.Next();
             var vo1 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(10),
                 MyInt = number
             };
             var vo2 = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(5),
+                MyString = StringGenerator.GeneratePrintableAscii(5),
                 MyInt = number
             };
 
@@ -211,7 +211,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
             // Arrange
             var vo = new TestValueObject()
             {
-                MyString = StringGenerator.GenerateUsingAsciiChars(10),
+                MyString = StringGenerator.GeneratePrintableAscii(),
                 MyInt = Random.Shared.Next()
             };
 
@@ -226,7 +226,7 @@ namespace AuthService.Test.Unit.Domain.SeedWork
         public void GetHashCode_WhenIsCalled_ShouldAggerateAllEqualityComponents()
         {
             // Arrange
-            var str = StringGenerator.GenerateUsingAsciiChars(10);
+            var str = StringGenerator.GeneratePrintableAscii();
             var number = Random.Shared.Next();
             var valuesHashCode = str.GetHashCode() ^ number.GetHashCode();
 

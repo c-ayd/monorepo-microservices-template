@@ -1,7 +1,6 @@
-using System.Text;
-using Cayd.Test.Generators;
 using Shared.Crypto;
 using Shared.Crypto.Exceptions;
+using Shared.TestGenerators;
 
 namespace Shared.Test.Unit.Crypto
 {
@@ -32,7 +31,7 @@ namespace Shared.Test.Unit.Crypto
         public void Encrypt_WhenKeyIsInvalid_ShouldThrowException(string? key)
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
 
             // Act
             var exception = Record.Exception(() =>
@@ -49,7 +48,7 @@ namespace Shared.Test.Unit.Crypto
         public void Encrypt_WhenKeyLengthIsWrong_ShouldThrowException()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
 
             // Act
             var exception = Record.Exception(() =>
@@ -66,7 +65,7 @@ namespace Shared.Test.Unit.Crypto
         public void Encrypt_WhenParametersAreValid_ShouldEncryptValue()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
 
             // Act
             var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
@@ -97,7 +96,7 @@ namespace Shared.Test.Unit.Crypto
         public void Decrypt_WhenKeyLengthIsWrong_ShouldThrowException()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
 
             // Act
@@ -115,7 +114,7 @@ namespace Shared.Test.Unit.Crypto
         public void Decrypt_WhenParametersAreValid_ShouldDecryptValue()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
 
             // Act
@@ -141,7 +140,7 @@ namespace Shared.Test.Unit.Crypto
         public void Compare_WhenEncryptedValueIsInvalid_ShouldThrowException(string? valueEncrypted)
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
 
             // Act
             var exception = Record.Exception(() =>
@@ -160,7 +159,7 @@ namespace Shared.Test.Unit.Crypto
         public void Compare_WhenPlainValueIsInvalid_ShouldThrowException(string? valuePlain)
         {
             // Arrange
-            var valueEncrypted = StringGenerator.GenerateUsingAsciiChars(10);
+            var valueEncrypted = StringGenerator.GeneratePrintableAscii();
 
             // Act
             var exception = Record.Exception(() =>
@@ -177,7 +176,7 @@ namespace Shared.Test.Unit.Crypto
         public void Compare_WhenValuesAreDifferent_ShouldReturnFalse()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
 
             // Act
@@ -191,7 +190,7 @@ namespace Shared.Test.Unit.Crypto
         public void Compare_WhenValuesAreDifferent_ShouldReturnTrue()
         {
             // Arrange
-            var value = StringGenerator.GenerateUsingAsciiChars(10);
+            var value = StringGenerator.GeneratePrintableAscii();
             var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
 
             // Act

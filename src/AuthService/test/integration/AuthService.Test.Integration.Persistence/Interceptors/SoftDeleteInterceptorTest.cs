@@ -2,8 +2,8 @@ using AuthService.Domain.Entities;
 using AuthService.Domain.SeedWork;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
-using Cayd.Test.Generators;
 using Microsoft.EntityFrameworkCore;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {
@@ -53,7 +53,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
-            var login = new Login(account.Id, StringGenerator.GenerateUsingAsciiChars(10), DateTimeOffset.UtcNow);
+            var login = new Login(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
             var loginId = login.Id;
 
             account.Logins.Add(login);

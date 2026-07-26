@@ -2,7 +2,7 @@ using System.Reflection;
 using AuthService.Application.Validations;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Application.Validations.Shared;
-using Cayd.Test.Generators;
+using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Application.Validations.Shared
 {
@@ -18,8 +18,20 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
 
             var passwords = new List<string>()
             {
-                PasswordGenerator.GenerateWithCustomRules(AccountConstraints.PasswordMinLength - 1, true, true, true, true),
-                PasswordGenerator.GenerateWithCustomRules(AccountConstraints.PasswordMaxLength + 1, true, true, true, true)
+                PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: true,
+                    includeDigit: true,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.PasswordMinLength - 1),
+                PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: true,
+                    includeDigit: true,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.EmailMaxLength + 1)
             };
 
             // Act
@@ -44,10 +56,33 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
 
             var passwords = new List<string>()
             {
-                "Abcdefghi-",     // No digit
-                "ABCDEFGH1-",     // No lowercase
-                "abcdefgh1-",     // No uppercase
-                "Abcdefgh1j",     // No special character
+                PasswordGenerator.Generate(
+                    includeUppercase: false,
+                    includeLowercase: true,
+                    includeDigit: true,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.PasswordMinLength),
+                PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: false,
+                    includeDigit: true,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.PasswordMinLength),
+                PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: true,
+                    includeDigit: false,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.PasswordMinLength),
+                PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: true,
+                    includeDigit: true,
+                    includeSpecialChars: false,
+                    length: AccountConstraints.PasswordMinLength)
             };
 
             // Act
@@ -68,7 +103,13 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
         public void Validate_WhenPasswordIsInCorrectFormat_ShouldReturnNoError()
         {
             // Arrange
-            var password = PasswordGenerator.GenerateWithCustomRules(10, true, true, true, true);
+            var password = PasswordGenerator.Generate(
+                    includeUppercase: true,
+                    includeLowercase: true,
+                    includeDigit: true,
+                    includeSpecialChars: true,
+                    specialChars: AccountConstraints.PasswordSpecialCharacters,
+                    length: AccountConstraints.PasswordMinLength);
 
             // Act
             var errors = _validator.Validate(password);

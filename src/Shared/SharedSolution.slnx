@@ -1,11 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Shared.Crypto/Shared.Crypto.csproj" />
-  </Folder>
-  <Folder Name="/test/">
-    <Project Path="test/Shared.Test.Utility/Shared.Test.Utility.csproj" />
+    <Project Path="src/Shared.TestGenerators/Shared.TestGenerators.csproj" />
   </Folder>
   <Folder Name="/test/unit/">
     <Project Path="test/unit/Shared.Test.Unit.Crypto/Shared.Test.Unit.Crypto.csproj" />
+    <Project Path="test/unit/Shared.Test.Unit.TestGenerators/Shared.Test.Unit.TestGenerators.csproj" />
   </Folder>
 </Solution>
