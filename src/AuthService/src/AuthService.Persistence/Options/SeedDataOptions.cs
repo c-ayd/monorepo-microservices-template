@@ -1,10 +1,10 @@
-using Cayd.AspNetCore.Settings;
+using Shared.AspNetCore.Helpers.Options;
 
-namespace AuthService.Persistence.Settings
+namespace AuthService.Persistence.Options
 {
-    public class SeedDataSettings : ISettings
+    public class SeedDataOptions : IOptions
     {
-        public static string SettingsKey => "SeedData";
+        public static string Key => "SeedData";
 
         public required AuthDbData AuthDb { get; set; }
 

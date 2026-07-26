@@ -2,7 +2,7 @@ using System.Reflection;
 using AuthService.Infrastructure;
 using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
-using Cayd.AspNetCore.Settings.DependencyInjection;
+using Shared.AspNetCore.Helpers.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +13,7 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 //~ End
 
-builder.Services.AddSettingsFromAssemblies(builder.Configuration,
+builder.AddOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Persistence.ServiceRegistration))!,
     Assembly.GetAssembly(typeof(AuthService.Infrastructure.ServiceRegistration))!
 );

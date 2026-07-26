@@ -1,5 +1,5 @@
 using AuthService.Infrastructure.Authentication;
-using AuthService.Infrastructure.Settings;
+using AuthService.Infrastructure.Options;
 using AuthService.Test.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -12,16 +12,16 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void Constructor_WhenServiceIsInstantiated_ShouldLoadKeys()
         {
             // Arrange
-            var jwtSettings = ConfigurationHelper.CreateConfiguration().GetSection(JwtSettings.SettingsKey).Get<JwtSettings>()!;
+            var jwtOptions = ConfigurationHelper.CreateConfiguration().GetSection(JwtOptions.Key).Get<JwtOptions>()!;
 
             // Act
-            var jwtKeyService = new JwtKeyService(Options.Create(jwtSettings));
+            var jwtKeyService = new JwtKeyService(Options.Create(jwtOptions));
 
             // Assert
             Assert.NotNull(jwtKeyService.PrivateKey);
             Assert.NotNull(jwtKeyService.PublicKey);
-            Assert.Equal(jwtSettings.KeyId, jwtKeyService.PrivateKey.KeyId);
-            Assert.Equal(jwtSettings.KeyId, jwtKeyService.PublicKey.KeyId);
+            Assert.Equal(jwtOptions.KeyId, jwtKeyService.PrivateKey.KeyId);
+            Assert.Equal(jwtOptions.KeyId, jwtKeyService.PublicKey.KeyId);
         }
     }
 }

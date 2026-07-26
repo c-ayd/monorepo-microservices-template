@@ -1,10 +1,10 @@
-using Cayd.AspNetCore.Settings;
+using Shared.AspNetCore.Helpers.Options;
 
-namespace AuthService.Infrastructure.Settings
+namespace AuthService.Infrastructure.Options
 {
-    public class JwtSettings : ISettings
+    public class JwtOptions : IOptions
     {
-        public static string SettingsKey => "Jwt";
+        public static string Key => "Jwt";
 
         public required string KeyId { get; set; }
         public required string PrivateKeyPath { get; set; }

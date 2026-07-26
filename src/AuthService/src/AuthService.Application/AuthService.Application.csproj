@@ -3,10 +3,10 @@
   <ItemGroup>
     <ProjectReference Include="..\AuthService.Domain\AuthService.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Crypto\Shared.Crypto.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.AspNetCore.Helpers\Shared.AspNetCore.Helpers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cayd.AspNetCore.Settings" Version="2.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.2" />
   </ItemGroup>
