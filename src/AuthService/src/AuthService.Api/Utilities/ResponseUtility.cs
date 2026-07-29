@@ -33,10 +33,10 @@ namespace AuthService.Api.Utilities
             return Results.Json(response, statusCode: statusCode);
         }
 
-        public static IResult Fail(HttpStatusCode statusCode, object? errors = null, object? metadata = null)
+        public static IResult Fail(HttpStatusCode statusCode, IEnumerable<object?>? errors = null, object? metadata = null)
             => Fail((int)statusCode, errors, metadata);
 
-        public static IResult Fail(int statusCode, object? errors = null, object? metadata = null)
+        public static IResult Fail(int statusCode, IEnumerable<object?>? errors = null, object? metadata = null)
         {
             var response = new Dictionary<object, object?>();
 

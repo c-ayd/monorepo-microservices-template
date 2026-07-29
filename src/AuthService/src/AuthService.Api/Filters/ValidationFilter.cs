@@ -23,7 +23,7 @@ namespace AuthService.Api.Filters
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, new[] { _requestBodyMissingError });
+                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
 
                 var errors = validator.Validate(request);
 
@@ -47,7 +47,7 @@ namespace AuthService.Api.Filters
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, new[] { _requestBodyMissingError });
+                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
 
                 var errors = new List<ValidationError>();
                 foreach (var validator in validators)
@@ -75,7 +75,7 @@ namespace AuthService.Api.Filters
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, new[] { _requestBodyMissingError });
+                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
 
                 var errors = await validator.ValidateAsync(request, context.HttpContext.RequestAborted);
                 if (errors.Count > 0)
@@ -98,7 +98,7 @@ namespace AuthService.Api.Filters
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, new[] { _requestBodyMissingError });
+                    return ResponseUtility.Fail(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
 
                 var errors = new List<ValidationError>();
                 foreach (var validator in validators)
