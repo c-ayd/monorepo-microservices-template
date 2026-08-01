@@ -1,6 +1,6 @@
 using Shared.AspNetCore.Helpers.Options;
 
-namespace NotificationService.Options
+namespace NotificationService.Worker.Options
 {
     public class SmtpOptions : IOptions
     {
@@ -12,5 +12,6 @@ namespace NotificationService.Options
         public required string SenderDisplayName { get; set; }
         public required string Server { get; set; }
         public required int Port { get; set; }
+        public required bool EnableSsl { get; set; }
     }
 }

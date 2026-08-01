@@ -1,29 +1,25 @@
 using System.Net;
 using System.Net.Mail;
 using Microsoft.Extensions.Options;
-using NotificationService.Abstractions;
-using NotificationService.Options;
+using NotificationService.Worker.Abstractions;
+using NotificationService.Worker.Options;
 
-namespace NotificationService.Services
+namespace NotificationService.Worker.Services
 {
-    public class Smtp : IEmailService
+    public class SmtpService : IEmailService
     {
         private readonly SmtpOptions _smtpOptions;
-        private readonly ILogger<Smtp> _logger;
 
-        public Smtp(
-            IOptions<SmtpOptions> smtpOptions,
-            ILogger<Smtp> logger)
+        public SmtpService(IOptions<SmtpOptions> smtpOptions)
         {
             _smtpOptions = smtpOptions.Value;
-            _logger = logger;
         }
 
-        public async Task Send(string subject, string body, bool isBodyHtml, params string[] to)
+        public async Task SendAsync(IEnumerable<string> to, string subject, string body, bool isBodyHtml)
         {
             using var client = new SmtpClient(_smtpOptions.Server, _smtpOptions.Port);
             client.Credentials = new NetworkCredential(_smtpOptions.Username, _smtpOptions.Password);
-            client.EnableSsl = true;
+            client.EnableSsl = _smtpOptions.EnableSsl;
 
             var message = new MailMessage()
             {
