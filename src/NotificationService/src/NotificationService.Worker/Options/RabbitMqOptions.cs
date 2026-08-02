@@ -10,7 +10,5 @@ namespace NotificationService.Worker.Options
         public required string Password { get; set; }
         public required string Host { get; set; }
         public required int Port { get; set; }
-        public required bool AutomaticRecovery { get; set; }
-        public required int NetworkRecoveryIntervalInSeconds { get; set; }
     }
 }
