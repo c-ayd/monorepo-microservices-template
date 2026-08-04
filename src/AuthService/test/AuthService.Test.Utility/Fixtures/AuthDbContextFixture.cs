@@ -1,4 +1,5 @@
 using AuthService.Persistence.DbContexts;
+using DotNet.Testcontainers.Builders;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
@@ -10,7 +11,7 @@ namespace AuthService.Test.Utility.Fixtures
 
         public async Task InitializeAsync()
         {
-            _container = new PostgreSqlBuilder(TestContainersImageVersions.PostgreSql)
+            _container = new PostgreSqlBuilder("postgres:18.4")
                 .Build();
             await _container.StartAsync();
 

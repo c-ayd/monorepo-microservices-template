@@ -18,8 +18,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
 
         public async Task InitializeAsync()
         {
-            // NOTE: Change the version tag to match your PostgreSQL version.
-            _container = new PostgreSqlBuilder("postgres:16.4")
+            _container = new PostgreSqlBuilder("postgres:18.4")
                 .Build();
             await _container.StartAsync();
 
