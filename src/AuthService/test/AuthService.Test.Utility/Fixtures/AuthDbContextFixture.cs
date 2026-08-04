@@ -12,6 +12,7 @@ namespace AuthService.Test.Utility.Fixtures
         public async Task InitializeAsync()
         {
             _container = new PostgreSqlBuilder("postgres:18.4")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
                 .Build();
             await _container.StartAsync();
 
