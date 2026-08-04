@@ -1,9 +1,11 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Shared.AspNetCore.Helpers/Shared.AspNetCore.Helpers.csproj" />
+    <Project Path="src/Shared.AspNetCore.RabbitMq.Notification/Shared.AspNetCore.RabbitMq.Notification.csproj" />
     <Project Path="src/Shared.Crypto/Shared.Crypto.csproj" />
     <Project Path="src/Shared.TestGenerators/Shared.TestGenerators.csproj" />
   </Folder>
+  <Folder Name="/test/" />
   <Folder Name="/test/integration/">
     <Project Path="test/integration/Shared.Test.Integration.AspNetCore.Helpers/Shared.Test.Integration.AspNetCore.Helpers.csproj" />
   </Folder>
