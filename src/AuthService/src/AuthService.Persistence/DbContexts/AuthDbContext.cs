@@ -10,7 +10,7 @@ namespace AuthService.Persistence.DbContexts
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Role> Roles { get; set; }
-        public DbSet<Login> Logins { get; set; }
+        public DbSet<Session> Sessions { get; set; }
         public DbSet<Token> Tokens { get; set; }
 
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)

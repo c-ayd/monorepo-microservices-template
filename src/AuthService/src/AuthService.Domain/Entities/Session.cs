@@ -5,7 +5,7 @@ using AuthService.Domain.SeedWork;
 
 namespace AuthService.Domain.Entities
 {
-    public class Login : EntityBase<Guid>, IUpdateable
+    public class Session : EntityBase<Guid>, IUpdateable
     {
         public string RefreshTokenHashed { get; set; }
         public DateTimeOffset ExpirationDate { get; set; }
@@ -19,11 +19,11 @@ namespace AuthService.Domain.Entities
         public Account Account { get; set; }
 
         // Reserved for EF Core
-        private Login() : base()
+        private Session() : base()
         {
         }
 
-        public Login(
+        public Session(
             Guid accountId,
             string refreshTokenHashed,
             DateTimeOffset expirationDate,

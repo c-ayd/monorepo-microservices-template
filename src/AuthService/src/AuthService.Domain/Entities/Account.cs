@@ -20,7 +20,7 @@ namespace AuthService.Domain.Entities
 
         // Relationships
         public ICollection<Role> Roles { get; set; } = new List<Role>();
-        public ICollection<Login> Logins { get; set; } = new List<Login>();
+        public ICollection<Session> Sessions { get; set; } = new List<Session>();
         public ICollection<Token> Tokens { get; set; } = new List<Token>();
 
         // Reserved for EF Core

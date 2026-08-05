@@ -24,7 +24,7 @@ namespace AuthService.Persistence.EntityConfigurations
             builder.HasMany(a => a.Roles)
                 .WithMany(r => r.Accounts);
 
-            builder.HasMany(a => a.Logins)
+            builder.HasMany(a => a.Sessions)
                 .WithOne(l => l.Account)
                 .HasForeignKey(l => l.AccountId);
 

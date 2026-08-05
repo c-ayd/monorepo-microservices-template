@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AuthService.Persistence.EntityConfigurations
 {
-    public class LoginConfiguration : IEntityTypeConfiguration<Login>
+    public class SessionConfiguration : IEntityTypeConfiguration<Session>
     {
-        public void Configure(EntityTypeBuilder<Login> builder)
+        public void Configure(EntityTypeBuilder<Session> builder)
         {
             builder.Property(l => l.DeviceInfo)
-                .HasMaxLength(LoginConstraints.DeviceInfoMaxLength);
+                .HasMaxLength(SessionConstraints.DeviceInfoMaxLength);
         }
     }
 }
