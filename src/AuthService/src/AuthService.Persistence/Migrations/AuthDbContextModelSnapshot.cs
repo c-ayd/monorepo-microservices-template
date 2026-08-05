@@ -57,6 +57,9 @@ namespace AuthService.Persistence.Migrations
                     b.Property<int>("FailedLoginAttempts")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -86,7 +89,28 @@ namespace AuthService.Persistence.Migrations
                     b.ToTable("Accounts");
                 });
 
-            modelBuilder.Entity("AuthService.Domain.Entities.Login", b =>
+            modelBuilder.Entity("AuthService.Domain.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Roles");
+                });
+
+            modelBuilder.Entity("AuthService.Domain.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,34 +143,7 @@ namespace AuthService.Persistence.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Logins");
-                });
-
-            modelBuilder.Entity("AuthService.Domain.Entities.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("DeletedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name");
-
-                    b.ToTable("Roles");
+                    b.ToTable("Sessions");
                 });
 
             modelBuilder.Entity("AuthService.Domain.Entities.Token", b =>
@@ -194,10 +191,10 @@ namespace AuthService.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AuthService.Domain.Entities.Login", b =>
+            modelBuilder.Entity("AuthService.Domain.Entities.Session", b =>
                 {
                     b.HasOne("AuthService.Domain.Entities.Account", "Account")
-                        .WithMany("Logins")
+                        .WithMany("Sessions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -218,7 +215,7 @@ namespace AuthService.Persistence.Migrations
 
             modelBuilder.Entity("AuthService.Domain.Entities.Account", b =>
                 {
-                    b.Navigation("Logins");
+                    b.Navigation("Sessions");
 
                     b.Navigation("Tokens");
                 });
