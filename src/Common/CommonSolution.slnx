@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Common.AspNetCore.Logging/Common.AspNetCore.Logging.csproj" />
+  </Folder>
+</Solution>
