@@ -18,11 +18,12 @@ namespace AuthService.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false),
                     NewEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     PasswordHashed = table.Column<string>(type: "text", nullable: true),
-                    FailedLoginAttempts = table.Column<int>(type: "integer", nullable: false),
+                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false),
+                    IsBanned = table.Column<bool>(type: "boolean", nullable: false),
                     IsLocked = table.Column<bool>(type: "boolean", nullable: false),
+                    FailedLoginAttempts = table.Column<int>(type: "integer", nullable: false),
                     UnlockDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     UpdatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -40,8 +41,6 @@ namespace AuthService.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     CreatedDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -50,7 +49,7 @@ namespace AuthService.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Logins",
+                name: "Sessions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -64,9 +63,9 @@ namespace AuthService.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Logins", x => x.Id);
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Logins_Accounts_AccountId",
+                        name: "FK_Sessions_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
@@ -130,14 +129,14 @@ namespace AuthService.Persistence.Migrations
                 column: "Email");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Logins_AccountId",
-                table: "Logins",
-                column: "AccountId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Roles_Name",
                 table: "Roles",
                 column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Sessions_AccountId",
+                table: "Sessions",
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tokens_AccountId",
@@ -152,7 +151,7 @@ namespace AuthService.Persistence.Migrations
                 name: "AccountRole");
 
             migrationBuilder.DropTable(
-                name: "Logins");
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Tokens");

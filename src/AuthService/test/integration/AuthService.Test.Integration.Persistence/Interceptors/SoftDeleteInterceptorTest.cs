@@ -53,22 +53,22 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
-            var login = new Login(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
-            var loginId = login.Id;
+            var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
+            var sessionId = session.Id;
 
-            account.Logins.Add(login);
+            account.Sessions.Add(session);
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
             // Act
-            authDbContext.Logins.Remove(login);
+            authDbContext.Sessions.Remove(session);
             await authDbContext.SaveChangesAsync();
 
             // Assert
             authDbContext.ChangeTracker.Clear();
-            var deletedLogin = await authDbContext.Logins.FindAsync(loginId);
+            var deletedSession = await authDbContext.Sessions.FindAsync(sessionId);
 
-            Assert.Null(deletedLogin);
+            Assert.Null(deletedSession);
         }
     }
 }

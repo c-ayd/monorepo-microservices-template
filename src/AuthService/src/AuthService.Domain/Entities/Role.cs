@@ -4,12 +4,9 @@ using AuthService.Domain.SeedWork;
 
 namespace AuthService.Domain.Entities
 {
-    public class Role : EntityBase<Guid>, ISoftDelete
+    public class Role : EntityBase<Guid>
     {
         public string Name { get; set; }
-
-        public bool IsDeleted { get; set; }
-        public DateTimeOffset? DeletedDate { get; set; }
 
         // Relationships
         public ICollection<Account> Accounts { get; set; } = new List<Account>();

@@ -70,19 +70,19 @@ namespace AuthService.Test.Integration.Persistence.Filters
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
-            var login = new Login(account.Id, StringGenerator.GeneratePrintableAscii(), DateTime.UtcNow);
-            var loginId = login.Id;
+            var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTime.UtcNow);
+            var sessionId = session.Id;
 
             // Act
-            account.Logins.Add(login);
+            account.Sessions.Add(session);
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
             // Assert
             authDbContext.ChangeTracker.Clear();
-            var loginFromDb = await authDbContext.Logins.FindAsync(loginId);
+            var sessionFromDb = await authDbContext.Sessions.FindAsync(sessionId);
 
-            Assert.NotNull(loginFromDb);
+            Assert.NotNull(sessionFromDb);
         }
     }
 }
