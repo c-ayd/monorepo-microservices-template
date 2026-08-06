@@ -1,4 +1,4 @@
-namespace Shared.AspNetCore.RabbitMq.Notification.Messages
+namespace Shared.RabbitMq.Notification.Messages
 {
     public record EmailMessage(
         IEnumerable<string> To,

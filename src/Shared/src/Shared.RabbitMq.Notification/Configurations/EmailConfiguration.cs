@@ -1,4 +1,4 @@
-namespace Shared.AspNetCore.RabbitMq.Notification.Configurations
+namespace Shared.RabbitMq.Notification.Configurations
 {
     public static class EmailConfiguration
     {
