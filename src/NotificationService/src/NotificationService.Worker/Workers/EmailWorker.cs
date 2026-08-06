@@ -4,8 +4,8 @@ using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Shared.AspNetCore.RabbitMq.Notification.Configurations;
-using Shared.AspNetCore.RabbitMq.Notification.Messages;
+using Shared.RabbitMq.Notification.Configurations;
+using Shared.RabbitMq.Notification.Messages;
 
 namespace NotificationService.Workers
 {

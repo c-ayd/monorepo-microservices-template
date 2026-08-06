@@ -4,8 +4,8 @@ using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.Services;
 using NotificationService.Workers;
 using RabbitMQ.Client;
-using Shared.AspNetCore.RabbitMq.Notification.Configurations;
-using Shared.AspNetCore.RabbitMq.Notification.Messages;
+using Shared.RabbitMq.Notification.Configurations;
+using Shared.RabbitMq.Notification.Messages;
 using Shared.TestGenerators;
 
 namespace NotificationService.Test.Integration.Worker.Workers
