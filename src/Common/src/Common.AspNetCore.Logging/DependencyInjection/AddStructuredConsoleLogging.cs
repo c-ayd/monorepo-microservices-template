@@ -3,10 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Common.AspNetCore.Logging.DependencyInjection
 {
-    public static class DependencyInjection
+    public static partial class DependencyInjection
     {
-        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, bool isDevelopment)
+        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, string appName, bool isDevelopment)
         {
+            LoggingOptions.ApplicationName = appName;
+
             logging.ClearProviders();
             logging.AddJsonConsole(config =>
             {
