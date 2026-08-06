@@ -1,0 +1,82 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // Build commands
+    {
+      "label": "Build API Gateway",
+      "type": "shell",
+      "command": "dotnet build src/ApiGateway/ApiGatewaySolution.slnx",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Auth Service",
+      "type": "shell",
+      "command": "dotnet build src/AuthService/AuthServiceSolution.slnx",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Notification Service",
+      "type": "shell",
+      "command": "dotnet build src/NotificationService/NotificationServiceSolution.slnx",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Shared Libraries",
+      "type": "shell",
+      "command": "dotnet build src/Shared/SharedSolution.slnx",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Common Libraries",
+      "type": "shell",
+      "command": "dotnet build src/Common/CommonSolution.slnx",
+      "problemMatcher": []
+    },
+
+    // Run commands
+    {
+      "label": "Run API Gateway (Development)",
+      "type": "shell",
+      "command": "dotnet run --project src/ApiGateway/src/ApiGateway.Web/ApiGateway.Web.csproj",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run API Gateway (Production)",
+      "type": "shell",
+      "command": "dotnet run --project src/ApiGateway/src/ApiGateway.Web/ApiGateway.Web.csproj --environment Production -c Release",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Run Auth Service (Development)",
+      "type": "shell",
+      "command": "dotnet run --project src/AuthService/src/AuthService.Api/AuthService.Api.csproj",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Auth Service (Production)",
+      "type": "shell",
+      "command": "dotnet run --project src/AuthService/src/AuthService.Api/AuthService.Api.csproj --environment Production -c Release",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Run Notification Service (Development)",
+      "type": "shell",
+      "command": "dotnet run --project src/NotificationService/src/NotificationService.Worker/NotificationService.Worker.csproj",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Notification Service (Production)",
+      "type": "shell",
+      "command": "dotnet run --project src/NotificationService/src/NotificationService.Worker/NotificationService.Worker.csproj --environment Production -c Release",
+      "isBackground": false,
+      "problemMatcher": []
+    }
+  ]
+}
