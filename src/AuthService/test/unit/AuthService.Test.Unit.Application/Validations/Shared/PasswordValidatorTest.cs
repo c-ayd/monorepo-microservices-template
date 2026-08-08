@@ -1,7 +1,7 @@
 using System.Reflection;
-using AuthService.Application.Validations;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Application.Validations.Shared;
+using Common.Http.Response.Structures;
 using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Application.Validations.Shared
@@ -35,7 +35,7 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
             };
 
             // Act
-            var errors = new List<ValidationError>();
+            var errors = new List<ErrorItem>();
             foreach (var password in passwords)
             {
                 errors.AddRange(_validator.Validate(password));
@@ -86,7 +86,7 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
             };
 
             // Act
-            var errors = new List<ValidationError>();
+            var errors = new List<ErrorItem>();
             foreach (var password in passwords)
             {
                 errors.AddRange(_validator.Validate(password));
