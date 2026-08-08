@@ -4,6 +4,7 @@
     <ProjectReference Include="..\AuthService.Domain\AuthService.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Crypto\Shared.Crypto.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.AspNetCore.Helpers\Shared.AspNetCore.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\Common\src\Common.Http\Common.Http.csproj" />
   </ItemGroup>
 
   <ItemGroup>
