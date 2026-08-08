@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Common.Http/Common.Http.csproj" />
     <Project Path="src/Common.Logging/Common.Logging.csproj" />
   </Folder>
 </Solution>
