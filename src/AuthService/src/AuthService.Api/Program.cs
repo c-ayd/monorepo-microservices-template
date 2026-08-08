@@ -2,6 +2,7 @@ using System.Reflection;
 using AuthService.Infrastructure;
 using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
+using Common.Logging.DependencyInjection;
 using Shared.AspNetCore.Helpers.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,12 +19,18 @@ builder.AddOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Infrastructure.ServiceRegistration))!
 );
 
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.ApplicationName,
+    builder.Environment.IsDevelopment());
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseLoggingMiddleware();
 
 app.UseHttpsRedirection();
 
