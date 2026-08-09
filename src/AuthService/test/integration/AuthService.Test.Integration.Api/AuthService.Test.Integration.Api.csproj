@@ -18,4 +18,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\AuthService.Test.Utility\AuthService.Test.Utility.csproj" />
+  </ItemGroup>
+
 </Project>
