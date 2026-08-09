@@ -9,9 +9,8 @@ namespace Common.Http.DependencyInjection
 {
     public static class ValidationFilter
     {
-        private const string _requestBodyMissingCode = "req_body_missing";
         private static readonly ErrorItem _requestBodyMissingError = new ErrorItem(
-            Code: _requestBodyMissingCode,
+            Code: "req_body_missing",
             Message: "The request body is missing"
         );
 
