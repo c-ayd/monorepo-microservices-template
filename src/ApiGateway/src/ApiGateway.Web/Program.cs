@@ -1,3 +1,4 @@
+using ApiGateway.Web.Middlewares;
 using Common.Logging.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Logging.AddStructuredConsoleLogging(
 var app = builder.Build();
 
 app.UseLoggingMiddleware();
+app.UseMiddleware<GlobalExceptionHandler>();
 
 app.MapReverseProxy();
 
