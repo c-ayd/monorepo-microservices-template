@@ -1,3 +1,4 @@
+using AuthService.Application.Abstractions.DbContexts;
 using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.Options;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace AuthService.Persistence
             var connStrings = configuration.GetSection(ConnectionStringsOptions.Key).Get<ConnectionStringsOptions>()!;
 
             services.AddDbContext<AuthDbContext>(_ => _.UseNpgsql(connStrings.AuthDb));
+            services.AddScoped<IAuthDbContext>(sp => sp.GetRequiredService<AuthDbContext>());
         }
     }
 }
