@@ -1,9 +1,11 @@
 using System.Net;
+using Common.Http.Exceptions;
 using Common.Http.Response;
 using Common.Http.Response.Structures;
 using Common.Http.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Common.Http.DependencyInjection
 {
@@ -18,13 +20,17 @@ namespace Common.Http.DependencyInjection
         /// Adds a validation filter to the endpoint.
         /// </summary>
         /// <param name="validator">Validator to run against the request</param>
-        public static IEndpointConventionBuilder AddValidation<T>(this IEndpointConventionBuilder builder, IValidator<T> validator)
+        public static IEndpointConventionBuilder AddValidation<T>(this IEndpointConventionBuilder builder)
         {
             return builder.AddEndpointFilter(async (context, next) =>
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
                     return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
+
+                var validator = context.HttpContext.RequestServices.GetRequiredService<IValidator<T>>();
+                if (validator == null)
+                    throw new ValidatorNotFoundException($"{nameof(IValidator<>)}<{typeof(T).Name}>");
 
                 var errors = validator.Validate(request);
                 if (errors.Count > 0)
@@ -68,13 +74,17 @@ namespace Common.Http.DependencyInjection
         /// Adds an async validator to the endpoint.
         /// </summary>
         /// <param name="validator">Async validator to run against the request</param>
-        public static IEndpointConventionBuilder AddAsyncValidation<T>(this IEndpointConventionBuilder builder, IAsyncValidator<T> validator)
+        public static IEndpointConventionBuilder AddAsyncValidation<T>(this IEndpointConventionBuilder builder)
         {
             return builder.AddEndpointFilter(async (context, next) =>
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
                     return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
+
+                var validator = context.HttpContext.RequestServices.GetRequiredService<IAsyncValidator<T>>();
+                if (validator == null)
+                    throw new AsyncValidatorNotFoundException($"{nameof(IAsyncValidator<>)}<{typeof(T).Name}>");
 
                 var errors = await validator.ValidateAsync(request, context.HttpContext.RequestAborted);
                 if (errors.Count > 0)
