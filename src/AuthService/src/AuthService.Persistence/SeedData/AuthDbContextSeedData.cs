@@ -1,5 +1,5 @@
+using AuthService.Application.Abstractions.DbContexts;
 using AuthService.Domain.Entities;
-using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.Exceptions;
 using AuthService.Persistence.Options;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +13,7 @@ namespace AuthService.Persistence.SeedData
         public static async Task SeedDataAuthDbContextAsync(this IServiceProvider services, IConfiguration configuration)
         {
             using var scope = services.CreateAsyncScope();
-            using var authDbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+            var authDbContext = scope.ServiceProvider.GetRequiredService<IAuthDbContext>();
 
             var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
@@ -23,7 +23,7 @@ namespace AuthService.Persistence.SeedData
             await AddDefaultAccountsAsync(authDbContext, seedDataOptions);
         }
 
-        private static async Task AddDefaultRolesAsync(AuthDbContext authDbContext, SeedDataOptions options)
+        private static async Task AddDefaultRolesAsync(IAuthDbContext authDbContext, SeedDataOptions options)
         {
             if (await authDbContext.Roles.AnyAsync())
                 return;
@@ -36,7 +36,7 @@ namespace AuthService.Persistence.SeedData
             await authDbContext.SaveChangesAsync();
         }
 
-        private static async Task AddDefaultAccountsAsync(AuthDbContext authDbContext, SeedDataOptions options)
+        private static async Task AddDefaultAccountsAsync(IAuthDbContext authDbContext, SeedDataOptions options)
         {
             if (await authDbContext.Accounts.AnyAsync())
                 return;
