@@ -1,4 +1,5 @@
 using System.Reflection;
+using AuthService.Application.Abstractions.DbContexts;
 using AuthService.Domain.Entities;
 using AuthService.Persistence.Filters;
 using AuthService.Persistence.Interceptors;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Persistence.DbContexts
 {
-    public class AuthDbContext : DbContext
+    public class AuthDbContext : DbContext, IAuthDbContext
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Role> Roles { get; set; }
