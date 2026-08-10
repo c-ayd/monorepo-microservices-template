@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Common.Http.DependencyInjection
 {
-    public static class ValidationFilter
+    public static partial class DependencyInjection
     {
         private static readonly ErrorItem _requestBodyMissingError = new ErrorItem(
             Code: "req_body_missing",
