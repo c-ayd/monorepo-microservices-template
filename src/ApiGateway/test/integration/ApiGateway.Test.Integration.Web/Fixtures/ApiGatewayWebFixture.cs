@@ -2,6 +2,7 @@ using System.Net;
 using ApiGateway.Web.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,13 +41,12 @@ namespace ApiGateway.Test.Integration.Web.Fixtures
                 return app =>
                 {
                     app.UseMiddleware<GlobalExceptionHandler>();
-                    app.Map("/test/no-exception", config =>
+
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        config.Run(async (context) => context.Response.StatusCode = (int)HttpStatusCode.NoContent);
-                    });
-                    app.Map("/test/exception", config =>
-                    {
-                        config.Run(async (context) => throw new Exception("Test exception"));
+                        endpoints.MapGet("/test/no-exception", (context) => Results.NoContent().ExecuteAsync(context));
+                        endpoints.MapGet("/test/exception", (context) => throw new Exception("Test exception"));
                     });
 
                     next(app);
