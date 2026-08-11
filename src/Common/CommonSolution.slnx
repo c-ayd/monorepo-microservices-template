@@ -3,4 +3,8 @@
     <Project Path="src/Common.Http/Common.Http.csproj" />
     <Project Path="src/Common.Logging/Common.Logging.csproj" />
   </Folder>
+  <Folder Name="/test/" />
+  <Folder Name="/test/integration/">
+    <Project Path="test/integration/Common.Test.Integration.Http/Common.Test.Integration.Http.csproj" />
+  </Folder>
 </Solution>
