@@ -26,6 +26,7 @@ namespace AuthService.Test.Integration.Api.Middlewares
 
             // Assert
             Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
             var jsonResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
             Assert.NotNull(jsonResponse);
