@@ -3,7 +3,7 @@ using AuthService.Infrastructure;
 using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
 using Common.Logging.DependencyInjection;
-using Shared.AspNetCore.Helpers.Options;
+using Shared.AspNetCore.Helpers.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
