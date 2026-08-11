@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.AspNetCore.Helpers.Options.Exceptions;
+using Shared.AspNetCore.Helpers.Exceptions;
 using Shared.AspNetCore.Helpers.Options;
 
 namespace Shared.AspNetCore.Helpers.DependencyInjection
