@@ -4,6 +4,7 @@ using AuthService.Persistence.DbContexts;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,13 +64,12 @@ namespace AuthService.Test.Utility.Fixtures
                 return app =>
                 {
                     app.UseMiddleware<GlobalExceptionHandler>();
-                    app.Map("/test/no-exception", builder =>
+
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        builder.Run(async (context) => context.Response.StatusCode = (int)HttpStatusCode.NoContent);
-                    });
-                    app.Map("/test/exception", builder =>
-                    {
-                        builder.Run(async (context) => throw new Exception("Test exception"));
+                        endpoints.MapGet("/test/no-exception", context => Results.NoContent().ExecuteAsync(context));
+                        endpoints.MapGet("/test/exception", context => throw new Exception("Test exception"));
                     });
 
                     next(app);
