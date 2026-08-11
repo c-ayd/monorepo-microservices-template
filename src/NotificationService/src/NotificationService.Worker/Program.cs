@@ -2,7 +2,7 @@ using System.Reflection;
 using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
 using NotificationService.Workers;
-using Shared.AspNetCore.Helpers.Options;
+using Shared.AspNetCore.Helpers.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
