@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.TestGenerators;
 using Testcontainers.PostgreSql;
+using AuthService.Application.Abstractions.DbContexts;
 
 namespace AuthService.Test.Integration.Persistence.SeedData
 {
@@ -24,6 +25,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
 
             _services = new ServiceCollection()
                 .AddDbContext<AuthDbContext>(_ => _.UseNpgsql(_container.GetConnectionString()))
+                .AddScoped<IAuthDbContext>(sp => sp.GetRequiredService<AuthDbContext>())
                 .BuildServiceProvider();
         }
 
