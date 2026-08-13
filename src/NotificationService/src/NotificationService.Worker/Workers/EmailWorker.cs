@@ -40,25 +40,25 @@ namespace NotificationService.Workers
                 await DeclareExchangesAsync();
                 await DeclareQueuesAsync();
 
-                _logger.LogInformation("The worker has been started.");
-
-                await base.StartAsync(cancellationToken);
+                _logger.LogInformation("The email worker has been started.");
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("The worker initialization has been canceled.");
+                _logger.LogWarning("The email worker initialization has been canceled.");
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "An error occured while initializing the worker.");
+                _logger.LogError(exception, exception.Message);
             }
+
+            await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (_channel == null)
             {
-                _logger.LogWarning("The worker is exiting since the connection is not initialized.");
+                _logger.LogWarning("The email worker is exiting since the connection is not initialized.");
                 return;
             }
 
@@ -94,9 +94,10 @@ namespace NotificationService.Workers
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "An error occured while processing the message. Correlation ID: {correlationId}, Timestamp: {timestamp}",
+                    _logger.LogError(exception, "Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
                         args.BasicProperties.CorrelationId,
-                        args.BasicProperties.Timestamp);
+                        args.BasicProperties.Timestamp,
+                        exception.Message);
 
                     await _channel!.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
                 }
@@ -116,11 +117,11 @@ namespace NotificationService.Workers
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("The worker has been canceled.");
+                _logger.LogWarning("The email worker has been canceled.");
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "An error occured while executing the worker.");
+                _logger.LogError(exception, exception.Message);
             }
         }
 
@@ -132,7 +133,7 @@ namespace NotificationService.Workers
                 await _channel.DisposeAsync();
             }
 
-            _logger.LogInformation("The worker has been stopped.");
+            _logger.LogInformation("The email worker has been stopped.");
 
             await base.StopAsync(cancellationToken);
         }
