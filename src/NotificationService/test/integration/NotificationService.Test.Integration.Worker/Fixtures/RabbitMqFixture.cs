@@ -1,7 +1,5 @@
-using System.Net;
 using System.Text.Json;
 using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
 using NotificationService.Worker.Options;
 using RabbitMQ.Client;
 using Testcontainers.RabbitMq;
@@ -10,7 +8,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
 {
     public class RabbitMqFixture : IAsyncLifetime
     {
-        private IContainer _container = null!;
+        private RabbitMqContainer _container = null!;
 
         private IConnection _connection = null!;
         private IChannel _channel = null!;
@@ -39,7 +37,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(
                 publisherConfirmationsEnabled: true,
-                publisherConfirmationTrackingEnabled: false
+                publisherConfirmationTrackingEnabled: true
             ));
         }
 
@@ -54,13 +52,12 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             };
         }
 
-        public async Task PublishMessageAsync<T>(T message, string exchangeName, string exchangeType, string routingKey, int timeoutInSeconds)
+        public async Task PublishMessageAsync<T>(T message, string exchangeName, string routingKey, int timeoutInSeconds)
         {
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
             await _channel.BasicPublishAsync(
                 exchange: exchangeName,
                 routingKey: routingKey,
-                mandatory: true,
                 body: JsonSerializer.SerializeToUtf8Bytes(message),
                 cancellationToken: cts.Token
             );
