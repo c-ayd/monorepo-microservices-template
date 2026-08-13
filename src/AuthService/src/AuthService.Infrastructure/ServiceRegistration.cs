@@ -17,6 +17,7 @@ namespace AuthService.Infrastructure
             services.AddSingleton<IPasswordHasher, Pbkdf2>();
 
             services.AddSingleton<RabbitMqConnectionService>();
+            services.AddSingleton<IHashVersions, HashVersions>();
         }
     }
 }
