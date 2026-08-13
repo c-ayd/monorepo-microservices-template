@@ -3,8 +3,8 @@ using NotificationService.Test.Integration.Worker.Collections;
 using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.Services;
 using NotificationService.Workers;
-using Shared.RabbitMq.Notification.Configurations;
-using Shared.RabbitMq.Notification.Messages;
+using Shared.RabbitMq.Notifications.Configurations;
+using Shared.RabbitMq.Notifications.Messages;
 using Shared.TestGenerators;
 
 namespace NotificationService.Test.Integration.Worker.Workers
@@ -56,9 +56,9 @@ namespace NotificationService.Test.Integration.Worker.Workers
             var body = StringGenerator.GenerateAlphanumeric();
 
             await _rabbitMqFixture.PublishMessageAsync(
-                new EmailMessage([to], subject, body, IsBodyHtml: false),
-                EmailConfiguration.ExchangeName,
-                EmailConfiguration.RoutingKey,
+                new RabbitMqEmailMessage([to], subject, body, IsBodyHtml: false),
+                RabbitMqEmailConfiguration.ExchangeName,
+                RabbitMqEmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
             // Act
@@ -93,8 +93,8 @@ namespace NotificationService.Test.Integration.Worker.Workers
 
             await _rabbitMqFixture.PublishMessageAsync(
                 message,
-                EmailConfiguration.ExchangeName,
-                EmailConfiguration.RoutingKey,
+                RabbitMqEmailConfiguration.ExchangeName,
+                RabbitMqEmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
             // Act
@@ -104,7 +104,7 @@ namespace NotificationService.Test.Integration.Worker.Workers
             var elapsedTimeInSeconds = 0;
             while (true)
             {
-                var dlqInfo = await _rabbitMqFixture.GetQueueInfo(EmailConfiguration.DlqName);
+                var dlqInfo = await _rabbitMqFixture.GetQueueInfo(RabbitMqEmailConfiguration.DlqName);
                 if (dlqInfo.MessageCount == 1)
                     break;
 

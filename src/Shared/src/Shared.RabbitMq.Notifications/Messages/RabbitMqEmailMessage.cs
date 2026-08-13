@@ -1,6 +1,6 @@
-namespace Shared.RabbitMq.Notification.Messages
+namespace Shared.RabbitMq.Notifications.Messages
 {
-    public record EmailMessage(
+    public record RabbitMqEmailMessage(
         IEnumerable<string> To,
         string Subject,
         string Body,

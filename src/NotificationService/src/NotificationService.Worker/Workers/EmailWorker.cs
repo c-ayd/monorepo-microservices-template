@@ -4,8 +4,8 @@ using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Shared.RabbitMq.Notification.Configurations;
-using Shared.RabbitMq.Notification.Messages;
+using Shared.RabbitMq.Notifications.Configurations;
+using Shared.RabbitMq.Notifications.Messages;
 
 namespace NotificationService.Workers
 {
@@ -69,7 +69,7 @@ namespace NotificationService.Workers
                 {
                     var body = args.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
-                    var message = JsonSerializer.Deserialize<EmailMessage>(json, new JsonSerializerOptions()
+                    var message = JsonSerializer.Deserialize<RabbitMqEmailMessage>(json, new JsonSerializerOptions()
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -106,7 +106,7 @@ namespace NotificationService.Workers
             try
             {
                 await _channel!.BasicConsumeAsync(
-                    queue: EmailConfiguration.QueueName,
+                    queue: RabbitMqEmailConfiguration.QueueName,
                     autoAck: false,
                     consumer: consumer,
                     cancellationToken: stoppingToken);
@@ -141,13 +141,13 @@ namespace NotificationService.Workers
         private async Task DeclareExchangesAsync()
         {
             await _channel!.ExchangeDeclareAsync(
-                exchange: EmailConfiguration.ExchangeName,
+                exchange: RabbitMqEmailConfiguration.ExchangeName,
                 type: ExchangeType.Topic,
                 durable: true,
                 autoDelete: false);
 
             await _channel.ExchangeDeclareAsync(
-                exchange: EmailConfiguration.DlxName,
+                exchange: RabbitMqEmailConfiguration.DlxName,
                 type: ExchangeType.Direct,
                 durable: true,
                 autoDelete: false);
@@ -156,33 +156,33 @@ namespace NotificationService.Workers
         private async Task DeclareQueuesAsync()
         {
             await _channel!.QueueDeclareAsync(
-                queue: EmailConfiguration.DlqName,
+                queue: RabbitMqEmailConfiguration.DlqName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false);
             await _channel.QueueBindAsync(
-                queue: EmailConfiguration.DlqName,
-                exchange: EmailConfiguration.DlxName,
-                routingKey: EmailConfiguration.DeadLetterRoutingKey);
+                queue: RabbitMqEmailConfiguration.DlqName,
+                exchange: RabbitMqEmailConfiguration.DlxName,
+                routingKey: RabbitMqEmailConfiguration.DeadLetterRoutingKey);
 
             var arguments = new Dictionary<string, object?>()
             {
                 { "x-queue-type", "quorum" },
                 { "delivery-limit", RetryLimit },
-                { "x-dead-letter-exchange", EmailConfiguration.DlxName },
-                { "x-dead-letter-routing-key", EmailConfiguration.DeadLetterRoutingKey }
+                { "x-dead-letter-exchange", RabbitMqEmailConfiguration.DlxName },
+                { "x-dead-letter-routing-key", RabbitMqEmailConfiguration.DeadLetterRoutingKey }
             };
 
             await _channel.QueueDeclareAsync(
-                queue: EmailConfiguration.QueueName,
+                queue: RabbitMqEmailConfiguration.QueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: arguments);
             await _channel.QueueBindAsync(
-                queue: EmailConfiguration.QueueName,
-                exchange: EmailConfiguration.ExchangeName,
-                routingKey: EmailConfiguration.RoutingKey);
+                queue: RabbitMqEmailConfiguration.QueueName,
+                exchange: RabbitMqEmailConfiguration.ExchangeName,
+                routingKey: RabbitMqEmailConfiguration.RoutingKey);
         }
     }
 }
