@@ -14,6 +14,8 @@ namespace AuthService.Infrastructure
             services.AddSingleton<IJwtService, JwtService>();
 
             services.AddSingleton<IPasswordHasher, Pbkdf2>();
+
+            services.AddSingleton<IHashVersions, HashVersions>();
         }
     }
 }
