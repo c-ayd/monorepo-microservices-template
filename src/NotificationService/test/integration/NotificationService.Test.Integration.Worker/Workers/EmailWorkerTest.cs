@@ -3,7 +3,6 @@ using NotificationService.Test.Integration.Worker.Collections;
 using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.Services;
 using NotificationService.Workers;
-using RabbitMQ.Client;
 using Shared.RabbitMq.Notification.Configurations;
 using Shared.RabbitMq.Notification.Messages;
 using Shared.TestGenerators;
@@ -59,7 +58,6 @@ namespace NotificationService.Test.Integration.Worker.Workers
             await _rabbitMqFixture.PublishMessageAsync(
                 new EmailMessage([to], subject, body, IsBodyHtml: false),
                 EmailConfiguration.ExchangeName,
-                ExchangeType.Topic,
                 EmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
@@ -96,7 +94,6 @@ namespace NotificationService.Test.Integration.Worker.Workers
             await _rabbitMqFixture.PublishMessageAsync(
                 message,
                 EmailConfiguration.ExchangeName,
-                ExchangeType.Topic,
                 EmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
