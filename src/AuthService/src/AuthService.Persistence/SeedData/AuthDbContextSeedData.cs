@@ -12,7 +12,7 @@ namespace AuthService.Persistence.SeedData
     {
         public static async Task SeedDataAuthDbContextAsync(this IServiceProvider services, IConfiguration configuration)
         {
-            using var scope = services.CreateAsyncScope();
+            await using var scope = services.CreateAsyncScope();
             var authDbContext = scope.ServiceProvider.GetRequiredService<IAuthDbContext>();
 
             var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
