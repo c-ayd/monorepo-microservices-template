@@ -2,6 +2,7 @@ using AuthService.Application.Abstractions.Authentication;
 using AuthService.Application.Abstractions.Crypto;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Infrastructure.Crypto;
+using AuthService.Infrastructure.MessageBrokers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AuthService.Infrastructure
@@ -15,6 +16,7 @@ namespace AuthService.Infrastructure
 
             services.AddSingleton<IPasswordHasher, Pbkdf2>();
 
+            services.AddSingleton<RabbitMqConnectionService>();
             services.AddSingleton<IHashVersions, HashVersions>();
         }
     }

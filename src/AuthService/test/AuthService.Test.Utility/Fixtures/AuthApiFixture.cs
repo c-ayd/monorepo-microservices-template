@@ -1,5 +1,5 @@
-using System.Net;
 using AuthService.Api.Middlewares;
+using AuthService.Infrastructure.Options;
 using AuthService.Persistence.DbContexts;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Builder;
@@ -7,20 +7,24 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 
 namespace AuthService.Test.Utility.Fixtures
 {
     public class AuthApiFixture : IAsyncLifetime
     {
-        private WebApplicationFactory<Program> _factory = null!;
         private PostgreSqlContainer _dbContainer = null!;
+        private RabbitMqContainer _rabbitMqContainer = null!;
         
+        public WebApplicationFactory<Program> Factory { get; private set; } = null!;
         public HttpClient Client { get; private set; } = null!;
 
         public async Task InitializeAsync()
         {
+            // PostgreSQL
             _dbContainer = new PostgreSqlBuilder("postgres:18.4")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
                 .Build();
@@ -32,7 +36,26 @@ namespace AuthService.Test.Utility.Fixtures
                 .Options);
             await dbContext.Database.MigrateAsync();
 
-            _factory = new WebApplicationFactory<Program>()
+            // RabbitMQ
+            _rabbitMqContainer = new RabbitMqBuilder("rabbitmq:4.3.4-management")
+                .WithPortBinding(5672, true)
+                .WithPortBinding(15672, true)
+                .WithEnvironment("RABBITMQ_DEFAULT_USER", "guest")
+                .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*Server startup complete.*"))
+                .Build();
+            await _rabbitMqContainer.StartAsync();
+
+            // Web API
+            var rabbitMqOptions = new RabbitMqOptions()
+            {
+                Username = "guest",
+                Password = "guest",
+                Host = "localhost",
+                Port = _rabbitMqContainer.GetMappedPublicPort(5672)
+            };
+
+            Factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureServices(services =>
@@ -46,15 +69,22 @@ namespace AuthService.Test.Utility.Fixtures
                         }
                         services.AddDbContext<AuthDbContext>(_ => _.UseNpgsql(_dbContainer.GetConnectionString()));
                     });
+
+                    builder.ConfigureAppConfiguration((context, configBuilder) =>
+                    {
+                        configBuilder.AddInMemoryCollection([
+                            new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}", rabbitMqOptions.Port.ToString())
+                        ]);
+                    });
                 });
 
-            Client = _factory.CreateClient();
+            Client = Factory.CreateClient();
         }
 
         public async Task DisposeAsync()
         {
             Client.Dispose();
-            await _factory.DisposeAsync();
+            await Factory.DisposeAsync();
         }
 
         private class TestConfiguration : IStartupFilter
