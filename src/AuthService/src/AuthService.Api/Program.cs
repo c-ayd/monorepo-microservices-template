@@ -1,4 +1,5 @@
 using System.Reflection;
+using AuthService.Api.BackgroundServices;
 using AuthService.Infrastructure;
 using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
@@ -11,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 //~ End
+
+builder.Services.AddHostedService<RabbitMqInitializerBackgroundService>();
 
 builder.AddOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Persistence.ServiceRegistration))!,
