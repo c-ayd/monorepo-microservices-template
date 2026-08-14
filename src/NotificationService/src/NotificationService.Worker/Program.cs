@@ -5,6 +5,7 @@ using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Options;
 using NotificationService.Worker.SeedData;
 using NotificationService.Worker.Services;
+using NotificationService.Worker.BackgroundServices;
 using Shared.AspNetCore.Helpers.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -17,7 +18,9 @@ builder.Services.AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(connStrings.Te
 builder.Services.AddSingleton<IEmailService, SmtpService>();
 
 builder.Services.AddSingleton<RabbitMqConnectionService>();
+builder.Services.AddSingleton<TemplateService>();
 
+builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailWorker>();
 
 var host = builder.Build();
