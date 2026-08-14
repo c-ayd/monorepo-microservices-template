@@ -21,7 +21,7 @@ builder.Services.AddSingleton<RabbitMqConnectionService>();
 builder.Services.AddSingleton<TemplateService>();
 
 builder.Services.AddHostedService<TemplateBackgroundService>();
-builder.Services.AddHostedService<EmailWorker>();
+builder.Services.AddHostedService<EmailBackgroundService>();
 
 var host = builder.Build();
 

@@ -9,19 +9,19 @@ using Shared.TestGenerators;
 
 namespace NotificationService.Test.Integration.Worker.Services
 {
-    [Collection(nameof(TemplateDbContextCollection))]
+    [Collection(nameof(WorkerCollection))]
     public class TemplateServiceTest
     {
-        private readonly TemplateDbContextFixture _templateDbContextFixture;
+        private readonly WorkerFixture _workerFixture;
 
         private readonly TemplateService _templateService;
 
-        public TemplateServiceTest(TemplateDbContextFixture templateDbContextFixture)
+        public TemplateServiceTest(WorkerFixture workerFixture)
         {
-            _templateDbContextFixture = templateDbContextFixture;
+            _workerFixture = workerFixture;
 
             var scopeFactory = new ServiceCollection()
-                .AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(_templateDbContextFixture.GetConnectionString()))
+                .AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(_workerFixture.GetTemplateDbConnectionString()))
                 .BuildServiceProvider()
                 .GetRequiredService<IServiceScopeFactory>();
 
@@ -40,7 +40,7 @@ namespace NotificationService.Test.Integration.Worker.Services
                 false
             );
 
-            using var dbContext = _templateDbContextFixture.CreateTemplateDbContext();
+            using var dbContext = _workerFixture.CreateTemplateDbContext();
             await dbContext.EmailTemplates.AddAsync(emailTemplate);
             await dbContext.SaveChangesAsync();
 
@@ -74,7 +74,7 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task RecacheAllTemplatesAsync_WhenItIsCalled_ShouldRecacheTemplates()
         {
             // Arrange
-            using var dbContext = _templateDbContextFixture.CreateTemplateDbContext();
+            using var dbContext = _workerFixture.CreateTemplateDbContext();
             var numberOfEmailTemplates = dbContext.EmailTemplates.Count();
 
             await dbContext.EmailTemplates.AddAsync(new EmailTemplate(

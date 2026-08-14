@@ -15,7 +15,7 @@ namespace NotificationService.Worker.Services
             _smtpOptions = smtpOptions.Value;
         }
 
-        public async Task SendAsync(IEnumerable<string> to, string subject, string body, bool isBodyHtml)
+        public async Task SendAsync(string[] to, string subject, string body, bool isBodyHtml)
         {
             using var client = new SmtpClient(_smtpOptions.Server, _smtpOptions.Port);
             client.Credentials = new NetworkCredential(_smtpOptions.Username, _smtpOptions.Password);
