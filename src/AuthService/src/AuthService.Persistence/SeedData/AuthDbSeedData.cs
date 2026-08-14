@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AuthService.Persistence.SeedData
 {
-    public static class AuthDbContextSeedData
+    public static class AuthDbSeedData
     {
         public static async Task SeedDataAuthDbContextAsync(this IServiceProvider services, IConfiguration configuration)
         {
