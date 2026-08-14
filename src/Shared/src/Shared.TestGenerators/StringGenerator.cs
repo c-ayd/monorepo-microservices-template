@@ -29,7 +29,7 @@ namespace Shared.TestGenerators
         }
 
         /// <summary>
-        /// Generates a random using using alphabetic characters.
+        /// Generates a random string using alphabetic characters.
         /// If a given length is lower than 2, the length is enforced to become 2 to include at least
         /// one uppercase and one lowercase.
         /// </summary>
@@ -65,7 +65,7 @@ namespace Shared.TestGenerators
         }
 
         /// <summary>
-        /// Generates a random using using alphabetic and numeric characters.
+        /// Generates a random string using alphabetic and numeric characters.
         /// If a given length is lower than 3, the length is enforced to become 3 to include at least
         /// one uppercase, one lowercase and one digit.
         /// </summary>

@@ -8,6 +8,16 @@ namespace Shared.TestGenerators
     /// </summary>
     public static class PasswordGenerator
     {
+        /// <summary>
+        /// Generates a random password.
+        /// </summary>
+        /// <param name="includeUppercase">Whether to include at least one uppercase letter in the generated password</param>
+        /// <param name="includeLowercase">Whether to include at least one lowercase letter in the generated password</param>
+        /// <param name="includeDigit">Whether to include at least one digit in the generated password</param>
+        /// <param name="includeSpecialChars">Whether to include at least one special character in the generated password</param>
+        /// <param name="specialChars">Allowed special characters for the generated password</param>
+        /// <param name="length">Length of the generated password</param>
+        /// <returns>Returns the generated password.</returns>
         public static string Generate(
             bool includeUppercase = true,
             bool includeLowercase = true,
