@@ -2,8 +2,8 @@ using NotificationService.Test.Integration.Worker.Fixtures;
 
 namespace NotificationService.Test.Integration.Worker.Collections
 {
-    [CollectionDefinition(nameof(RabbitMqCollection))]
-    public class RabbitMqCollection : ICollectionFixture<RabbitMqFixture>
+    [CollectionDefinition(nameof(WorkerCollection))]
+    public class WorkerCollection : ICollectionFixture<WorkerFixture>
     {
     }
 }

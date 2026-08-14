@@ -45,7 +45,7 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task SendAsync_WhenSendMultipleEmails_ShouldSendMultipleEmails()
         {
             // Arrange
-            var to = new List<string>()
+            var to = new string[]
             {
                 EmailGenerator.Generate(),
                 EmailGenerator.Generate(),

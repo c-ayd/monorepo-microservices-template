@@ -1,28 +1,42 @@
 using System.Text.Json;
 using DotNet.Testcontainers.Builders;
+using Microsoft.EntityFrameworkCore;
+using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Options;
 using RabbitMQ.Client;
+using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
 namespace NotificationService.Test.Integration.Worker.Fixtures
 {
-    public class RabbitMqFixture : IAsyncLifetime
+    public class WorkerFixture : IAsyncLifetime
     {
-        private RabbitMqContainer _container = null!;
+        private PostgreSqlContainer _postgresContainer = null!;
+        private RabbitMqContainer _rabbitMqContainer = null!;
 
         private IConnection _connection = null!;
         private IChannel _channel = null!;
 
         public async Task InitializeAsync()
         {
-            _container = new RabbitMqBuilder("rabbitmq:4.3.4-management")
+            // PostgreSQL
+            _postgresContainer = new PostgreSqlBuilder("postgres:18.4")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
+                .Build();
+            await _postgresContainer.StartAsync();
+
+            using var dbContext = CreateTemplateDbContext();
+            await dbContext.Database.MigrateAsync();
+
+            // RabbitMQ
+            _rabbitMqContainer = new RabbitMqBuilder("rabbitmq:4.3.4-management")
                 .WithPortBinding(5672, true)
                 .WithPortBinding(15672, true)
                 .WithEnvironment("RABBITMQ_DEFAULT_USER", "guest")
                 .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*Server startup complete.*"))
                 .Build();
-            await _container.StartAsync();
+            await _rabbitMqContainer.StartAsync();
 
             var rabbitMqOptions = GetRabbitMqOptions();
             var factory = new ConnectionFactory()
@@ -41,6 +55,18 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             ));
         }
 
+        public TemplateDbContext CreateTemplateDbContext()
+        {
+            return new TemplateDbContext(new DbContextOptionsBuilder<TemplateDbContext>()
+                .UseNpgsql(_postgresContainer.GetConnectionString())
+                .Options);
+        }
+
+        public string GetTemplateDbConnectionString()
+        {
+            return _postgresContainer.GetConnectionString();
+        }
+
         public RabbitMqOptions GetRabbitMqOptions()
         {
             return new RabbitMqOptions()
@@ -48,7 +74,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
                 Username = "guest",
                 Password = "guest",
                 Host = "localhost",
-                Port = _container.GetMappedPublicPort(5672)
+                Port = _rabbitMqContainer.GetMappedPublicPort(5672)
             };
         }
 
@@ -75,13 +101,18 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
 
         public async Task DisposeAsync()
         {
+            // PostgreSQL
+            await _postgresContainer.StopAsync();
+            await _postgresContainer.DisposeAsync();
+
+            // RabbitMQ
             await _channel.CloseAsync();
             await _connection.CloseAsync();
-            await _container.StopAsync();
+            await _rabbitMqContainer.StopAsync();
 
             await _channel.DisposeAsync();
             await _connection.DisposeAsync();
-            await _container.DisposeAsync();
+            await _rabbitMqContainer.DisposeAsync();
         }
     }
 }

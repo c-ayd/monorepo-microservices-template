@@ -1,9 +1,10 @@
 namespace Shared.RabbitMq.Notifications.Messages
 {
     public record RabbitMqEmailMessage(
-        IEnumerable<string> To,
-        string Subject,
-        string Body,
-        bool IsBodyHtml
+        string[] To,
+        string TemplateId,
+        string Language,
+        string[]? SubjectParameters = null,
+        string[]? BodyParameters = null
     );
 }

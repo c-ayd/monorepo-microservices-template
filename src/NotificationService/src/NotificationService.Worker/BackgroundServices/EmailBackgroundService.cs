@@ -7,25 +7,28 @@ using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Notifications.Configurations;
 using Shared.RabbitMq.Notifications.Messages;
 
-namespace NotificationService.Workers
+namespace NotificationService.Worker.BackgroundServices
 {
-    public class EmailWorker : BackgroundService
+    public class EmailBackgroundService : BackgroundService
     {
         private const int RetryLimit = 3;
 
         private readonly RabbitMqConnectionService _rabbitMq;
+        private readonly TemplateService _templateService;
         private readonly IEmailService _emailService;
-        private readonly ILogger<EmailWorker> _logger;
+        private readonly ILogger<EmailBackgroundService> _logger;
 
         private IChannel? _channel;
 
-        public EmailWorker(
+        public EmailBackgroundService(
             RabbitMqConnectionService rabbitMq,
+            TemplateService templateService,
             IEmailService emailService,
-            ILogger<EmailWorker> logger)
+            ILogger<EmailBackgroundService> logger)
         {
-            _emailService = emailService;
             _rabbitMq = rabbitMq;
+            _templateService = templateService;
+            _emailService = emailService;
             _logger = logger;
         }
 
@@ -40,15 +43,17 @@ namespace NotificationService.Workers
                 await DeclareExchangesAsync();
                 await DeclareQueuesAsync();
 
-                _logger.LogInformation("The email worker has been started.");
+                _logger.LogInformation("The email background service has been started.");
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("The email worker initialization has been canceled.");
+                _logger.LogWarning("The email background service initialization has been canceled.");
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, exception.Message);
+                _logger.LogError(exception, @"Something went wrong while initializing the email background service. 
+                    Message: {Message}",
+                    exception.Message);
             }
 
             await base.StartAsync(cancellationToken);
@@ -58,7 +63,7 @@ namespace NotificationService.Workers
         {
             if (_channel == null)
             {
-                _logger.LogWarning("The email worker is exiting since the connection is not initialized.");
+                _logger.LogWarning("The email background service is exiting since the connection is not initialized.");
                 return;
             }
 
@@ -67,6 +72,7 @@ namespace NotificationService.Workers
             {
                 try
                 {
+                    // Deserialize message
                     var body = args.Body.ToArray();
                     var json = Encoding.UTF8.GetString(body);
                     var message = JsonSerializer.Deserialize<RabbitMqEmailMessage>(json, new JsonSerializerOptions()
@@ -76,7 +82,8 @@ namespace NotificationService.Workers
 
                     if (message == null)
                     {
-                        _logger.LogWarning("The message could not be deserialized. Correlation ID: {correlationId}, Timestamp: {timestamp}",
+                        _logger.LogWarning(@"The message could not be deserialized. 
+                            Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
                             args.BasicProperties.CorrelationId,
                             args.BasicProperties.Timestamp);
 
@@ -84,17 +91,38 @@ namespace NotificationService.Workers
                         return;
                     }
 
-                    await _emailService.SendAsync(message.To, message.Subject, message.Body, message.IsBodyHtml);
+                    // Get email template
+                    var template = await _templateService.GetEmailTemplateAsync(message.TemplateId, message.Language);
+                    if (template == null)
+                    {
+                        _logger.LogWarning(@"The email template could not be found. 
+                            Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, Template ID: {TemplateId}",
+                            args.BasicProperties.CorrelationId,
+                            args.BasicProperties.Timestamp,
+                            message.TemplateId);
+
+                        await _channel!.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                        return;
+                    }
+
+                    // Send email
+                    await _emailService.SendAsync(
+                        message.To,
+                        string.Format(template.Subject, message.SubjectParameters),
+                        string.Format(template.Body, message.BodyParameters),
+                        template.IsBodyHtml);
 
                     await _channel!.BasicAckAsync(args.DeliveryTag, multiple: false);
 
-                    _logger.LogInformation("The message has been processed. Correlation ID: {correlationId}, Timestamp: {timestamp}",
+                    _logger.LogInformation(@"The message has been processed. 
+                        Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
                         args.BasicProperties.CorrelationId,
                         args.BasicProperties.Timestamp);
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
+                    _logger.LogError(exception, @"Something went wrong while handing a message. 
+                        Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
                         args.BasicProperties.CorrelationId,
                         args.BasicProperties.Timestamp,
                         exception.Message);
@@ -117,7 +145,7 @@ namespace NotificationService.Workers
             }
             catch (OperationCanceledException)
             {
-                _logger.LogWarning("The email worker has been canceled.");
+                _logger.LogWarning("The email background service has been canceled.");
             }
             catch (Exception exception)
             {
@@ -133,7 +161,7 @@ namespace NotificationService.Workers
                 await _channel.DisposeAsync();
             }
 
-            _logger.LogInformation("The email worker has been stopped.");
+            _logger.LogInformation("The email background service has been stopped.");
 
             await base.StopAsync(cancellationToken);
         }
