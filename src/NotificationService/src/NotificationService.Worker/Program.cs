@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Options;
+using NotificationService.Worker.SeedData;
 using NotificationService.Worker.Services;
 using Shared.AspNetCore.Helpers.DependencyInjection;
 
@@ -20,4 +21,8 @@ builder.Services.AddSingleton<RabbitMqConnectionService>();
 builder.Services.AddHostedService<EmailWorker>();
 
 var host = builder.Build();
+
+// Seed data
+await host.SeedDataTemplateDbAsync();
+
 host.Run();
