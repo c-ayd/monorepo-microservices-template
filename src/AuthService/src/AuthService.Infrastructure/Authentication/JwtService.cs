@@ -22,9 +22,9 @@ namespace AuthService.Infrastructure.Authentication
             _jwtKeyService = jwtKeyService;
         }
 
-        public JwtDto GenerateTokens(ICollection<Claim>? claims = null, DateTime? notBefore = null)
+        public JwtDto GenerateTokens(ICollection<Claim>? claims = null, DateTimeOffset? notBefore = null)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
             var accessTokenExpirationDate = now.AddMinutes(_jwtOptions.AccessTokenLifespanInMinutes);
             var refreshTokenExpirationDate = now.AddDays(_jwtOptions.RefreshTokenLifespanInDays);
 
@@ -32,8 +32,8 @@ namespace AuthService.Infrastructure.Authentication
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims ?? Enumerable.Empty<Claim>(),
-                notBefore: notBefore,
-                expires: accessTokenExpirationDate,
+                notBefore: notBefore?.UtcDateTime,
+                expires: accessTokenExpirationDate.UtcDateTime,
                 signingCredentials: new SigningCredentials(_jwtKeyService.PrivateKey, SecurityAlgorithms.RsaSha256)
             );
 

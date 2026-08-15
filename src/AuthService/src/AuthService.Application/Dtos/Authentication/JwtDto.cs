@@ -2,8 +2,8 @@ namespace AuthService.Application.Dtos.Authentication
 {
     public record JwtDto(
         string AccessToken,
-        DateTime AccessTokenExpirationDate,
+        DateTimeOffset AccessTokenExpirationDate,
         string RefreshToken,
-        DateTime RefreshTokenExpirationDate
+        DateTimeOffset RefreshTokenExpirationDate
     );
 }

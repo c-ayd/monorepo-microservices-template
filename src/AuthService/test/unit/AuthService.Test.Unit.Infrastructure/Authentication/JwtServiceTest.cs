@@ -64,7 +64,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             // Arrange
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
             var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             // Act
             var result = _jwtService.GenerateTokens();
@@ -85,7 +85,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             // Arrange
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
             var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             var notBefore = now.AddMinutes(1);
 
@@ -120,7 +120,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
             var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             // Act
             var result = _jwtService.GenerateTokens(claims);
@@ -156,7 +156,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
             var refreshTokenLifespan = _jwtOptions.RefreshTokenLifespanInDays * 24 * 60;
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             var notBefore = now.AddMinutes(1);
 
