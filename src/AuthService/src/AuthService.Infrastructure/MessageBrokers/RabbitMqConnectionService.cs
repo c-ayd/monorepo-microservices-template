@@ -6,7 +6,7 @@ namespace AuthService.Infrastructure.MessageBrokers
 {
     public class RabbitMqConnectionService : IDisposable, IAsyncDisposable
     {
-        private const int NetworkRecoveryIntervalInSeconds = 30;
+        private readonly TimeSpan NetworkRecoveryInterval = TimeSpan.FromSeconds(30);
 
         private readonly RabbitMqOptions _rabbitMqOptions;
 
@@ -32,7 +32,7 @@ namespace AuthService.Infrastructure.MessageBrokers
                 Port = _rabbitMqOptions.Port,
                 VirtualHost = "/",
                 AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(NetworkRecoveryIntervalInSeconds)
+                NetworkRecoveryInterval = NetworkRecoveryInterval
             };
 
             Connection = await factory.CreateConnectionAsync(cancellationToken);
