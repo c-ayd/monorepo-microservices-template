@@ -6,7 +6,7 @@ namespace NotificationService.Worker.Services
 {
     public class RabbitMqConnectionService : IDisposable, IAsyncDisposable
     {
-        private const int NetworkRecoveryIntervalInSeconds = 30;
+        private readonly TimeSpan NetworkRecoveryInterval = TimeSpan.FromSeconds(30);
 
         private readonly RabbitMqOptions _rabbitMqOptions;
 
@@ -37,7 +37,7 @@ namespace NotificationService.Worker.Services
                     Port = _rabbitMqOptions.Port,
                     VirtualHost = "/",
                     AutomaticRecoveryEnabled = true,
-                    NetworkRecoveryInterval = TimeSpan.FromSeconds(NetworkRecoveryIntervalInSeconds)
+                    NetworkRecoveryInterval = NetworkRecoveryInterval
                 };
 
                 Connection = await factory.CreateConnectionAsync(cancellationToken);
