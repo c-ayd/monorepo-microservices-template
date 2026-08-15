@@ -7,6 +7,7 @@ using NotificationService.Worker.SeedData;
 using NotificationService.Worker.Services;
 using NotificationService.Worker.BackgroundServices;
 using Shared.AspNetCore.Helpers.DependencyInjection;
+using Common.Logging.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -22,6 +23,10 @@ builder.Services.AddSingleton<TemplateService>();
 
 builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
+
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.ApplicationName,
+    builder.Environment.IsDevelopment());
 
 var host = builder.Build();
 
