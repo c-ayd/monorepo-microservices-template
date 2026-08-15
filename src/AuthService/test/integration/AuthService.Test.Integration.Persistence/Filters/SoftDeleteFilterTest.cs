@@ -70,7 +70,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
-            var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTime.UtcNow);
+            var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
             var sessionId = session.Id;
 
             // Act
