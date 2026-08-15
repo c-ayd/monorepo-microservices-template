@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AuthService.Application\AuthService.Application.csproj" />
-    <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Notification\Shared.RabbitMq.Notification.csproj" />
   </ItemGroup>
 
   <ItemGroup>
