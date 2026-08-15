@@ -31,8 +31,7 @@ namespace NotificationService.Worker.BackgroundServices
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, @"Something went wrong while caching the templates. 
-                    Message: {Message}",
+                _logger.LogError(exception, "Something went wrong while caching the templates. Message: {Message}",
                     exception.Message);
             }
 
@@ -60,8 +59,7 @@ namespace NotificationService.Worker.BackgroundServices
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, @"Something went wrong while recaching the templates. 
-                        Message: {Message}",
+                    _logger.LogError(exception, "Something went wrong while recaching the templates. Message: {Message}",
                         exception.Message);
                 }
             }

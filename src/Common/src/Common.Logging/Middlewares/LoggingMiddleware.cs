@@ -18,7 +18,7 @@ namespace Common.Logging.Middlewares
         
         public async Task Invoke(HttpContext context)
         {
-            using (_logger.BeginScope("Application Name:{AppName}", LoggingOptions.ApplicationName))
+            using (_logger.BeginScope("Application Name: {AppName}", LoggingOptions.ApplicationName))
             {
                 await _next(context);
             }

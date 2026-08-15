@@ -51,8 +51,7 @@ namespace NotificationService.Worker.BackgroundServices
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, @"Something went wrong while initializing the email background service. 
-                    Message: {Message}",
+                _logger.LogError(exception, "Something went wrong. Message: {Message}",
                     exception.Message);
             }
 
@@ -82,8 +81,7 @@ namespace NotificationService.Worker.BackgroundServices
 
                     if (message == null)
                     {
-                        _logger.LogWarning(@"The message could not be deserialized. 
-                            Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
+                        _logger.LogWarning("The message could not be deserialized. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
                             args.BasicProperties.CorrelationId,
                             args.BasicProperties.Timestamp);
 
@@ -95,8 +93,7 @@ namespace NotificationService.Worker.BackgroundServices
                     var template = await _templateService.GetEmailTemplateAsync(message.TemplateId, message.Language);
                     if (template == null)
                     {
-                        _logger.LogWarning(@"The email template could not be found. 
-                            Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, Template ID: {TemplateId}",
+                        _logger.LogWarning("The email template could not be found. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, Template ID: {TemplateId}",
                             args.BasicProperties.CorrelationId,
                             args.BasicProperties.Timestamp,
                             message.TemplateId);
@@ -114,15 +111,13 @@ namespace NotificationService.Worker.BackgroundServices
 
                     await _channel!.BasicAckAsync(args.DeliveryTag, multiple: false);
 
-                    _logger.LogInformation(@"The message has been processed. 
-                        Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
+                    _logger.LogInformation("The message has been processed. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
                         args.BasicProperties.CorrelationId,
                         args.BasicProperties.Timestamp);
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, @"Something went wrong while handing a message. 
-                        Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
+                    _logger.LogError(exception, "Something went wrong while handing a message. Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
                         args.BasicProperties.CorrelationId,
                         args.BasicProperties.Timestamp,
                         exception.Message);
