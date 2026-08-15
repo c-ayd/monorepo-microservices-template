@@ -30,7 +30,8 @@ namespace AuthService.Api.Middlewares
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, exception.Message);
+                _logger.LogError(exception, "Something went wrong. Message: {Message}",
+                    exception.Message);
 
                 if (!context.Response.HasStarted)
                 {
