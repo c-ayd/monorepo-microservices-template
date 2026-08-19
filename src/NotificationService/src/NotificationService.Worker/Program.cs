@@ -26,7 +26,7 @@ builder.Services.AddHostedService<EmailBackgroundService>();
 
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.ApplicationName,
-    builder.Environment.IsDevelopment());
+    builder.Environment.IsProduction());
 
 var host = builder.Build();
 
