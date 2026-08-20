@@ -5,7 +5,7 @@ namespace Common.Logging.DependencyInjection
 {
     public static partial class DependencyInjection
     {
-        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, string appName, bool isDevelopment)
+        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, string appName, bool isProduction)
         {
             LoggingOptions.ApplicationName = appName;
 
@@ -17,9 +17,9 @@ namespace Common.Logging.DependencyInjection
                 config.TimestampFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffffff'Z'";
                 config.JsonWriterOptions = new JsonWriterOptions()
                 {
-                    Indented = isDevelopment,
+                    Indented = !isProduction,
                     IndentSize = 2,
-                    SkipValidation = !isDevelopment,
+                    SkipValidation = isProduction,
                 };
             });
         }
