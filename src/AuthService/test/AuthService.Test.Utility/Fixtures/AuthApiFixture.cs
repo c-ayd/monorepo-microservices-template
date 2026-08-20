@@ -1,6 +1,7 @@
 using AuthService.Api.Middlewares;
 using AuthService.Infrastructure.Options;
 using AuthService.Persistence.DbContexts;
+using AuthService.Persistence.Options;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -55,7 +56,9 @@ namespace AuthService.Test.Utility.Fixtures
                     builder.ConfigureAppConfiguration((context, configBuilder) =>
                     {
                         configBuilder.AddConfiguration(ConfigurationHelper.CreateConfiguration());
+                        
                         configBuilder.AddInMemoryCollection([
+                            new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}", _dbContainer.GetConnectionString()),
                             new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
                                 _rabbitMqContainer.GetMappedPublicPort(5672).ToString())
                         ]);
