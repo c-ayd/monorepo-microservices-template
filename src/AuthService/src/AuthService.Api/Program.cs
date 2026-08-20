@@ -22,7 +22,7 @@ builder.AddOptionsFromAssemblies(
 
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.ApplicationName,
-    builder.Environment.IsDevelopment());
+    builder.Environment.IsProduction());
 
 var app = builder.Build();
 

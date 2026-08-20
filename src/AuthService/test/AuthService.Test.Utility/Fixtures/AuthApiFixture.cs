@@ -1,6 +1,7 @@
 using AuthService.Api.Middlewares;
 using AuthService.Infrastructure.Options;
 using AuthService.Persistence.DbContexts;
+using AuthService.Persistence.Options;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -47,17 +48,22 @@ namespace AuthService.Test.Utility.Fixtures
             await _rabbitMqContainer.StartAsync();
 
             // Web API
-            var rabbitMqOptions = new RabbitMqOptions()
-            {
-                Username = "guest",
-                Password = "guest",
-                Host = "localhost",
-                Port = _rabbitMqContainer.GetMappedPublicPort(5672)
-            };
-
             Factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
+                    builder.UseEnvironment("Test");
+
+                    builder.ConfigureAppConfiguration((context, configBuilder) =>
+                    {
+                        configBuilder.AddConfiguration(ConfigurationHelper.CreateConfiguration());
+                        
+                        configBuilder.AddInMemoryCollection([
+                            new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}", _dbContainer.GetConnectionString()),
+                            new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
+                                _rabbitMqContainer.GetMappedPublicPort(5672).ToString())
+                        ]);
+                    });
+
                     builder.ConfigureServices(services =>
                     {
                         services.AddSingleton<IStartupFilter, TestConfiguration>();
@@ -68,13 +74,6 @@ namespace AuthService.Test.Utility.Fixtures
                             services.Remove(dbContext);
                         }
                         services.AddDbContext<AuthDbContext>(_ => _.UseNpgsql(_dbContainer.GetConnectionString()));
-                    });
-
-                    builder.ConfigureAppConfiguration((context, configBuilder) =>
-                    {
-                        configBuilder.AddInMemoryCollection([
-                            new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}", rabbitMqOptions.Port.ToString())
-                        ]);
                     });
                 });
 

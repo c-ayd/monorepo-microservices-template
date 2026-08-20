@@ -1,4 +1,3 @@
-using System.Net;
 using ApiGateway.Web.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +18,8 @@ namespace ApiGateway.Test.Integration.Web.Fixtures
             _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
+                    builder.UseEnvironment("Test");
+                    
                     builder.ConfigureServices(services =>
                     {
                         services.AddSingleton<IStartupFilter, TestConfiguration>();

@@ -13,8 +13,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
-var connStrings = builder.Configuration.GetSection(ConnectionStringsOptions.Key).Get<ConnectionStringsOptions>()!;
-builder.Services.AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(connStrings.TemplateDb));
+builder.Services.AddDbContext<TemplateDbContext>(_ => 
+    _.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ConnectionStringsOptions.TemplateDb))));
 
 builder.Services.AddSingleton<IEmailService, SmtpService>();
 
@@ -26,7 +26,7 @@ builder.Services.AddHostedService<EmailBackgroundService>();
 
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.ApplicationName,
-    builder.Environment.IsDevelopment());
+    builder.Environment.IsProduction());
 
 var host = builder.Build();
 
