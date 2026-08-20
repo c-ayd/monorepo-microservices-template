@@ -1,14 +1,13 @@
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 
 namespace AuthService.Test.Utility
 {
     public static class ConfigurationHelper
     {
-        public static IConfiguration CreateConfiguration(params string[] filePaths)
+        public static IConfiguration CreateConfiguration()
         {
             return new ConfigurationBuilder()
-                .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!)
+                .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.Test.json")
                 .Build();
         }
