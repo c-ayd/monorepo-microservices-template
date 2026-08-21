@@ -1,8 +1,8 @@
 using System.Reflection;
-using Common.Http.Validation;
+using Shared.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Common.Http.DependencyInjection
+namespace Shared.Http.DependencyInjection
 {
     public static partial class DependencyInjection
     {

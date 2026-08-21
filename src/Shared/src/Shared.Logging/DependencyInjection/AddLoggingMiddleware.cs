@@ -1,7 +1,7 @@
-using Common.Logging.Middlewares;
+using Shared.Logging.Middlewares;
 using Microsoft.AspNetCore.Builder;
 
-namespace Common.Logging.DependencyInjection
+namespace Shared.Logging.DependencyInjection
 {
     public static partial class DependencyInjection
     {

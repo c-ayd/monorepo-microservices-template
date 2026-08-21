@@ -1,12 +1,12 @@
 using System.Net;
-using Common.Http.Response;
-using Common.Http.Response.Structures;
-using Common.Http.Validation;
+using Shared.Http.Response;
+using Shared.Http.Response.Structures;
+using Shared.Http.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Common.Http.DependencyInjection
+namespace Shared.Http.DependencyInjection
 {
     public static partial class DependencyInjection
     {

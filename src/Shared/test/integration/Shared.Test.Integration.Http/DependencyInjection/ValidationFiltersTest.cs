@@ -1,14 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Reflection;
-using Common.Http.DependencyInjection;
-using Common.Http.Response.Structures;
-using Common.Http.Validation;
-using Common.Test.Integration.Http.Fixtures;
+using Shared.Http.DependencyInjection;
+using Shared.Http.Response.Structures;
+using Shared.Http.Validation;
+using Shared.Test.Integration.Http.Fixtures;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Common.Test.Integration.Http.DependencyInjection
+namespace Shared.Test.Integration.Http.DependencyInjection
 {
     public class ValidationFiltersTest : IClassFixture<TestHostFixture>
     {

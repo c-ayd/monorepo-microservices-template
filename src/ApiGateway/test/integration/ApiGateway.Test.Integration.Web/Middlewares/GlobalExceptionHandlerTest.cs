@@ -4,7 +4,7 @@ using System.Reflection;
 using ApiGateway.Test.Integration.Web.Collections;
 using ApiGateway.Test.Integration.Web.Fixtures;
 using ApiGateway.Web.Middlewares;
-using Common.Http.Response.Structures;
+using Shared.Http.Response.Structures;
 
 namespace ApiGateway.Test.Integration.Web.Middlewares
 {

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
-namespace Common.Logging.DependencyInjection
+namespace Shared.Logging.DependencyInjection
 {
     public static partial class DependencyInjection
     {

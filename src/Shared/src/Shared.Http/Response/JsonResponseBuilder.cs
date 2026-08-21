@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Mime;
 using System.Text.Json;
-using Common.Http.Response.Structures;
+using Shared.Http.Response.Structures;
 using Microsoft.AspNetCore.Http;
 
-namespace Common.Http.Response
+namespace Shared.Http.Response
 {
     /// <summary>
     /// Builds JSON HTTP responses to standardize formats across endpoints.

@@ -1,11 +1,11 @@
 using System.Reflection;
-using Common.Http.DependencyInjection;
-using Common.Http.Response.Structures;
-using Common.Http.Validation;
-using Common.Test.Integration.Http.Fixtures;
+using Shared.Http.DependencyInjection;
+using Shared.Http.Response.Structures;
+using Shared.Http.Validation;
+using Shared.Test.Integration.Http.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Common.Test.Integration.Http.DependencyInjection
+namespace Shared.Test.Integration.Http.DependencyInjection
 {
     public class AddValidatorTest : IClassFixture<TestHostFixture>
     {

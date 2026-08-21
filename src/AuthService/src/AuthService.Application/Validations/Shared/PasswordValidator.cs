@@ -1,6 +1,6 @@
 using AuthService.Application.Validations.Constraints;
-using Common.Http.Response.Structures;
-using Common.Http.Validation;
+using Shared.Http.Response.Structures;
+using Shared.Http.Validation;
 
 namespace AuthService.Application.Validations.Shared
 {

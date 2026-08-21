@@ -649,19 +649,18 @@
         "dependencies": {
           "AuthService.Infrastructure": "[1.0.0, )",
           "AuthService.Persistence": "[1.0.0, )",
-          "Common.Http": "[1.0.0, )",
-          "Common.Logging": "[1.0.0, )",
-          "Microsoft.OpenApi": "[2.11.0, )"
+          "Microsoft.OpenApi": "[2.11.0, )",
+          "Shared.Logging": "[1.0.0, )"
         }
       },
       "authservice.application": {
         "type": "Project",
         "dependencies": {
           "AuthService.Domain": "[1.0.0, )",
-          "Common.Http": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
           "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Crypto": "[1.0.0, )",
+          "Shared.Http": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       },
@@ -698,16 +697,16 @@
           "xunit.runner.visualstudio": "[3.1.4, )"
         }
       },
-      "common.http": {
-        "type": "Project"
-      },
-      "common.logging": {
-        "type": "Project"
-      },
       "shared.aspnetcore.helpers": {
         "type": "Project"
       },
       "shared.crypto": {
+        "type": "Project"
+      },
+      "shared.http": {
+        "type": "Project"
+      },
+      "shared.logging": {
         "type": "Project"
       },
       "shared.testgenerators": {

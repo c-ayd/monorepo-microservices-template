@@ -105,7 +105,7 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "common.http": {
+      "shared.http": {
         "type": "Project"
       }
     }
