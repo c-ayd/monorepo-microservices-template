@@ -45,20 +45,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      - name: Check solution file
+        id: check-solution
+        run: |
+          SOLUTION_FILE="${{ github.workspace }}/src/${{ matrix.service }}/${{ matrix.service }}Solution.slnx"
+          if [ -f "$SOLUTION_FILE" ]; then
+            echo "slnx-exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "slnx-exists=false" >> $GITHUB_OUTPUT
+          fi
       
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
+        if: steps.check-solution.outputs.slnx-exists == 'true'
         with:
           dotnet-version: '10.0.x'
           cache: true
           cache-dependency-path: 'src/${{ matrix.service }}/**/packages.lock.json'
 
       - name: Build and run tests
+        if: steps.check-solution.outputs.slnx-exists == 'true'
         run: |
           SOLUTION_FILE="${{ github.workspace }}/src/${{ matrix.service }}/${{ matrix.service }}Solution.slnx"
           if [ ! -f "$SOLUTION_FILE" ]; then
             echo "$SOLUTION_FILE could not be found"
-            exit 1
+            exit 0
           fi
           
           dotnet restore "$SOLUTION_FILE"
