@@ -1,4 +1,4 @@
-namespace Common.Logging
+namespace Shared.Logging
 {
     internal static class LoggingOptions
     {

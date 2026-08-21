@@ -1,5 +1,5 @@
 using ApiGateway.Web.Middlewares;
-using Common.Logging.DependencyInjection;
+using Shared.Logging.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 

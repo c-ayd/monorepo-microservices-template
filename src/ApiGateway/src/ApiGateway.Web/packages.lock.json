@@ -19,7 +19,7 @@
       "common.http": {
         "type": "Project"
       },
-      "common.logging": {
+      "shared.logging": {
         "type": "Project"
       }
     }

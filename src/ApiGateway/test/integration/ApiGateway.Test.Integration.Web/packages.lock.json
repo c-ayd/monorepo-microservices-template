@@ -421,14 +421,14 @@
         "type": "Project",
         "dependencies": {
           "Common.Http": "[1.0.0, )",
-          "Common.Logging": "[1.0.0, )",
+          "Shared.Logging": "[1.0.0, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
       "common.http": {
         "type": "Project"
       },
-      "common.logging": {
+      "shared.logging": {
         "type": "Project"
       }
     }

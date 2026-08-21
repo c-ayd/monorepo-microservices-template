@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Common.Logging.Middlewares
+namespace Shared.Logging.Middlewares
 {
     internal class LoggingMiddleware
     {
@@ -15,7 +15,7 @@ namespace Common.Logging.Middlewares
             _next = next;
             _logger = logger;
         }
-        
+
         public async Task Invoke(HttpContext context)
         {
             using (_logger.BeginScope("Application Name: {AppName}", LoggingOptions.ApplicationName))

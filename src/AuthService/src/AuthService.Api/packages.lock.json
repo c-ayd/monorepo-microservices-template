@@ -302,13 +302,13 @@
       "common.http": {
         "type": "Project"
       },
-      "common.logging": {
-        "type": "Project"
-      },
       "shared.aspnetcore.helpers": {
         "type": "Project"
       },
       "shared.crypto": {
+        "type": "Project"
+      },
+      "shared.logging": {
         "type": "Project"
       }
     }

@@ -577,23 +577,23 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "common.logging": {
-        "type": "Project"
-      },
       "notificationservice.worker": {
         "type": "Project",
         "dependencies": {
-          "Common.Logging": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
           "Microsoft.Extensions.Hosting": "[10.0.10, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "RabbitMQ.Client": "[7.2.1, )",
           "Shared.AspNetCore.Helpers": "[1.0.0, )",
+          "Shared.Logging": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )"
         }
       },
       "shared.aspnetcore.helpers": {
+        "type": "Project"
+      },
+      "shared.logging": {
         "type": "Project"
       },
       "shared.rabbitmq.notifications": {
