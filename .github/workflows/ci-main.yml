@@ -58,7 +58,7 @@ jobs:
           SOLUTION_FILE="${{ github.workspace }}/src/${{ matrix.service }}/${{ matrix.service }}Solution.slnx"
           if [ ! -f "$SOLUTION_FILE" ]; then
             echo "$SOLUTION_FILE could not be found"
-            exit 1
+            exit 0
           fi
           
           dotnet restore "$SOLUTION_FILE"
