@@ -420,12 +420,12 @@
       "apigateway.web": {
         "type": "Project",
         "dependencies": {
-          "Common.Http": "[1.0.0, )",
+          "Shared.Http": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
-      "common.http": {
+      "shared.http": {
         "type": "Project"
       },
       "shared.logging": {

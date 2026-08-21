@@ -4,7 +4,7 @@ using System.Reflection;
 using AuthService.Api.Middlewares;
 using AuthService.Test.Integration.Api.Collections;
 using AuthService.Test.Utility.Fixtures;
-using Common.Http.Response.Structures;
+using Shared.Http.Response.Structures;
 
 namespace AuthService.Test.Integration.Api.Middlewares
 {

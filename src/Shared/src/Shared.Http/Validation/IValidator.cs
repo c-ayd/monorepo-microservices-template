@@ -1,6 +1,6 @@
-using Common.Http.Response.Structures;
+using Shared.Http.Response.Structures;
 
-namespace Common.Http.Validation
+namespace Shared.Http.Validation
 {
     /// <summary>
     /// Provides a method to validate a value.

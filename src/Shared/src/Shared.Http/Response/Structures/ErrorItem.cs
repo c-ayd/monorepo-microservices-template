@@ -1,4 +1,4 @@
-namespace Common.Http.Response.Structures
+namespace Shared.Http.Response.Structures
 {
     /// <summary>
     /// Represents an error item in the error response.

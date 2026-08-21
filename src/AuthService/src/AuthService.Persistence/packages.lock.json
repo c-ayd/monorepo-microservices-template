@@ -347,23 +347,23 @@
         "type": "Project",
         "dependencies": {
           "AuthService.Domain": "[1.0.0, )",
-          "Common.Http": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
           "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Crypto": "[1.0.0, )",
+          "Shared.Http": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       },
       "authservice.domain": {
         "type": "Project"
       },
-      "common.http": {
-        "type": "Project"
-      },
       "shared.aspnetcore.helpers": {
         "type": "Project"
       },
       "shared.crypto": {
+        "type": "Project"
+      },
+      "shared.http": {
         "type": "Project"
       }
     }

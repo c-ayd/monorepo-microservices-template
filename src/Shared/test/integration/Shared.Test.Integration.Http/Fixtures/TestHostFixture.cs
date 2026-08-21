@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Common.Test.Integration.Http.Fixtures
+namespace Shared.Test.Integration.Http.Fixtures
 {
     public class TestHostFixture : IAsyncLifetime
     {

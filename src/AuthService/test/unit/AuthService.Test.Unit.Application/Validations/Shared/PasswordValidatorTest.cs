@@ -1,7 +1,7 @@
 using System.Reflection;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Application.Validations.Shared;
-using Common.Http.Response.Structures;
+using Shared.Http.Response.Structures;
 using Shared.TestGenerators;
 
 namespace AuthService.Test.Unit.Application.Validations.Shared
