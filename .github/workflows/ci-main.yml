@@ -51,28 +51,22 @@ jobs:
         run: |
           SOLUTION_FILE="${{ github.workspace }}/src/${{ matrix.service }}/${{ matrix.service }}Solution.slnx"
           if [ -f "$SOLUTION_FILE" ]; then
-            echo "slnx-exists=true" >> $GITHUB_OUTPUT
+            echo "slnx-file=$SOLUTION_FILE" >> $GITHUB_OUTPUT
           else
-            echo "slnx-exists=false" >> $GITHUB_OUTPUT
+            echo "$SOLUTION_FILE could not be found"
           fi
       
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
-        if: steps.check-solution.outputs.slnx-exists == 'true'
+        if: steps.check-solution.outputs.slnx-file != ''
         with:
           dotnet-version: '10.0.x'
           cache: true
           cache-dependency-path: 'src/${{ matrix.service }}/**/packages.lock.json'
 
       - name: Build and run tests
-        if: steps.check-solution.outputs.slnx-exists == 'true'
+        if: steps.check-solution.outputs.slnx-file != ''
         run: |
-          SOLUTION_FILE="${{ github.workspace }}/src/${{ matrix.service }}/${{ matrix.service }}Solution.slnx"
-          if [ ! -f "$SOLUTION_FILE" ]; then
-            echo "$SOLUTION_FILE could not be found"
-            exit 0
-          fi
-          
-          dotnet restore "$SOLUTION_FILE"
-          dotnet build --no-restore "$SOLUTION_FILE"
-          dotnet test --no-build "$SOLUTION_FILE"
+          dotnet restore "${{ steps.check-solution.outputs.slnx-file }}"
+          dotnet build --no-restore "${{ steps.check-solution.outputs.slnx-file }}"
+          dotnet test --no-build "${{ steps.check-solution.outputs.slnx-file }}"
