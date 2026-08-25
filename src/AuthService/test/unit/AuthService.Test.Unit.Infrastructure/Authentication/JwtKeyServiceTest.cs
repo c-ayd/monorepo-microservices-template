@@ -3,6 +3,7 @@ using AuthService.Infrastructure.Options;
 using AuthService.Test.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Shared.Test.Helpers;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
@@ -12,7 +13,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void Constructor_WhenServiceIsInstantiated_ShouldLoadKeys()
         {
             // Arrange
-            var jwtOptions = ConfigurationHelper.CreateConfiguration().GetSection(JwtOptions.Key).Get<JwtOptions>()!;
+            var jwtOptions = ConfigurationHelper.CreateConfigurationFromTestSettings()
+                .GetSection(JwtOptions.Key).Get<JwtOptions>()!;
 
             // Act
             var jwtKeyService = new JwtKeyService(Options.Create(jwtOptions));

@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AuthService.Api\AuthService.Api.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.Test.Helpers\Shared.Test.Helpers.csproj" />
   </ItemGroup>
 
   <ItemGroup>

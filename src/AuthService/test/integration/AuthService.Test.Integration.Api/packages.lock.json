@@ -683,6 +683,7 @@
           "Microsoft.AspNetCore.Mvc.Testing": "[10.0.10, )",
           "Microsoft.NET.Test.Sdk": "[17.14.1, )",
           "Shared.Test.Generators": "[1.0.0, )",
+          "Shared.Test.Helpers": "[1.0.0, )",
           "Testcontainers": "[4.14.0, )",
           "Testcontainers.PostgreSql": "[4.14.0, )",
           "Testcontainers.RabbitMq": "[4.14.0, )",
@@ -704,6 +705,9 @@
         "type": "Project"
       },
       "shared.test.generators": {
+        "type": "Project"
+      },
+      "shared.test.helpers": {
         "type": "Project"
       }
     }
