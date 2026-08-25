@@ -21,7 +21,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             _hostFixture = hostFixture;
             _hostFixture.BuildAsync(services =>
             {
-                services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+                services.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             }, app =>
             {
                 app.UseRouting();
