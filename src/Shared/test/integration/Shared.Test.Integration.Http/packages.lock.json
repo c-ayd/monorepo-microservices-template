@@ -107,6 +107,9 @@
       },
       "shared.http": {
         "type": "Project"
+      },
+      "shared.testgenerators": {
+        "type": "Project"
       }
     }
   }
