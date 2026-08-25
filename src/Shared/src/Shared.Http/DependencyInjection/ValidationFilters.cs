@@ -11,7 +11,7 @@ namespace Shared.Http.DependencyInjection
     public static partial class DependencyInjection
     {
         private static readonly ErrorItem _requestBodyMissingError = new ErrorItem(
-            Code: "req_body_missing",
+            Code: "request_body_missing",
             Message: "The request body is missing"
         );
 
