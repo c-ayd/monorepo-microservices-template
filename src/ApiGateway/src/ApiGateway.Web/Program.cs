@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Http.Response.Middlewares;
 using Shared.Logging.DependencyInjection;
+using Shared.Logging.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,7 +46,7 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseLoggingMiddleware();
+app.UseMiddleware<LoggingScopeMiddleware>();
 app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
