@@ -5,6 +5,7 @@
     <Project Path="src/Shared.Http/Shared.Http.csproj" />
     <Project Path="src/Shared.RabbitMq.Notifications/Shared.RabbitMq.Notifications.csproj" />
     <Project Path="src/Shared.Test.Generators/Shared.Test.Generators.csproj" />
+    <Project Path="src/Shared.Test.Helpers/Shared.Test.Helpers.csproj" />
   </Folder>
   <Folder Name="/test/" />
   <Folder Name="/test/integration/">
