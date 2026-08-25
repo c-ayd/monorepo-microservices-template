@@ -525,11 +525,6 @@
           "Microsoft.IdentityModel.Logging": "8.19.2"
         }
       },
-      "Microsoft.OpenApi": {
-        "type": "Transitive",
-        "resolved": "2.11.0",
-        "contentHash": "/ignjfdeKT2SGLIR7QEv19KnI0rvoxRG/TYDOZdK9EsWLjKK9IK8i1Mo5NRm9PRV3i64DzlTqnIflWvoyfljLg=="
-      },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
         "resolved": "17.14.1",
@@ -653,7 +648,6 @@
         "dependencies": {
           "AuthService.Infrastructure": "[1.0.0, )",
           "AuthService.Persistence": "[1.0.0, )",
-          "Microsoft.OpenApi": "[2.11.0, )",
           "Shared.Logging": "[1.0.0, )"
         }
       },

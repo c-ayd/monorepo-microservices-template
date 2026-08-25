@@ -11,12 +11,6 @@
           "Microsoft.EntityFrameworkCore.Design": "10.0.10"
         }
       },
-      "Microsoft.OpenApi": {
-        "type": "Direct",
-        "requested": "[2.11.0, )",
-        "resolved": "2.11.0",
-        "contentHash": "/ignjfdeKT2SGLIR7QEv19KnI0rvoxRG/TYDOZdK9EsWLjKK9IK8i1Mo5NRm9PRV3i64DzlTqnIflWvoyfljLg=="
-      },
       "Humanizer.Core": {
         "type": "Transitive",
         "resolved": "2.14.1",
