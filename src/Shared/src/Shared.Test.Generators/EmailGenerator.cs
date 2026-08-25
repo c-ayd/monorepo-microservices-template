@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Shared.TestGenerators
+namespace Shared.Test.Generators
 {
     /// <summary>
     /// Generates random email addresses for test cases.

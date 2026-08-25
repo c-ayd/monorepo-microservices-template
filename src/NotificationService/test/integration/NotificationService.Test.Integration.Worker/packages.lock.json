@@ -585,12 +585,12 @@
           "Microsoft.Extensions.Hosting": "[10.0.10, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "RabbitMQ.Client": "[7.2.1, )",
-          "Shared.AspNetCore.Helpers": "[1.0.0, )",
+          "Shared.Helpers": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )"
         }
       },
-      "shared.aspnetcore.helpers": {
+      "shared.helpers": {
         "type": "Project"
       },
       "shared.logging": {
@@ -599,7 +599,7 @@
       "shared.rabbitmq.notifications": {
         "type": "Project"
       },
-      "shared.testgenerators": {
+      "shared.test.generators": {
         "type": "Project"
       }
     }

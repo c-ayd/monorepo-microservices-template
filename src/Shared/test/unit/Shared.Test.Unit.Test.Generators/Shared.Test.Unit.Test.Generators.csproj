@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Shared.TestGenerators\Shared.TestGenerators.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@ using AuthService.Domain.SeedWork;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {

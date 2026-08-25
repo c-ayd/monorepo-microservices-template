@@ -199,13 +199,13 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.10, )",
-          "Shared.AspNetCore.Helpers": "[1.0.0, )",
+          "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
-      "shared.aspnetcore.helpers": {
+      "shared.helpers": {
         "type": "Project"
       },
       "shared.http": {
@@ -214,7 +214,7 @@
       "shared.logging": {
         "type": "Project"
       },
-      "shared.testgenerators": {
+      "shared.test.generators": {
         "type": "Project"
       }
     }

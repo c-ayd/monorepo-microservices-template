@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Shared.AspNetCore.Helpers.DependencyInjection;
-using Shared.AspNetCore.Helpers.Options;
+using Shared.Helpers.DependencyInjection;
+using Shared.Helpers.Options;
 
-namespace Shared.Test.Integration.AspNetCore.Helpers.Options
+namespace Shared.Test.Integration.Helpers.Options
 {
     public class AddOptionsTest
     {

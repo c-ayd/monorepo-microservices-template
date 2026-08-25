@@ -4,7 +4,7 @@ using AuthService.Infrastructure;
 using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
 using Shared.Logging.DependencyInjection;
-using Shared.AspNetCore.Helpers.DependencyInjection;
+using Shared.Helpers.DependencyInjection;
 using AuthService.Api.WellKnown;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;

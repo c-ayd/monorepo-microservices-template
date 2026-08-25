@@ -1,4 +1,4 @@
-namespace Shared.AspNetCore.Helpers.Exceptions
+namespace Shared.Helpers.Exceptions
 {
     public class OptionsKeyIsNullException : Exception
     {

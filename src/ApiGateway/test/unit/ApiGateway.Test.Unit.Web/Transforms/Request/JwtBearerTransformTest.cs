@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Shared.Http.Authentication;
 using Shared.Http.Authentication.Structures;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 using Yarp.ReverseProxy.Transforms;
 
 namespace ApiGateway.Test.Unit.Web.Transforms.Request

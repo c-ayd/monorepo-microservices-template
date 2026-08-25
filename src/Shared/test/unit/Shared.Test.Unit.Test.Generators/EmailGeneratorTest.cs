@@ -1,6 +1,6 @@
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
-namespace Shared.Test.Unit.TestGenerators
+namespace Shared.Test.Unit.Test.Generators
 {
     public class EmailGeneratorTest
     {

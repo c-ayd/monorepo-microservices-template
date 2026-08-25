@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NotificationService.Worker\NotificationService.Worker.csproj" />
-    <ProjectReference Include="..\..\..\..\Shared\src\Shared.TestGenerators\Shared.TestGenerators.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
   </ItemGroup>
 
 </Project>

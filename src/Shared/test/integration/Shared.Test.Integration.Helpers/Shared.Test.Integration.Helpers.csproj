@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Shared.AspNetCore.Helpers\Shared.AspNetCore.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.Helpers\Shared.Helpers.csproj" />
   </ItemGroup>
 
 </Project>

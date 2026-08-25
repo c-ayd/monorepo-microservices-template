@@ -5,7 +5,7 @@ using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Entities;
 using NotificationService.Worker.Services;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace NotificationService.Test.Integration.Worker.Services
 {
