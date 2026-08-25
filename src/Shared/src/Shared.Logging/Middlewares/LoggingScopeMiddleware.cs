@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Shared.Logging.Middlewares
 {
-    internal class LoggingMiddleware
+    public class LoggingScopeMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<LoggingMiddleware> _logger;
+        private readonly ILogger<LoggingScopeMiddleware> _logger;
 
-        public LoggingMiddleware(
+        public LoggingScopeMiddleware(
             RequestDelegate next,
-            ILogger<LoggingMiddleware> logger)
+            ILogger<LoggingScopeMiddleware> logger)
         {
             _next = next;
             _logger = logger;
