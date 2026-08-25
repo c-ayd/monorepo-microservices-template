@@ -5,6 +5,10 @@ using AuthService.Persistence;
 using AuthService.Persistence.SeedData;
 using Shared.Logging.DependencyInjection;
 using Shared.AspNetCore.Helpers.DependencyInjection;
+using AuthService.Api.WellKnown;
+using Shared.Http.Authentication;
+using Shared.Http.Response.Middlewares;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +24,10 @@ builder.AddOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Infrastructure.ServiceRegistration))!
 );
 
+builder.Services.AddAuthentication(ApiGatewayConstants.AuthenticationScheme)
+    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayConstants.AuthenticationScheme, options => { });
+builder.Services.AddAuthorization();
+
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.ApplicationName,
     builder.Environment.IsProduction());
@@ -27,6 +35,12 @@ builder.Logging.AddStructuredConsoleLogging(
 var app = builder.Build();
 
 app.UseLoggingMiddleware();
+
+app.UseMiddleware<AuthErrorResponseMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapWellKnownEndpoints();
 
 // Seed data
 await app.Services.SeedDataAuthDbContextAsync(app.Configuration);
