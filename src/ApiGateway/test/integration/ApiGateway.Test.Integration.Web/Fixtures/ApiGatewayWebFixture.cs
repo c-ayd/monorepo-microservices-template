@@ -1,31 +1,20 @@
-using ApiGateway.Web.Middlewares;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Shared.Test.Helpers;
 
 namespace ApiGateway.Test.Integration.Web.Fixtures
 {
     public class ApiGatewayWebFixture : IAsyncLifetime
     {
-        private WebApplicationFactory<Program> _factory = null!;
+        private ApiGatewayFactory _factory = null!;
         
         public HttpClient Client { get; private set; } = null!;
 
         public async Task InitializeAsync()
         {
-            _factory = new WebApplicationFactory<Program>()
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.UseEnvironment("Test");
-                    
-                    builder.ConfigureServices(services =>
-                    {
-                        services.AddSingleton<IStartupFilter, TestConfiguration>();
-                    });
-                });
-
+            _factory = new ApiGatewayFactory();
             Client = _factory.CreateClient();
         }
 
@@ -35,23 +24,21 @@ namespace ApiGateway.Test.Integration.Web.Fixtures
             await _factory.DisposeAsync();
         }
 
-        private class TestConfiguration : IStartupFilter
+        private class ApiGatewayFactory : WebApplicationFactory<Program>
         {
-            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            protected override void ConfigureWebHost(IWebHostBuilder builder)
             {
-                return app =>
+                builder.UseEnvironment("Test");
+            }
+
+            protected override IHost CreateHost(IHostBuilder builder)
+            {
+                builder.ConfigureHostConfiguration(config =>
                 {
-                    app.UseMiddleware<GlobalExceptionHandler>();
+                    config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromTestSettings());
+                });
 
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/test/no-exception", (context) => Results.NoContent().ExecuteAsync(context));
-                        endpoints.MapGet("/test/exception", (context) => throw new Exception("Test exception"));
-                    });
-
-                    next(app);
-                };
+                return base.CreateHost(builder);
             }
         }
     }

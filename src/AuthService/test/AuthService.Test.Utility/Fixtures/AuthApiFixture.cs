@@ -1,15 +1,12 @@
-using AuthService.Api.Middlewares;
 using AuthService.Infrastructure.Options;
 using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.Options;
 using DotNet.Testcontainers.Builders;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Shared.Test.Helpers;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
@@ -48,35 +45,8 @@ namespace AuthService.Test.Utility.Fixtures
             await _rabbitMqContainer.StartAsync();
 
             // Web API
-            Factory = new WebApplicationFactory<Program>()
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.UseEnvironment("Test");
-
-                    builder.ConfigureAppConfiguration((context, configBuilder) =>
-                    {
-                        configBuilder.AddConfiguration(ConfigurationHelper.CreateConfiguration());
-                        
-                        configBuilder.AddInMemoryCollection([
-                            new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}", _dbContainer.GetConnectionString()),
-                            new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
-                                _rabbitMqContainer.GetMappedPublicPort(5672).ToString())
-                        ]);
-                    });
-
-                    builder.ConfigureServices(services =>
-                    {
-                        services.AddSingleton<IStartupFilter, TestConfiguration>();
-
-                        var dbContext = services.FirstOrDefault(s => s.ServiceType == typeof(AuthDbContext));
-                        if (dbContext != null)
-                        {
-                            services.Remove(dbContext);
-                        }
-                        services.AddDbContext<AuthDbContext>(_ => _.UseNpgsql(_dbContainer.GetConnectionString()));
-                    });
-                });
-
+            Factory = new AuthApiFactory(_dbContainer.GetConnectionString(),
+                _rabbitMqContainer.GetMappedPublicPort(5672).ToString());
             Client = Factory.CreateClient();
         }
 
@@ -86,23 +56,32 @@ namespace AuthService.Test.Utility.Fixtures
             await Factory.DisposeAsync();
         }
 
-        private class TestConfiguration : IStartupFilter
+        private class AuthApiFactory : WebApplicationFactory<Program>
         {
-            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            private readonly string _authDbConnString;
+            private readonly string _rabbitMqPort;
+
+            public AuthApiFactory(string authDbConnString, string rabbitMqPort)
             {
-                return app =>
+                _authDbConnString = authDbConnString;
+                _rabbitMqPort = rabbitMqPort;
+            }
+
+            protected override void ConfigureWebHost(IWebHostBuilder builder)
+            {
+                builder.UseEnvironment("Test");
+
+                builder.ConfigureAppConfiguration((context, config) =>
                 {
-                    app.UseMiddleware<GlobalExceptionHandler>();
+                    config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromTestSettings());
 
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/test/no-exception", context => Results.NoContent().ExecuteAsync(context));
-                        endpoints.MapGet("/test/exception", context => throw new Exception("Test exception"));
-                    });
-
-                    next(app);
-                };
+                    config.AddInMemoryCollection([
+                        new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDb)}",
+                            _authDbConnString),
+                        new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
+                            _rabbitMqPort)
+                    ]);
+                });
             }
         }
     }

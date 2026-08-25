@@ -55,4 +55,10 @@ app.UseAuthorization();
 
 app.MapReverseProxy();
 
+if (app.Environment.IsEnvironment("Test"))
+{
+    app.MapGet("/test/no-exception", () => Results.NoContent());
+    app.MapGet("/test/exception", (context) => throw new Exception("Test exception"));
+}
+
 app.Run();

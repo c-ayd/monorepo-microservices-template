@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Test.Generators;
 using Testcontainers.PostgreSql;
 using AuthService.Application.Abstractions.DbContexts;
+using Shared.Test.Helpers;
 
 namespace AuthService.Test.Integration.Persistence.SeedData
 {
@@ -46,7 +47,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         public async Task SeedDataAuthDbContextAsync_WhenDatabaseIsEmpty_ShouldCreateDefaultRolesAndAccounts()
         {
             // Arrange
-            var configuration = ConfigurationHelper.CreateConfiguration();
+            var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
             var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             // Act
@@ -91,7 +92,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         public async Task SeedDataAuthDbContextAsync_WhenDatabaseHasData_ShouldSkipSeedData()
         {
             // Arrange
-            var configuration = ConfigurationHelper.CreateConfiguration();
+            var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
             var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             using var authDbContext = CreateAuthDbContext();

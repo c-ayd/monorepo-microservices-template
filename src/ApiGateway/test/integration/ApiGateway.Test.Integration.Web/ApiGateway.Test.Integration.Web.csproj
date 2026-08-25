@@ -22,6 +22,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\ApiGateway.Web\ApiGateway.Web.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Helpers\Shared.Test.Helpers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.Test.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

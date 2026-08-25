@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Test.Generators;
+using Shared.Test.Helpers;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
@@ -18,7 +19,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
         public JwtServiceTest()
         {
-            _jwtOptions = ConfigurationHelper.CreateConfiguration().GetSection(JwtOptions.Key).Get<JwtOptions>()!;
+            _jwtOptions = ConfigurationHelper.CreateConfigurationFromTestSettings()
+                .GetSection(JwtOptions.Key).Get<JwtOptions>()!;
             var jwtOptionsPattern = Options.Create(_jwtOptions);
 
             _jwtKeyService = new JwtKeyService(jwtOptionsPattern);
