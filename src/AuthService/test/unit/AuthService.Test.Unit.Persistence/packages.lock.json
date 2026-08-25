@@ -652,8 +652,8 @@
         "dependencies": {
           "AuthService.Domain": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
-          "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Crypto": "[1.0.0, )",
+          "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
@@ -691,10 +691,10 @@
           "xunit.runner.visualstudio": "[3.1.4, )"
         }
       },
-      "shared.aspnetcore.helpers": {
+      "shared.crypto": {
         "type": "Project"
       },
-      "shared.crypto": {
+      "shared.helpers": {
         "type": "Project"
       },
       "shared.http": {

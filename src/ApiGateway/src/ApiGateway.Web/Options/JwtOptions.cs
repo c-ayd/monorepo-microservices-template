@@ -1,4 +1,4 @@
-using Shared.AspNetCore.Helpers.Options;
+using Shared.Helpers.Options;
 
 namespace ApiGateway.Web.Options
 {

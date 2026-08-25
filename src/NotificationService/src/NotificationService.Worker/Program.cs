@@ -6,7 +6,7 @@ using NotificationService.Worker.Options;
 using NotificationService.Worker.SeedData;
 using NotificationService.Worker.Services;
 using NotificationService.Worker.BackgroundServices;
-using Shared.AspNetCore.Helpers.DependencyInjection;
+using Shared.Helpers.DependencyInjection;
 using Shared.Logging.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);

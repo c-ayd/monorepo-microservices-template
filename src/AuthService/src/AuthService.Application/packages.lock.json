@@ -138,10 +138,10 @@
       "authservice.domain": {
         "type": "Project"
       },
-      "shared.aspnetcore.helpers": {
+      "shared.crypto": {
         "type": "Project"
       },
-      "shared.crypto": {
+      "shared.helpers": {
         "type": "Project"
       },
       "shared.http": {

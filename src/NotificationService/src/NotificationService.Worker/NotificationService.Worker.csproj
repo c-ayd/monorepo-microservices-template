@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Shared\src\Shared.AspNetCore.Helpers\Shared.AspNetCore.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.Helpers\Shared.Helpers.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Notifications\Shared.RabbitMq.Notifications.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Logging\Shared.Logging.csproj" />
   </ItemGroup>
