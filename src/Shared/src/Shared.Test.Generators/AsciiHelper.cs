@@ -1,4 +1,4 @@
-namespace Shared.TestGenerators
+namespace Shared.Test.Generators
 {
     internal static class AsciiHelper
     {

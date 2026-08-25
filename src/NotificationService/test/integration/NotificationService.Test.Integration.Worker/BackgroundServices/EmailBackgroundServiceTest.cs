@@ -5,7 +5,7 @@ using NotificationService.Worker.Services;
 using NotificationService.Worker.BackgroundServices;
 using Shared.RabbitMq.Notifications.Configurations;
 using Shared.RabbitMq.Notifications.Messages;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Worker.DbContexts;
 using Microsoft.EntityFrameworkCore;

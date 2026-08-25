@@ -102,7 +102,7 @@
       "shared.crypto": {
         "type": "Project"
       },
-      "shared.testgenerators": {
+      "shared.test.generators": {
         "type": "Project"
       }
     }

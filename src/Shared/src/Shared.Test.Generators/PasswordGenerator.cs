@@ -1,7 +1,7 @@
 using System.Text;
-using Shared.TestGenerators.Extensions;
+using Shared.Test.Generators.Extensions;
 
-namespace Shared.TestGenerators
+namespace Shared.Test.Generators
 {
     /// <summary>
     /// Generates random passwords for test cases.

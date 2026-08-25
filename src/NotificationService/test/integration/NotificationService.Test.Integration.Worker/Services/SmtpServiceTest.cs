@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.Services;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace NotificationService.Test.Integration.Worker.Services
 {

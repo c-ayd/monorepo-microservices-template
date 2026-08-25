@@ -692,7 +692,7 @@
       "shared.logging": {
         "type": "Project"
       },
-      "shared.testgenerators": {
+      "shared.test.generators": {
         "type": "Project"
       }
     }

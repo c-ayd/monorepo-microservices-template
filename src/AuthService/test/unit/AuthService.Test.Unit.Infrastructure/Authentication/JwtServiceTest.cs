@@ -6,7 +6,7 @@ using AuthService.Test.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication
 {

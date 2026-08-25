@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Shared.TestGenerators.Extensions
+namespace Shared.Test.Generators.Extensions
 {
     internal static class StringBuilderShuffle
     {

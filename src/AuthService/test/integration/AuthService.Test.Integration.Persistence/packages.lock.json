@@ -682,7 +682,7 @@
           "AuthService.Api": "[1.0.0, )",
           "Microsoft.AspNetCore.Mvc.Testing": "[10.0.10, )",
           "Microsoft.NET.Test.Sdk": "[17.14.1, )",
-          "Shared.TestGenerators": "[1.0.0, )",
+          "Shared.Test.Generators": "[1.0.0, )",
           "Testcontainers": "[4.14.0, )",
           "Testcontainers.PostgreSql": "[4.14.0, )",
           "Testcontainers.RabbitMq": "[4.14.0, )",
@@ -703,7 +703,7 @@
       "shared.logging": {
         "type": "Project"
       },
-      "shared.testgenerators": {
+      "shared.test.generators": {
         "type": "Project"
       }
     }

@@ -4,7 +4,7 @@ using AuthService.Domain.SeedWork;
 using AuthService.Persistence.Exceptions;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {

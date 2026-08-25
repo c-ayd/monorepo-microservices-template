@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared.Http.Authentication;
 using Shared.Http.Authentication.Structures;
 using Shared.Test.Integration.Http.Fixtures;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace Shared.Test.Integration.Http.Authentication
 {

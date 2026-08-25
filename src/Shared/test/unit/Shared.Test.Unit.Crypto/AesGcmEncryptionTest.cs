@@ -1,6 +1,6 @@
 using Shared.Crypto;
 using Shared.Crypto.Exceptions;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 
 namespace Shared.Test.Unit.Crypto
 {

@@ -6,7 +6,7 @@ using AuthService.Test.Utility;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.TestGenerators;
+using Shared.Test.Generators;
 using Testcontainers.PostgreSql;
 using AuthService.Application.Abstractions.DbContexts;
 
