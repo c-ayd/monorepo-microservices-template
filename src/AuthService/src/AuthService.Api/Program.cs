@@ -9,6 +9,7 @@ using AuthService.Api.WellKnown;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
 using Microsoft.AspNetCore.Authentication;
+using AuthService.Api.Middlewares;
 using Shared.Logging.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,7 @@ builder.Logging.AddStructuredConsoleLogging(
 var app = builder.Build();
 
 app.UseMiddleware<LoggingScopeMiddleware>();
+app.UseMiddleware<GlobalExceptionHandler>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
 app.UseAuthentication();
