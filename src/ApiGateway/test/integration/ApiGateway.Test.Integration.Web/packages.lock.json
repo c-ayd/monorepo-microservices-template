@@ -505,6 +505,9 @@
       },
       "shared.logging": {
         "type": "Project"
+      },
+      "shared.test.helpers": {
+        "type": "Project"
       }
     }
   }
