@@ -13,7 +13,7 @@ namespace AuthService.Application.Abstractions.Crypto
         /// Gets the hash options based on <see cref="IHashVersions.CurrentHashVersion"/>.
         /// </summary>
         /// <returns>Returns the current hash options.</returns>
-        HashOptions GetCurrentHashOption();
+        HashOptions GetCurrentHashOptions();
         /// <summary>
         /// Gets the hash options based on a given version.
         /// </summary>

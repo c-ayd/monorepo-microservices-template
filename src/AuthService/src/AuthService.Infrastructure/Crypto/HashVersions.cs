@@ -8,7 +8,7 @@ namespace AuthService.Infrastructure.Crypto
     {
         public byte CurrentHashVersion { get; private set; } = 1;
 
-        public HashOptions GetCurrentHashOption()
+        public HashOptions GetCurrentHashOptions()
         {
             return _versions[CurrentHashVersion];
         }
