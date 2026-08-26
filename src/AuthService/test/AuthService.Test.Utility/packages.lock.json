@@ -659,6 +659,7 @@
           "Shared.Crypto": "[1.0.0, )",
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
+          "Shared.RabbitMq.Notifications": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       },
@@ -690,6 +691,9 @@
         "type": "Project"
       },
       "shared.logging": {
+        "type": "Project"
+      },
+      "shared.rabbitmq.notifications": {
         "type": "Project"
       },
       "shared.test.generators": {

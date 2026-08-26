@@ -146,6 +146,9 @@
       },
       "shared.http": {
         "type": "Project"
+      },
+      "shared.rabbitmq.notifications": {
+        "type": "Project"
       }
     }
   }

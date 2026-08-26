@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\..\Shared\src\Shared.Crypto\Shared.Crypto.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Helpers\Shared.Helpers.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Http\Shared.Http.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Notifications\Shared.RabbitMq.Notifications.csproj" />
   </ItemGroup>
 
   <ItemGroup>
