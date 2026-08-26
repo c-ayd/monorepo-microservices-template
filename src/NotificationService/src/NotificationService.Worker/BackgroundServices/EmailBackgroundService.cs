@@ -85,7 +85,11 @@ namespace NotificationService.Worker.BackgroundServices
                             args.BasicProperties.CorrelationId,
                             args.BasicProperties.Timestamp);
 
-                        await _channel!.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                        await _channel!.BasicNackAsync(
+                            deliveryTag: args.DeliveryTag,
+                            multiple: false,
+                            requeue: false);
+    
                         return;
                     }
 
@@ -98,18 +102,26 @@ namespace NotificationService.Worker.BackgroundServices
                             args.BasicProperties.Timestamp,
                             message.TemplateId);
 
-                        await _channel!.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                        await _channel!.BasicNackAsync(
+                            deliveryTag: args.DeliveryTag,
+                            multiple: false,
+                            requeue: false);
+                        
                         return;
                     }
 
                     // Send email
                     await _emailService.SendAsync(
                         message.To,
-                        string.Format(template.Subject, message.SubjectParameters),
-                        string.Format(template.Body, message.BodyParameters),
+                        message.SubjectParameters?.Length > 0 ?
+                            string.Format(template.Subject, message.SubjectParameters) : template.Subject,
+                        message.BodyParameters?.Length > 0 ?
+                            string.Format(template.Body, message.BodyParameters) : template.Body,
                         template.IsBodyHtml);
 
-                    await _channel!.BasicAckAsync(args.DeliveryTag, multiple: false);
+                    await _channel!.BasicAckAsync(
+                        deliveryTag: args.DeliveryTag,
+                        multiple: false);
 
                     _logger.LogInformation("The message has been processed. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
                         args.BasicProperties.CorrelationId,
@@ -122,7 +134,10 @@ namespace NotificationService.Worker.BackgroundServices
                         args.BasicProperties.Timestamp,
                         exception.Message);
 
-                    await _channel!.BasicNackAsync(args.DeliveryTag, multiple: false, requeue: false);
+                    await _channel!.BasicNackAsync(
+                        deliveryTag: args.DeliveryTag,
+                        multiple: false,
+                        requeue: false);
                 }
             };
 
