@@ -17,7 +17,7 @@ namespace AuthService.Application.Abstractions.Crypto
         /// <summary>
         /// Gets the hash options based on a given version.
         /// </summary>
-        /// <param name="version">Version of the hash options.</param>
+        /// <param name="version">Version of the hash options</param>
         /// <returns>Returns the hash options.</returns>
         HashOptions GetHashOptions(byte version);
     }
