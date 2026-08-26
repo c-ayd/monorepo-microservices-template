@@ -51,7 +51,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(
                 publisherConfirmationsEnabled: true,
-                publisherConfirmationTrackingEnabled: true
+                publisherConfirmationTrackingEnabled: false
             ));
         }
 
@@ -73,7 +73,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             {
                 Username = "guest",
                 Password = "guest",
-                Host = "localhost",
+                Host = _rabbitMqContainer.Hostname,
                 Port = _rabbitMqContainer.GetMappedPublicPort(5672)
             };
         }
@@ -84,6 +84,7 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             await _channel.BasicPublishAsync(
                 exchange: exchangeName,
                 routingKey: routingKey,
+                mandatory: true,
                 body: JsonSerializer.SerializeToUtf8Bytes(message),
                 cancellationToken: cts.Token
             );
