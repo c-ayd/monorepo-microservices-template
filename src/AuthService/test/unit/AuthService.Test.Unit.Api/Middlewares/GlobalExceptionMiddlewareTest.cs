@@ -1,8 +1,8 @@
 using AuthService.Api.Middlewares;
-using AuthService.Test.Utility.Fixtures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Unit.Api.Middlewares
 {
