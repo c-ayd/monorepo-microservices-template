@@ -20,6 +20,9 @@ namespace AuthService.Persistence.EntityConfigurations
                 .HasMaxLength(AccountConstraints.EmailMaxLength)
                 .HasConversion<ToLowerConverter>();
 
+            builder.Property(a => a.PreferredLanguage)
+                .HasMaxLength(AccountConstraints.PreferredLanguageMaxLength);
+
             // Relationships
             builder.HasMany(a => a.Roles)
                 .WithMany(r => r.Accounts);

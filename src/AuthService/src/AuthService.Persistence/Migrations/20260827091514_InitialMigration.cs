@@ -20,6 +20,7 @@ namespace AuthService.Persistence.Migrations
                     Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     NewEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     PasswordHashed = table.Column<string>(type: "text", nullable: true),
+                    PreferredLanguage = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
                     IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false),
                     IsBanned = table.Column<bool>(type: "boolean", nullable: false),
                     IsLocked = table.Column<bool>(type: "boolean", nullable: false),

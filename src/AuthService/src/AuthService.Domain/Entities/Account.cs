@@ -8,6 +8,8 @@ namespace AuthService.Domain.Entities
         public string? NewEmail { get; set; }
         public string? PasswordHashed { get; set; }
 
+        public string? PreferredLanguage { get; set; }
+
         public bool IsEmailVerified { get; set; }
         public bool IsBanned { get; set; }
         public bool IsLocked { get; set; }

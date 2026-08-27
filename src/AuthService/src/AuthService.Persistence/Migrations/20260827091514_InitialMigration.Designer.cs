@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthService.Persistence.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260805143206_InitialMigration")]
+    [Migration("20260827091514_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -78,6 +78,10 @@ namespace AuthService.Persistence.Migrations
 
                     b.Property<string>("PasswordHashed")
                         .HasColumnType("text");
+
+                    b.Property<string>("PreferredLanguage")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
 
                     b.Property<DateTimeOffset?>("UnlockDate")
                         .HasColumnType("timestamp with time zone");
