@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Worker.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using NotificationService.Worker.Entities;
+using Shared.Test.Helpers.Fixtures;
 
 namespace NotificationService.Test.Integration.Worker.BackgroundServices
 {

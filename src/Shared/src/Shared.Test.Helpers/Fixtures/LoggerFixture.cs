@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace NotificationService.Test.Integration.Worker.Fixtures
+namespace Shared.Test.Helpers.Fixtures
 {
     public class LoggerFixture<T> : ILogger<T>
     {
