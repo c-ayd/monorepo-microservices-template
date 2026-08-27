@@ -94,7 +94,7 @@ namespace NotificationService.Worker.BackgroundServices
                     }
 
                     // Get email template
-                    var template = await _templateService.GetEmailTemplateAsync(message.TemplateId, message.Language);
+                    var template = _templateService.GetEmailTemplateAsync(message.TemplateId, message.Language);
                     if (template == null)
                     {
                         _logger.LogWarning("The email template could not be found. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, Template ID: {TemplateId}",

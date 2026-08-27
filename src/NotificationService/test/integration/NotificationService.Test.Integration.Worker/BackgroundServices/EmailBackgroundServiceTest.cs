@@ -21,6 +21,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
         private readonly WorkerFixture _workerFixture;
         private readonly EmailServiceFixture _emailServiceFixture;
 
+        private readonly TemplateService _templateService;
         private readonly EmailBackgroundService _backgroundService;
 
         private readonly CancellationTokenSource _cts;
@@ -38,9 +39,10 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 .BuildServiceProvider()
                 .GetRequiredService<IServiceScopeFactory>();
 
+            _templateService = new TemplateService(scopeFactory);
             _backgroundService = new EmailBackgroundService(
                 new RabbitMqConnectionService(Options.Create(_workerFixture.GetRabbitMqOptions())),
-                new TemplateService(scopeFactory),
+                _templateService,
                 new SmtpService(Options.Create(_emailServiceFixture.SmtpOptions)),
                 loggerFixture);
             
@@ -72,7 +74,8 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
             using var dbContext = _workerFixture.CreateTemplateDbContext();
             await dbContext.EmailTemplates.AddAsync(emailTemplate);
             await dbContext.SaveChangesAsync();
-            
+            await _templateService.RecacheAllTemplatesAsync();
+
             var to = EmailGenerator.Generate();
 
             await _workerFixture.PublishMessageAsync(
@@ -130,6 +133,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
             using var dbContext = _workerFixture.CreateTemplateDbContext();
             await dbContext.EmailTemplates.AddAsync(emailTemplate);
             await dbContext.SaveChangesAsync();
+            await _templateService.RecacheAllTemplatesAsync();
 
             var to = EmailGenerator.Generate();
             var subjectParameters = new string[] { "abc", "def" };
