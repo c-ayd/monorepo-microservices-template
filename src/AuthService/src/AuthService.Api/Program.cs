@@ -31,7 +31,7 @@ builder.RegisterOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Application.ServiceRegistration))!
 );
 
-builder.Services.RegisterValidatorsFromAssembly(Assembly.GetAssembly(typeof(AuthService.Application.ServiceRegistration))!);
+builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(AuthService.Application.ServiceRegistration))!);
 
 builder.Services.AddAuthentication(ApiGatewayConstants.AuthenticationScheme)
     .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayConstants.AuthenticationScheme, options => { });

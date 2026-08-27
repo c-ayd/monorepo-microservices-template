@@ -6,7 +6,7 @@ namespace Shared.Http.DependencyInjection
 {
     public static partial class DependencyInjection
     {
-        public static void RegisterValidatorsFromAssembly(this IServiceCollection services, Assembly assembly)
+        public static void AddValidatorsFromAssembly(this IServiceCollection services, Assembly assembly)
         {
             var validators = new List<(Type serviceType, Type implementationType)>();
             var asyncValidators = new List<(Type serviceType, Type implementationType)>();
@@ -16,7 +16,7 @@ namespace Shared.Http.DependencyInjection
             RegisterValidators(services, validators, asyncValidators);
         }
 
-        public static void RegisterValidatorsFromAssemblies(this IServiceCollection services, params Assembly[] assemblies)
+        public static void AddValidatorsFromAssemblies(this IServiceCollection services, params Assembly[] assemblies)
         {
             var validators = new List<(Type serviceType, Type implementationType)>();
             var asyncValidators = new List<(Type serviceType, Type implementationType)>();

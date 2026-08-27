@@ -26,7 +26,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             {
                 services.AddScoped<TestScopedService>();
 
-                services.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+                services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             }, null);
 
             // Assert
