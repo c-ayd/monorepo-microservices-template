@@ -44,7 +44,7 @@ builder.Logging.AddStructuredConsoleLogging(
 var app = builder.Build();
 
 app.UseMiddleware<LoggingScopeMiddleware>();
-app.UseMiddleware<GlobalExceptionHandler>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
 app.UseAuthentication();
@@ -57,11 +57,5 @@ app.MapAccountEndpoints();
 
 // Seed data
 await app.Services.SeedDataAuthDbContextAsync(app.Configuration);
-
-if (app.Environment.IsEnvironment("Test"))
-{
-    app.MapGet("/test/no-exception", () => Results.NoContent());
-    app.MapGet("/test/exception", (context) => throw new Exception("Test exception"));
-}
 
 app.Run();
