@@ -76,6 +76,10 @@ namespace AuthService.Persistence.Migrations
                     b.Property<string>("PasswordHashed")
                         .HasColumnType("text");
 
+                    b.Property<string>("PreferredLanguage")
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
                     b.Property<DateTimeOffset?>("UnlockDate")
                         .HasColumnType("timestamp with time zone");
 
