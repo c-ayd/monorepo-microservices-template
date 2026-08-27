@@ -11,7 +11,7 @@ using Shared.Logging.DependencyInjection;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.AddOptionsFromAssembly(Assembly.GetExecutingAssembly());
+builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
 builder.Services.AddDbContext<TemplateDbContext>(_ => 
     _.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ConnectionStringsOptions.TemplateDb))));
