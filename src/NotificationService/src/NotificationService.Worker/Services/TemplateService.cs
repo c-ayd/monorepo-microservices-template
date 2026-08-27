@@ -7,6 +7,8 @@ namespace NotificationService.Worker.Services
 {
     public class TemplateService
     {
+        public const string DefaultLanguage = "en";
+
         private readonly IServiceScopeFactory _scopeFactory;
 
         public TemplateService(IServiceScopeFactory scopeFactory)
@@ -14,38 +16,38 @@ namespace NotificationService.Worker.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task<EmailTemplateDto?> GetEmailTemplateAsync(
-            string templateId,
-            string? language = "en",
-            CancellationToken cancellationToken = default)
+        public EmailTemplateDto? GetEmailTemplateAsync(string templateId, string? language = DefaultLanguage)
+        {
+            return GetTemplate(_emailTemplates, templateId, language);
+        }
+
+        private T? GetTemplate<T>(ConcurrentDictionary<(string templateId, string language), T> templates, string templateId, string? language)
         {
             if (language == null)
             {
-                language = "en";
+                language = DefaultLanguage;
             }
 
-            _emailTemplates.TryGetValue((templateId, language), out var emailTemplate);
-            if (emailTemplate != null)
-                return emailTemplate;
-
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            var templateDbContext = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-
-            var template = await templateDbContext.EmailTemplates.FindAsync(templateId, language, cancellationToken);
+            templates.TryGetValue((templateId, language), out var template);
             if (template != null)
+                return template;
+
+            if (language != DefaultLanguage)
             {
-                emailTemplate = new EmailTemplateDto(template.Subject, template.Body, template.IsBodyHtml);
-                _emailTemplates.TryAdd((templateId, language), emailTemplate);
+                templates.TryGetValue((templateId, DefaultLanguage), out template);
             }
 
-            return emailTemplate;
+            return template;
         }
+
+        private ConcurrentDictionary<(string templateId, string language), EmailTemplateDto> _emailTemplates = 
+            new ConcurrentDictionary<(string templateId, string language), EmailTemplateDto>();
 
         public async Task RecacheAllTemplatesAsync(CancellationToken cancellationToken = default)
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var templateDbContext = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-
+            
             // Email templates
             var emailTemplates = await templateDbContext.EmailTemplates.ToListAsync(cancellationToken);
             foreach (var emailTemplate in emailTemplates)
@@ -54,8 +56,5 @@ namespace NotificationService.Worker.Services
                 _emailTemplates.AddOrUpdate((emailTemplate.TemplateId, emailTemplate.Language), template, (key, oldValue) => template);
             }
         }
-
-        private ConcurrentDictionary<(string templateId, string language), EmailTemplateDto> _emailTemplates = 
-            new ConcurrentDictionary<(string templateId, string language), EmailTemplateDto>();
     }
 }
