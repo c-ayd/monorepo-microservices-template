@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Shared.Helpers.Options;
 using Shared.Test.Helpers;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -14,7 +17,7 @@ namespace AuthService.Test.Utility.Fixtures
 {
     public class AuthApiFixture : IAsyncLifetime
     {
-        private PostgreSqlContainer _dbContainer = null!;
+        private PostgreSqlContainer _authDbContainer = null!;
         private RabbitMqContainer _rabbitMqContainer = null!;
         
         public WebApplicationFactory<Program> Factory { get; private set; } = null!;
@@ -23,16 +26,14 @@ namespace AuthService.Test.Utility.Fixtures
         public async Task InitializeAsync()
         {
             // PostgreSQL
-            _dbContainer = new PostgreSqlBuilder("postgres:18.4")
+            _authDbContainer = new PostgreSqlBuilder("postgres:18.4")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
                 .Build();
                 
-            await _dbContainer.StartAsync();
+            await _authDbContainer.StartAsync();
 
-            using var dbContext = new AuthDbContext(new DbContextOptionsBuilder<AuthDbContext>()
-                .UseNpgsql(_dbContainer.GetConnectionString())
-                .Options);
-            await dbContext.Database.MigrateAsync();
+            using var authDbContext = CreateAuthDbContext();
+            await authDbContext.Database.MigrateAsync();
 
             // RabbitMQ
             _rabbitMqContainer = new RabbitMqBuilder("rabbitmq:4.3.4-management")
@@ -45,9 +46,22 @@ namespace AuthService.Test.Utility.Fixtures
             await _rabbitMqContainer.StartAsync();
 
             // Web API
-            Factory = new AuthApiFactory(_dbContainer.GetConnectionString(),
+            Factory = new AuthApiFactory(_authDbContainer.GetConnectionString(),
                 _rabbitMqContainer.GetMappedPublicPort(5672).ToString());
             Client = Factory.CreateClient();
+        }
+
+        public AuthDbContext CreateAuthDbContext()
+        {
+            return new AuthDbContext(new DbContextOptionsBuilder<AuthDbContext>()
+                .UseNpgsql(_authDbContainer.GetConnectionString())
+                .Options);
+        }
+
+        public T GetOptions<T>()
+            where T : class
+        {
+            return Factory.Services.GetRequiredService<IOptions<T>>().Value;
         }
 
         public async Task DisposeAsync()
