@@ -3,9 +3,6 @@
     <Project Path="src/ApiGateway.Web/ApiGateway.Web.csproj" />
   </Folder>
   <Folder Name="/test/" />
-  <Folder Name="/test/integration/">
-    <Project Path="test/integration/ApiGateway.Test.Integration.Web/ApiGateway.Test.Integration.Web.csproj" />
-  </Folder>
   <Folder Name="/test/unit/">
     <Project Path="test/unit/ApiGateway.Test.Unit.Web/ApiGateway.Test.Unit.Web.csproj" />
   </Folder>
