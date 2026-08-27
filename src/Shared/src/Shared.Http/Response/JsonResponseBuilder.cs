@@ -11,9 +11,9 @@ namespace Shared.Http.Response
     /// </summary>
     public static class JsonResponseBuilder
     {
-        private const string DataKey = "data";
-        private const string MetadataKey = "metadata";
-        private const string ErrorsKey = "errors";
+        public const string DataKey = "data";
+        public const string MetadataKey = "metadata";
+        public const string ErrorsKey = "errors";
 
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
         {
