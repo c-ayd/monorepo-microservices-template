@@ -7,5 +7,7 @@ namespace AuthService.Application.Validations.Constraints
         public const int PasswordMinLength = 10;
         public const int PasswordMaxLength = 100;
         public const string PasswordSpecialCharacters = "!@#$%^&*()_+-=[]{};':\",./<>?\\|";
+
+        public const int PreferredLanguageMaxLength = 3;
     }
 }
