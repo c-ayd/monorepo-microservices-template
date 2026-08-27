@@ -14,8 +14,16 @@ namespace NotificationService.Worker.Services
             _scopeFactory = scopeFactory;
         }
 
-        public async Task<EmailTemplateDto?> GetEmailTemplateAsync(string templateId, string language, CancellationToken cancellationToken = default)
+        public async Task<EmailTemplateDto?> GetEmailTemplateAsync(
+            string templateId,
+            string? language = "en",
+            CancellationToken cancellationToken = default)
         {
+            if (language == null)
+            {
+                language = "en";
+            }
+
             _emailTemplates.TryGetValue((templateId, language), out var emailTemplate);
             if (emailTemplate != null)
                 return emailTemplate;
