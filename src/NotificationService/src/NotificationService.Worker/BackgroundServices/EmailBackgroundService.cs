@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
@@ -72,9 +71,7 @@ namespace NotificationService.Worker.BackgroundServices
                 try
                 {
                     // Deserialize message
-                    var body = args.Body.ToArray();
-                    var json = Encoding.UTF8.GetString(body);
-                    var message = JsonSerializer.Deserialize<RabbitMqEmailMessage>(json, new JsonSerializerOptions()
+                    var message = JsonSerializer.Deserialize<RabbitMqEmailMessage>(args.Body.ToArray(), new JsonSerializerOptions()
                     {
                         PropertyNameCaseInsensitive = true
                     });
