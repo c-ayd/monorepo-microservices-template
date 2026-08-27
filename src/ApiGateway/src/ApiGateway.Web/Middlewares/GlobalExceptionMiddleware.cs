@@ -4,19 +4,14 @@ using Shared.Http.Response.Structures;
 
 namespace ApiGateway.Web.Middlewares
 {
-    public class GlobalExceptionHandler
+    public class GlobalExceptionMiddleware
     {
-        private static readonly ErrorItem _internalServerError = new ErrorItem(
-            Code: "internal_server_error",
-            Message: "Something went wrong."
-        );
-
         private readonly RequestDelegate _next;
-        private readonly ILogger<GlobalExceptionHandler> _logger;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-        public GlobalExceptionHandler(
+        public GlobalExceptionMiddleware(
             RequestDelegate next,
-            ILogger<GlobalExceptionHandler> logger)
+            ILogger<GlobalExceptionMiddleware> logger)
         {
             _next = next;
             _logger = logger;
@@ -35,8 +30,10 @@ namespace ApiGateway.Web.Middlewares
 
                 if (!context.Response.HasStarted)
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    await JsonResponseBuilder.Error(HttpStatusCode.InternalServerError, [_internalServerError]).ExecuteAsync(context);
+                    await JsonResponseBuilder.Error(HttpStatusCode.InternalServerError, [new ErrorItem(
+                        Code: "internal_server_error",
+                        Message: "Something went wrong."
+                    )]).ExecuteAsync(context);
                 }
             }
         }
