@@ -24,7 +24,7 @@ namespace Shared.Test.Integration.Helpers.Options
             ]);
 
             // Act
-            builder.AddOptionsFromAssembly(Assembly.GetExecutingAssembly());
+            builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
             var host = builder.Build();
             await host.StartAsync();

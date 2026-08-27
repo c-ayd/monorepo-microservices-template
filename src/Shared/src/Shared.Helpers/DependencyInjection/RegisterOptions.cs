@@ -8,7 +8,7 @@ namespace Shared.Helpers.DependencyInjection
 {
     public static class DependencyInjection
     {
-        public static void AddOptionsFromAssembly(this IHostApplicationBuilder builder, Assembly assembly)
+        public static void RegisterOptionsFromAssembly(this IHostApplicationBuilder builder, Assembly assembly)
         {
             var options = assembly.GetTypes()
                 .Where(t => t.IsAssignableTo(typeof(IOptions)))
@@ -17,7 +17,7 @@ namespace Shared.Helpers.DependencyInjection
             RegisterOptions(builder, options);
         }
 
-        public static void AddOptionsFromAssemblies(this IHostApplicationBuilder builder, params Assembly[] assemblies)
+        public static void RegisterOptionsFromAssemblies(this IHostApplicationBuilder builder, params Assembly[] assemblies)
         {
             var options = new List<Type>();
             foreach (var assembly in assemblies)

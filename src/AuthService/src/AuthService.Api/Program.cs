@@ -25,7 +25,7 @@ builder.Services.AddApplicationServices();
 
 builder.Services.AddHostedService<RabbitMqInitializerBackgroundService>();
 
-builder.AddOptionsFromAssemblies(
+builder.RegisterOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Persistence.ServiceRegistration))!,
     Assembly.GetAssembly(typeof(AuthService.Infrastructure.ServiceRegistration))!,
     Assembly.GetAssembly(typeof(AuthService.Application.ServiceRegistration))!
