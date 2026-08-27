@@ -601,6 +601,9 @@
       },
       "shared.test.generators": {
         "type": "Project"
+      },
+      "shared.test.helpers": {
+        "type": "Project"
       }
     }
   }
