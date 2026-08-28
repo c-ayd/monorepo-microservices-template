@@ -73,6 +73,7 @@ namespace Shared.Test.Integration.Http.Authentication
                 headerValue = StringGenerator.GenerateAlpha();
 
                 _hostFixture.Client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
+                break;
             }
 
             // Act
