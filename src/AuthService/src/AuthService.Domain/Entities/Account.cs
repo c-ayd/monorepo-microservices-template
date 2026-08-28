@@ -45,6 +45,7 @@ namespace AuthService.Domain.Entities
             IsEmailVerified = false;
             NewEmail = null;
             PasswordHashed = null;
+            PreferredLanguage = null;
             FailedLoginAttempts = 0;
             IsLocked = false;
             UnlockDate = null;
