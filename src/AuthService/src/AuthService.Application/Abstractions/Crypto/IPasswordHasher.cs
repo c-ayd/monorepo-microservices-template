@@ -19,7 +19,8 @@ namespace AuthService.Application.Abstractions.Crypto
         /// </summary>
         /// <param name="passwordHashed">Hashed password to verify against</param>
         /// <param name="passwordPlain">Plain password to check</param>
+        /// <param name="version">Version of the hashed password</param>
         /// <returns>Returns the verification result.</returns>
-        EPasswordVerificationResult Verify(string passwordHashed, string passwordPlain);
+        EPasswordVerificationResult Verify(string passwordHashed, string passwordPlain, out byte version);
     }
 }
