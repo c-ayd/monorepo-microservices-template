@@ -29,7 +29,7 @@ namespace AuthService.Infrastructure.Crypto
             return Convert.ToBase64String(bytes);
         }
 
-        public EPasswordVerificationResult Verify(string passwordHashed, string passwordPlain)
+        public EPasswordVerificationResult Verify(string passwordHashed, string passwordPlain, out byte version)
         {
             if (string.IsNullOrEmpty(passwordHashed))
                 throw new ArgumentException("The hashed password cannot be null or empty.", nameof(passwordHashed));
@@ -39,8 +39,8 @@ namespace AuthService.Infrastructure.Crypto
             Span<byte> bytes = Convert.FromBase64String(passwordHashed).AsSpan();
 
             // Get version of the hashed password
-            var versionByte = bytes[0];
-            if (!_hashVersions.TryGetValue(versionByte, out var hashVersion))
+            version = bytes[0];
+            if (!_hashVersions.TryGetValue(version, out var hashVersion))
                 return EPasswordVerificationResult.VersionNotFound;
 
             // Hashed password bytes are: {Version}{Salt}{Key}
@@ -60,7 +60,7 @@ namespace AuthService.Infrastructure.Crypto
             if (!CryptographicOperations.FixedTimeEquals(expectedKeyBytes, keyBytes))
                 return EPasswordVerificationResult.Fail;
 
-            return versionByte == _currentVersion ?
+            return version == _currentVersion ?
                 EPasswordVerificationResult.Success :
                 EPasswordVerificationResult.SuccessRehashNeeded;
         }
