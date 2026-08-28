@@ -48,29 +48,32 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
         public void Verify_WhenHashingVersionIsNotFound_ShouldReturnVersionNotFound()
         {
             // Arrange
+            byte version = 0;
             var password = PasswordGenerator.Generate();
             var passwordHashed = _pbkdf2.Hash(password);
 
             byte[] hashBytes = Convert.FromBase64String(passwordHashed);
-            hashBytes[0] = 0;
+            hashBytes[0] = version;
             passwordHashed = Convert.ToBase64String(hashBytes);
 
             // Act
-            var result = _pbkdf2.Verify(passwordHashed, password);
+            var result = _pbkdf2.Verify(passwordHashed, password, out var passwordVersion);
 
             // Assert
             Assert.Equal(EPasswordVerificationResult.VersionNotFound, result);
+            Assert.Equal(version, passwordVersion);
         }
 
         [Fact]
         public void Verify_WhenNumberOfBytesDoesNotMatchVersion_ShouldReturnLengthMismatch()
         {
             // Arrange
+            byte version = byte.MaxValue;
             var password = PasswordGenerator.Generate();
             var passwordHashed = _pbkdf2.Hash(password);
 
             byte[] hashBytes = Convert.FromBase64String(passwordHashed);
-            hashBytes[0] = byte.MaxValue;
+            hashBytes[0] = version;
             passwordHashed = Convert.ToBase64String(hashBytes);
 
             var hashVersionType = typeof(Pbkdf2).GetNestedType("HashVersion", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -83,10 +86,11 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
             addVersionMethod.Invoke(hashVersionsDict, [byte.MaxValue, hashVersionInstance]);
 
             // Act
-            var result = _pbkdf2.Verify(passwordHashed, password);
+            var result = _pbkdf2.Verify(passwordHashed, password, out var passwordVersion);
 
             // Assert
             Assert.Equal(EPasswordVerificationResult.LengthMismatch, result);
+            Assert.Equal(version, passwordVersion);
         }
 
         [Fact]
@@ -97,7 +101,7 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
             var passwordHashed = _pbkdf2.Hash(password);
 
             // Act
-            var result = _pbkdf2.Verify(passwordHashed, password + "a");
+            var result = _pbkdf2.Verify(passwordHashed, password + "a", out _);
 
             // Assert
             Assert.Equal(EPasswordVerificationResult.Fail, result);
@@ -107,11 +111,12 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
         public void Verify_WhenPasswordIsSameButVersionIsDifferent_ShouldReturnSuccessRehashNeeded()
         {
             // Arrange
+            byte version = byte.MaxValue;
             var password = PasswordGenerator.Generate();
             var passwordHashed = _pbkdf2.Hash(password);
 
             byte[] hashBytes = Convert.FromBase64String(passwordHashed);
-            hashBytes[0] = byte.MaxValue;
+            hashBytes[0] = version;
             passwordHashed = Convert.ToBase64String(hashBytes);
 
             var currentVersion = typeof(Pbkdf2).GetField("_currentVersion", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(_pbkdf2)!;
@@ -125,10 +130,11 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
             addVersionMethod.Invoke(hashVersionsDict, [byte.MaxValue, currentHashVersion]);
 
             // Act
-            var result = _pbkdf2.Verify(passwordHashed, password);
+            var result = _pbkdf2.Verify(passwordHashed, password, out var passwordVersion);
 
             // Assert
             Assert.Equal(EPasswordVerificationResult.SuccessRehashNeeded, result);
+            Assert.Equal(version, passwordVersion);
         }
 
         [Fact]
@@ -139,7 +145,7 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
             var passwordHashed = _pbkdf2.Hash(password);
 
             // Act
-            var result = _pbkdf2.Verify(passwordHashed, password);
+            var result = _pbkdf2.Verify(passwordHashed, password, out _);
 
             // Assert
             Assert.Equal(EPasswordVerificationResult.Success, result);
@@ -155,7 +161,7 @@ namespace AuthService.Test.Unit.Infrastructure.Crypto
             // Act
             var result = Record.Exception(() =>
             {
-                _pbkdf2.Verify(hashedPassword!, password!);
+                _pbkdf2.Verify(hashedPassword!, password!, out _);
             });
 
             // Assert
