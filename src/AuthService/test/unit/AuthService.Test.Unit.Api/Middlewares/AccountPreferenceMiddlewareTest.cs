@@ -18,14 +18,14 @@ namespace AuthService.Test.Unit.Api.Middlewares
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers.Append(HeaderNames.AcceptLanguage, "en-US;q=0.9,de-DE;q=0.8,en;q=0.7");
+            httpContext.Request.Headers.Append(HeaderNames.AcceptLanguage, "de-DE;q=0.9,en-US;q=0.8,en;q=0.7");
 
             // Act
             await _middleware.Invoke(httpContext);
 
             // Assert
             Assert.NotNull(httpContext.Items["PreferredLanguage"]);
-            Assert.Equal("en", httpContext.Items["PreferredLanguage"]!.ToString());
+            Assert.Equal("de", (string)httpContext.Items["PreferredLanguage"]!);
         }
 
         [Fact]
@@ -38,7 +38,8 @@ namespace AuthService.Test.Unit.Api.Middlewares
             await _middleware.Invoke(httpContext);
 
             // Assert
-            Assert.Null(httpContext.Items["PreferredLanguage"]);
+            Assert.NotNull(httpContext.Items["PreferredLanguage"]);
+            Assert.Equal("en", (string)httpContext.Items["PreferredLanguage"]!);
         }
     }
 }

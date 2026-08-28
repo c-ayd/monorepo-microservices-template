@@ -14,7 +14,7 @@ namespace AuthService.Api.Middlewares
             context.Items["PreferredLanguage"] = context.Request.GetTypedHeaders().AcceptLanguage
                 .OrderByDescending(h => h.Quality ?? 1.0)
                 .Select(h => h.Value.ToString().Split('-')[0].ToLower())
-                .FirstOrDefault();
+                .FirstOrDefault() ?? "en";
 
             await _next(context);
         }
