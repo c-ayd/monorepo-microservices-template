@@ -32,6 +32,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             // Check if the account with the same email exists
             var account = await authDbContext.Accounts
                 .Where(a => a.Email == request.Email)
+                .Select(a => a.Email)
                 .FirstOrDefaultAsync();
 
             if (account != null)
