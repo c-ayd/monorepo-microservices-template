@@ -13,6 +13,7 @@ namespace Shared.Http.Authentication
             public static readonly UserClaim Id = new UserClaim(ClaimTypes.NameIdentifier, "X-User-Id", IsMultiple: false);
             public static readonly UserClaim Roles = new UserClaim(ClaimTypes.Role, "X-User-Roles", IsMultiple: true);
             public static readonly UserClaim EmailVerified = new UserClaim("email_verified", "X-User-Email-Verified", IsMultiple: false);
+            public static readonly UserClaim PreferredLanguage = new UserClaim("preferred_language", "X-User-Preferred-Language", IsMultiple: false);
 
             public static readonly List<UserClaim> AllUserClaims = typeof(ApiGatewayAuthKeys.Claims)
                 .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
