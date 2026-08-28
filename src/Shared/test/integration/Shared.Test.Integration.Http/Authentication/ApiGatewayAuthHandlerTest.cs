@@ -24,8 +24,8 @@ namespace Shared.Test.Integration.Http.Authentication
 
             _hostFixture.BuildAsync(configureServices =>
             {
-                configureServices.AddAuthentication(ApiGatewayConstants.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayConstants.AuthenticationScheme, options => { });
+                configureServices.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
+                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
                 configureServices.AddAuthorization();
             },
             configureApp =>
@@ -58,14 +58,18 @@ namespace Shared.Test.Integration.Http.Authentication
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayConstants.UserId.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayConstants.UserRoles.HeaderKey, RoleName);
+            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, RoleName);
 
-            UserClaim? userClaim = null;
+            UserClaim? claim = null;
             string? headerValue = null;
-            if (ApiGatewayConstants.UserClaims.Count > 0)
+            foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
             {
-                userClaim = ApiGatewayConstants.UserClaims[0];
+                if (userClaim.HeaderKey == ApiGatewayAuthKeys.Claims.Id.HeaderKey ||
+                    userClaim.HeaderKey == ApiGatewayAuthKeys.Claims.Roles.HeaderKey)
+                    continue;
+
+                claim = userClaim;
                 headerValue = StringGenerator.GenerateAlpha();
 
                 _hostFixture.Client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
@@ -78,11 +82,11 @@ namespace Shared.Test.Integration.Http.Authentication
             var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserId.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserRoles.HeaderKey);
-            if (userClaim != null)
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            if (claim != null)
             {
-                _hostFixture.Client.DefaultRequestHeaders.Remove(userClaim.HeaderKey);
+                _hostFixture.Client.DefaultRequestHeaders.Remove(claim.HeaderKey);
             }
 
             Assert.NotNull(responseUser);
@@ -90,9 +94,9 @@ namespace Shared.Test.Integration.Http.Authentication
             Assert.Equal(userId, responseUser.Name);
             Assert.Equal(RoleName, responseUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)!.Value);
 
-            if (userClaim != null)
+            if (claim != null)
             {
-                Assert.Equal(headerValue, responseUser.Claims.FirstOrDefault(c => c.Type == userClaim.ClaimType)!.Value);
+                Assert.Equal(headerValue, responseUser.Claims.FirstOrDefault(c => c.Type == claim.ClaimType)!.Value);
             }
 
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);

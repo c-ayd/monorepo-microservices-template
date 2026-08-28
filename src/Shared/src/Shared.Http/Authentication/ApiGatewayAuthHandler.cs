@@ -18,37 +18,33 @@ namespace Shared.Http.Authentication
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             // Check if the user is authenticated
-            if (!Request.Headers.TryGetValue(ApiGatewayConstants.UserId.HeaderKey, out var userId))
+            if (!Request.Headers.TryGetValue(ApiGatewayAuthKeys.Claims.Id.HeaderKey, out _))
                 return AuthenticateResult.NoResult();
 
-            // Extract the user ID
-            var claims = new List<Claim>()
+            // Extract all claims from the headers
+            var claims = new List<Claim>();
+            foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
             {
-                new Claim(ApiGatewayConstants.UserId.ClaimType, userId.ToString())
-            };
+                if (!Request.Headers.TryGetValue(userClaim.HeaderKey, out var headerValue))
+                    continue;
 
-            // Extract the user roles
-            if (Request.Headers.TryGetValue(ApiGatewayConstants.UserRoles.HeaderKey, out var userRoles))
-            {
-                foreach (var userRole in userRoles.ToArray())
+                if (userClaim.IsMultiple)
                 {
-                    claims.Add(new Claim(ApiGatewayConstants.UserRoles.ClaimType, userRole!));
+                    foreach (var item in headerValue.ToArray())
+                    {
+                        claims.Add(new Claim(userClaim.ClaimType, item!));
+                    }
                 }
-            }
-
-            // Extract the other user claims requiring value checks
-            foreach (var userClaim in ApiGatewayConstants.UserClaims)
-            {
-                if (Request.Headers.TryGetValue(userClaim.HeaderKey, out var headerValue))
+                else
                 {
                     claims.Add(new Claim(userClaim.ClaimType, headerValue.ToString()));
                 }
             }
 
-            var identity = new ClaimsIdentity(claims, ApiGatewayConstants.AuthenticationScheme,
-                ApiGatewayConstants.UserId.ClaimType, ApiGatewayConstants.UserRoles.ClaimType);
+            var identity = new ClaimsIdentity(claims, ApiGatewayAuthKeys.AuthenticationScheme,
+                ApiGatewayAuthKeys.Claims.Id.ClaimType, ApiGatewayAuthKeys.Claims.Roles.ClaimType);
             var principal = new ClaimsPrincipal(identity);
-            var ticket = new AuthenticationTicket(principal, ApiGatewayConstants.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(principal, ApiGatewayAuthKeys.AuthenticationScheme);
             return AuthenticateResult.Success(ticket);
         }
     }

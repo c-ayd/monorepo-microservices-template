@@ -25,16 +25,20 @@ namespace ApiGateway.Test.Unit.Web.Transforms.Request
 
             var claims = new List<Claim>()
             {
-                new Claim(ApiGatewayConstants.UserId.ClaimType, userId),
-                new Claim(ApiGatewayConstants.UserRoles.ClaimType, role1),
-                new Claim(ApiGatewayConstants.UserRoles.ClaimType, role2)
+                new Claim(ApiGatewayAuthKeys.Claims.Id.ClaimType, userId),
+                new Claim(ApiGatewayAuthKeys.Claims.Roles.ClaimType, role1),
+                new Claim(ApiGatewayAuthKeys.Claims.Roles.ClaimType, role2)
             };
 
-            UserClaim? userClaim = null;
+            UserClaim? claim = null;
             string? claimValue = null;
-            if (ApiGatewayConstants.UserClaims.Count > 0)
+            foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
             {
-                userClaim = ApiGatewayConstants.UserClaims[0];
+                if (userClaim.HeaderKey == ApiGatewayAuthKeys.Claims.Id.HeaderKey ||
+                    userClaim.HeaderKey == ApiGatewayAuthKeys.Claims.Roles.HeaderKey)
+                    continue;
+
+                claim = userClaim;
                 claimValue = StringGenerator.GenerateAlpha();
 
                 claims.Add(new Claim(userClaim.ClaimType, claimValue));
@@ -58,21 +62,21 @@ namespace ApiGateway.Test.Unit.Web.Transforms.Request
             await applyTranform;
 
             // Assert
-            Assert.True(request.Headers.Contains(ApiGatewayConstants.UserId.HeaderKey), $"The headers do not contain {ApiGatewayConstants.UserId.HeaderKey}.");
-            Assert.Single(request.Headers.GetValues(ApiGatewayConstants.UserId.HeaderKey));
-            Assert.Equal(userId, request.Headers.GetValues(ApiGatewayConstants.UserId.HeaderKey).ElementAt(0));
+            Assert.True(request.Headers.Contains(ApiGatewayAuthKeys.Claims.Id.HeaderKey), $"The headers do not contain {ApiGatewayAuthKeys.Claims.Id.HeaderKey}.");
+            Assert.Single(request.Headers.GetValues(ApiGatewayAuthKeys.Claims.Id.HeaderKey));
+            Assert.Equal(userId, request.Headers.GetValues(ApiGatewayAuthKeys.Claims.Id.HeaderKey).ElementAt(0));
 
-            Assert.True(request.Headers.Contains(ApiGatewayConstants.UserRoles.HeaderKey), $"The headers do not contain {ApiGatewayConstants.UserRoles.HeaderKey}.");
-            Assert.Single(request.Headers.GetValues(ApiGatewayConstants.UserRoles.HeaderKey));
-            var roles = request.Headers.GetValues(ApiGatewayConstants.UserRoles.HeaderKey).FirstOrDefault()!.Split(',');
+            Assert.True(request.Headers.Contains(ApiGatewayAuthKeys.Claims.Roles.HeaderKey), $"The headers do not contain {ApiGatewayAuthKeys.Claims.Roles.HeaderKey}.");
+            Assert.Single(request.Headers.GetValues(ApiGatewayAuthKeys.Claims.Roles.HeaderKey));
+            var roles = request.Headers.GetValues(ApiGatewayAuthKeys.Claims.Roles.HeaderKey).FirstOrDefault()!.Split(',');
             Assert.Contains(role1, roles);
             Assert.Contains(role2, roles);
 
-            if (userClaim != null)
+            if (claim != null)
             {
-                Assert.True(request.Headers.Contains(userClaim.HeaderKey), $"The headers do not contain {userClaim.HeaderKey}.");
-                Assert.Single(request.Headers.GetValues(userClaim.HeaderKey));
-                Assert.Equal(claimValue, request.Headers.GetValues(userClaim.HeaderKey).ElementAt(0));
+                Assert.True(request.Headers.Contains(claim.HeaderKey), $"The headers do not contain {claim.HeaderKey}.");
+                Assert.Single(request.Headers.GetValues(claim.HeaderKey));
+                Assert.Equal(claimValue, request.Headers.GetValues(claim.HeaderKey).ElementAt(0));
             }
 
             Assert.False(request.Headers.Contains(HeaderNames.Authorization), $"The headers contain {HeaderNames.Authorization}.");
@@ -114,12 +118,9 @@ namespace ApiGateway.Test.Unit.Web.Transforms.Request
             await applyTranform;
 
             // Assert
-            Assert.False(request.Headers.Contains(ApiGatewayConstants.UserId.HeaderKey), $"The headers contain {ApiGatewayConstants.UserId.HeaderKey}.");
-            Assert.False(request.Headers.Contains(ApiGatewayConstants.UserRoles.HeaderKey), $"The headers contain {ApiGatewayConstants.UserRoles.HeaderKey}.");
-
-            foreach (var userClaim in ApiGatewayConstants.UserClaims)
+            foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
             {
-                Assert.False(request.Headers.Contains(userClaim.HeaderKey), $"The headers contain {ApiGatewayConstants.UserId.HeaderKey}.");
+                Assert.False(request.Headers.Contains(userClaim.HeaderKey), $"The headers contain {ApiGatewayAuthKeys.Claims.Id.HeaderKey}.");
             }
 
             Assert.False(request.Headers.Contains(HeaderNames.Authorization), $"The headers contain {HeaderNames.Authorization}.");
