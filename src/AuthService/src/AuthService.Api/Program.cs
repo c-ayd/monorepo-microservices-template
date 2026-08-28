@@ -33,8 +33,8 @@ builder.RegisterOptionsFromAssemblies(
 
 builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(AuthService.Application.ServiceRegistration))!);
 
-builder.Services.AddAuthentication(ApiGatewayConstants.AuthenticationScheme)
-    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayConstants.AuthenticationScheme, options => { });
+builder.Services.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
+    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
 builder.Services.AddAuthorization();
 
 builder.Logging.AddStructuredConsoleLogging(

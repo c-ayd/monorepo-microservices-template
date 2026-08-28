@@ -26,31 +26,32 @@ namespace ApiGateway.Web.Transforms.Request
             if (user.Identity == null || !user.Identity.IsAuthenticated)
                 return;
 
-            var userId = user.FindFirstValue(ApiGatewayConstants.UserId.ClaimType);
+            var userId = user.FindFirstValue(ApiGatewayAuthKeys.Claims.Id.ClaimType);
             if (string.IsNullOrEmpty(userId))
                 return;
 
-            // Add the user ID to the headers
-            transformContext.ProxyRequest.Headers.Add(ApiGatewayConstants.UserId.HeaderKey, userId);
-
-            // Add the user roles to the headers
-            var userRoles = user.FindAll(ApiGatewayConstants.UserRoles.ClaimType)
-                .Select(c => c.Value)
-                .ToArray();
-            
-            if (userRoles.Length > 0)
+            // Add the user claims to the headers
+            foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
             {
-                transformContext.ProxyRequest.Headers.Add(ApiGatewayConstants.UserRoles.HeaderKey, string.Join(',', userRoles));
-            }
+                if (userClaim.IsMultiple)
+                {
+                    var claimValues = user.FindAll(userClaim.ClaimType)
+                        .Select(c => c.Value)
+                        .ToArray();
+                    
+                    if (claimValues.Length == 0)
+                        continue;
 
-            // Add the user claims requring value checks to the headers
-            foreach (var userClaim in ApiGatewayConstants.UserClaims)
-            {
-                var claimValue = user.FindFirstValue(userClaim.ClaimType);
-                if (string.IsNullOrEmpty(claimValue))
-                    continue;
+                    transformContext.ProxyRequest.Headers.Add(userClaim.HeaderKey, string.Join(',', claimValues));
+                }
+                else
+                {
+                    var claimValue = user.FindFirstValue(userClaim.ClaimType);
+                    if (string.IsNullOrEmpty(claimValue))
+                        continue;
 
-                transformContext.ProxyRequest.Headers.Add(userClaim.HeaderKey, claimValue);
+                    transformContext.ProxyRequest.Headers.Add(userClaim.HeaderKey, claimValue);
+                }
             }
         }
 

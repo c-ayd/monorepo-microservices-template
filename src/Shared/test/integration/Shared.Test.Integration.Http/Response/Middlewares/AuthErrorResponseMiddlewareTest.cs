@@ -21,8 +21,8 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
 
             _hostFixture.BuildAsync(configureServices =>
             {
-                configureServices.AddAuthentication(ApiGatewayConstants.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayConstants.AuthenticationScheme, options => { });
+                configureServices.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
+                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
                 configureServices.AddAuthorization();
             },
             configureApp =>
@@ -63,7 +63,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayConstants.UserId.HeaderKey, userId);
+            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
 
             // Act
             var responseAnonymous = await _hostFixture.Client.GetAsync("/anonymous");
@@ -71,8 +71,8 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
             var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserId.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserRoles.HeaderKey);
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
 
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);
@@ -84,8 +84,8 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayConstants.UserId.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayConstants.UserRoles.HeaderKey, RoleName);
+            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, RoleName);
 
             // Act
             var responseAnonymous = await _hostFixture.Client.GetAsync("/anonymous");
@@ -93,8 +93,8 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
             var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserId.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayConstants.UserRoles.HeaderKey);
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
             
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);

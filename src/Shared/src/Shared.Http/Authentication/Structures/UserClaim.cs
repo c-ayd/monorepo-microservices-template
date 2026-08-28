@@ -2,6 +2,7 @@ namespace Shared.Http.Authentication.Structures
 {
     public record UserClaim(
         string ClaimType,
-        string HeaderKey
+        string HeaderKey,
+        bool IsMultiple
     );
 }
