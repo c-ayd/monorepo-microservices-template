@@ -54,7 +54,7 @@ namespace Shared.Test.Integration.Http.Authentication
         }
 
         [Fact]
-        public async Task Invoke_WhenHeaderHasUserContent_ShouldFillClaimPrincipalAndAuthorize()
+        public async Task Invoke_WhenHeadersHaveUserContent_ShouldFillClaimPrincipalAndAuthorize()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
@@ -101,7 +101,7 @@ namespace Shared.Test.Integration.Http.Authentication
         }
 
         [Fact]
-        public async Task Invoke_WhenHeaderHasUserContent_ShouldLeftClaimPrincipalEmptyAndNotAuthorize()
+        public async Task Invoke_WhenHeadersHaveNoUserContent_ShouldLeftClaimPrincipalEmptyAndNotAuthorize()
         {
             // Act
             var responseUser = await _hostFixture.Client!.GetFromJsonAsync<UserDto>("/");
