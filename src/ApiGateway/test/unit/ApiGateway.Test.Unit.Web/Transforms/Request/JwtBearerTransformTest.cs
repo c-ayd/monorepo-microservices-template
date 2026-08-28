@@ -42,6 +42,7 @@ namespace ApiGateway.Test.Unit.Web.Transforms.Request
                 claimValue = StringGenerator.GenerateAlpha();
 
                 claims.Add(new Claim(userClaim.ClaimType, claimValue));
+                break;
             }
 
             var httpContext = new DefaultHttpContext
