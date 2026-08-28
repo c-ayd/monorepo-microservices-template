@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using AuthService.Api.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using Shared.Http.Authentication;
 
 namespace AuthService.Test.Unit.Api.Middlewares
 {
@@ -14,7 +16,25 @@ namespace AuthService.Test.Unit.Api.Middlewares
         }
 
         [Fact]
-        public async Task Invoke_WhenUserPreferencesExist_ShouldAddPreferencesToItems()
+        public async Task Invoke_WhenAuthenticatedAndUserPreferencesExist_ShouldAddPreferencesToItems()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
+            {
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, "de")
+            }, "TestAuth"));
+
+            // Act
+            await _middleware.Invoke(httpContext);
+
+            // Assert
+            Assert.NotNull(httpContext.Items["PreferredLanguage"]);
+            Assert.Equal("de", (string)httpContext.Items["PreferredLanguage"]!);
+        }
+
+        [Fact]
+        public async Task Invoke_WhenNotAuthenticatedAndUserPreferencesExist_ShouldAddPreferencesToItems()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -29,7 +49,7 @@ namespace AuthService.Test.Unit.Api.Middlewares
         }
 
         [Fact]
-        public async Task Invoke_WhenUserPreferencesDoNotExist_ShouldAddNothingToItems()
+        public async Task Invoke_WhenNotAuthenticatedAndUserPreferencesDoNotExist_ShouldAddNothingToItems()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
