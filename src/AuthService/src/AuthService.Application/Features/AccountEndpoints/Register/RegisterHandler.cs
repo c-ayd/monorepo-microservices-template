@@ -36,16 +36,16 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
                 .FirstOrDefaultAsync();
 
             if (account != null)
-                return JsonResponseBuilder.Error(HttpStatusCode.Conflict, [new ErrorItem()
-                {
-                    Code = "auth_email_in_use",
-                    Message = "The email address is already in use."
-                }]);
+                return JsonResponseBuilder.Error(HttpStatusCode.Conflict, [new ErrorItem(
+                    Code: "auth_email_in_use",
+                    Message: "The email address is already in use."
+                )]);
 
             // Create a new account and an email verification token and save them in the DB
             var newAccount = new Account(
                 request.Email!,
                 passwordHasher.Hash(request.Password!));
+            newAccount.PreferredLanguage = (string)context.Items["PreferredLanguage"]!;
 
             var emailVerificationTokenValue = TokenGenerator.GenerateBase64UrlSafe();
             var emailVerificationToken = new Token(
@@ -58,19 +58,19 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             await authDbContext.Accounts.AddAsync(newAccount);
             await authDbContext.SaveChangesAsync();
 
-            // Send email verification message to the message broker
+            // Send an email verification message to the message broker
             try
             {
                 await emailService.SendAsync(new RabbitMqEmailMessage(
                     To: [request.Email!],
                     TemplateId: RabbitMqEmailTemplates.EmailVerification,
-                    Language: context.Items["PreferredLanguage"]?.ToString(),
+                    Language: newAccount.PreferredLanguage,
                     BodyParameters: [emailVerificationTokenValue]
                 ));
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Something went wrong while sending an email message to the message broker. Message: {message}",
+                logger.LogError(exception, "Something went wrong while sending an email message to the message broker. Message: {Message}",
                     exception.Message);
 
                 return JsonResponseBuilder.Success(HttpStatusCode.MultiStatus);
