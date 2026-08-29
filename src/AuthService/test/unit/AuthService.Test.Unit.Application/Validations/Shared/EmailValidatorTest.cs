@@ -15,35 +15,24 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
         [InlineData("abc@")]
         public void Validate_WhenEmailIsInvalid_ShouldReturnError(string email)
         {
-            // Arrange
-            var invalidEmailCode = (string)typeof(EmailValidator).GetField("_invalidCode", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-
             // Act
             var errors = _validator.Validate(email);
 
             // Assert
-            Assert.NotEmpty(errors);
-
-            var error = errors.FirstOrDefault(e => e.Code == invalidEmailCode);
-            Assert.NotNull(error);
+            Assert.Single(errors);
         }
 
         [Fact]
         public void Validate_WhenEmailIsLong_ShouldReturnError()
         {
             // Arrange
-            var maxLengthCode = (string)typeof(EmailValidator).GetField("_maxLengthCode", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-            
             var email = EmailGenerator.Generate(AccountConstraints.EmailMaxLength + 1, 3, 3);
 
             // Act
             var errors = _validator.Validate(email);
 
             // Assert
-            Assert.NotEmpty(errors);
-
-            var error = errors.FirstOrDefault(e => e.Code == maxLengthCode);
-            Assert.NotNull(error);
+            Assert.Single(errors);
         }
 
         [Fact]

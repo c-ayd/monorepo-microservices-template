@@ -12,11 +12,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
 
             if (value.Email == null)
             {
-                errors.Add(new ErrorItem()
-                {
-                    Code = "auth_email_required",
-                    Message = "The email address is required."
-                });
+                errors.Add(new ErrorItem("auth_email_required", "The email address is required."));
             }
             else
             {
@@ -25,11 +21,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             
             if (value.Password == null)
             {
-                errors.Add(new ErrorItem()
-                {
-                    Code = "auth_password_required",
-                    Message = "The password is required."
-                });
+                errors.Add(new ErrorItem("auth_password_required", "The password is required."));
             }
 
             return errors;

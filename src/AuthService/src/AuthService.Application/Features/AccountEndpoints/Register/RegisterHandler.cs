@@ -36,10 +36,12 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
                 .FirstOrDefaultAsync();
 
             if (account != null)
-                return JsonResponseBuilder.Error(HttpStatusCode.Conflict, [new ErrorItem(
-                    Code: "auth_email_in_use",
-                    Message: "The email address is already in use."
-                )]);
+                return JsonResponseBuilder.Error(
+                    HttpStatusCode.Conflict,
+                    [
+                        new ErrorItem("auth_email_in_use", "The email address is already in use.")
+                    ]
+                );
 
             // Create a new account and an email verification token and save them in the DB
             var newAccount = new Account(
