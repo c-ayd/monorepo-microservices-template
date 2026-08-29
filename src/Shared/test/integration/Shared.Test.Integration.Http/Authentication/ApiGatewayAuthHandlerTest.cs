@@ -93,7 +93,7 @@ namespace Shared.Test.Integration.Http.Authentication
             Assert.NotNull(responseUser);
             Assert.True(responseUser.IsAuthenticated, "The user is not authenticated.");
             Assert.Equal(userId, responseUser.Name);
-            Assert.Equal(RoleName, responseUser.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)!.Value);
+            Assert.Equal(RoleName, responseUser.Claims.FirstOrDefault(c => c.Type == ApiGatewayAuthKeys.Claims.Roles.ClaimType)!.Value);
 
             if (claim != null)
             {
