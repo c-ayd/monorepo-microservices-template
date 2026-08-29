@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AuthService.Api.Middlewares;
+using AuthService.Application.Validations.Constraints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Shared.Http.Authentication;
@@ -59,7 +60,7 @@ namespace AuthService.Test.Unit.Api.Middlewares
 
             // Assert
             Assert.NotNull(httpContext.Items["PreferredLanguage"]);
-            Assert.Equal("en", (string)httpContext.Items["PreferredLanguage"]!);
+            Assert.Equal(AccountConstraints.SuppoertedLanguages[0], (string)httpContext.Items["PreferredLanguage"]!);
         }
     }
 }

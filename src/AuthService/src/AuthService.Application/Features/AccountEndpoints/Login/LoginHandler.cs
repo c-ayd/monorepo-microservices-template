@@ -5,6 +5,7 @@ using AuthService.Application.Abstractions.Crypto;
 using AuthService.Application.Abstractions.DbContexts;
 using AuthService.Application.Dtos.Crypto;
 using AuthService.Application.Options;
+using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -151,7 +152,8 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             {
                 new Claim(ApiGatewayAuthKeys.Claims.Id.ClaimType, account.Id.ToString()),
                 new Claim(ApiGatewayAuthKeys.Claims.EmailVerified.ClaimType, account.IsEmailVerified.ToString().ToLower()),
-                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, account.PreferredLanguage?.ToString() ?? "en"),
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, account.PreferredLanguage?.ToString() ?? 
+                    AccountConstraints.SuppoertedLanguages[0]),
             };
 
             foreach (var role in account.Roles)
