@@ -42,12 +42,13 @@ namespace AuthService.Domain.Entities
         public void SoftDelete()
         {
             Email = null;
-            IsEmailVerified = false;
             NewEmail = null;
             PasswordHashed = null;
             PreferredLanguage = null;
-            FailedLoginAttempts = 0;
+            IsEmailVerified = false;
+            IsBanned = false;
             IsLocked = false;
+            FailedLoginAttempts = 0;
             UnlockDate = null;
             UpdatedDate = null;
         }
