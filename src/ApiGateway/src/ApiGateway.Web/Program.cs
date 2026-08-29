@@ -3,6 +3,7 @@ using ApiGateway.Web.Options;
 using ApiGateway.Web.Transforms.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
 using Shared.Logging.DependencyInjection;
 using Shared.Logging.Middlewares;
@@ -32,7 +33,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             RequireSignedTokens = true,
             
             ValidAudience = jwtOptions.Audience,
-            ValidAlgorithms = [SecurityAlgorithms.RsaSha256]
+            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
+
+            NameClaimType = ApiGatewayAuthKeys.Claims.Id.ClaimType,
+            RoleClaimType = ApiGatewayAuthKeys.Claims.Roles.ClaimType
         };
 
         options.BackchannelHttpHandler = new SocketsHttpHandler
