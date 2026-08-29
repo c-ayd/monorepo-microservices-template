@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Infrastructure.Options;
-using AuthService.Test.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -83,6 +82,10 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             var refreshTokenLifespanInMinutes = (result.RefreshTokenExpirationDate - now).TotalMinutes;
             Assert.InRange(accessTokenLifespanInMinutes, accessTokenLifespan - 1, accessTokenLifespan + 1);
             Assert.InRange(refreshTokenLifespanInMinutes, refreshTokenLifespan - 1, refreshTokenLifespan + 1);
+
+            var (decodedClaims, _, _) = DecodeAccessToken(result.AccessToken);
+            var decodedIssuedAt = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType)!.Value;
+            Assert.InRange((DateTimeOffset.FromUnixTimeSeconds(long.Parse(decodedIssuedAt)) - now).TotalSeconds, -60, 60);
         }
 
         [Fact]
@@ -107,7 +110,9 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             Assert.InRange(accessTokenLifespanInMinutes, accessTokenLifespan - 1, accessTokenLifespan + 1);
             Assert.InRange(refreshTokenLifespanInMinutes, refreshTokenLifespan - 1, refreshTokenLifespan + 1);
 
-            var (_, decodedNotBefore, _) = DecodeAccessToken(result.AccessToken);
+            var (decodedClaims, decodedNotBefore, _) = DecodeAccessToken(result.AccessToken);
+            var decodedIssuedAt = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType)!.Value;
+            Assert.InRange((DateTimeOffset.FromUnixTimeSeconds(long.Parse(decodedIssuedAt)) - now).TotalSeconds, -60, 60);
             Assert.Equal(notBefore.ToString("dd-MM-yyyy HH:mm:ss"), decodedNotBefore!.Value.ToString("dd-MM-yyyy HH:mm:ss"));
         }
 
@@ -143,8 +148,10 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             var (decodedClaims, _, _) = DecodeAccessToken(result.AccessToken);
             var decodedId = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.Id.ClaimType)!.Value;
             var decodedLanguage = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType)!.Value;
+            var decodedIssuedAt = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType)!.Value;
             Assert.Equal(id, decodedId);
             Assert.Equal(language, decodedLanguage);
+            Assert.InRange((DateTimeOffset.FromUnixTimeSeconds(long.Parse(decodedIssuedAt)) - now).TotalSeconds, -60, 60);
         }
 
         [Fact]
@@ -181,8 +188,10 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             var (decodedClaims, decodedNotBefore, _) = DecodeAccessToken(result.AccessToken);
             var decodedId = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.Id.ClaimType)!.Value;
             var decodedLanguage = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType)!.Value;
+            var decodedIssuedAt = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType)!.Value;
             Assert.Equal(id, decodedId);
             Assert.Equal(language, decodedLanguage);
+            Assert.InRange((DateTimeOffset.FromUnixTimeSeconds(long.Parse(decodedIssuedAt)) - now).TotalSeconds, -60, 60);
             Assert.Equal(notBefore.ToString("dd-MM-yyyy HH:mm:ss"), decodedNotBefore!.Value.ToString("dd-MM-yyyy HH:mm:ss"));
         }
     }
