@@ -30,10 +30,12 @@ namespace ApiGateway.Web.Middlewares
 
                 if (!context.Response.HasStarted)
                 {
-                    await JsonResponseBuilder.Error(HttpStatusCode.InternalServerError, [new ErrorItem(
-                        Code: "internal_server_error",
-                        Message: "Something went wrong."
-                    )]).ExecuteAsync(context);
+                    await JsonResponseBuilder.Error(
+                        HttpStatusCode.InternalServerError,
+                        [
+                            new ErrorItem("internal_server_error", "Something went wrong.")
+                        ]
+                    ).ExecuteAsync(context);
                 }
             }
         }

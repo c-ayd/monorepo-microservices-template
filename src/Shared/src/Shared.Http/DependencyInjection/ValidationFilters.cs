@@ -10,10 +10,7 @@ namespace Shared.Http.DependencyInjection
 {
     public static partial class DependencyInjection
     {
-        private static readonly ErrorItem _requestBodyMissingError = new ErrorItem(
-            Code: "request_body_missing",
-            Message: "The request body is missing"
-        );
+        private static readonly ErrorItem _requestBodyMissingError = new ErrorItem("request_body_missing", "The request body is missing");
 
         /// <summary>
         /// Adds a validator to the endpoint.
@@ -25,14 +22,22 @@ namespace Shared.Http.DependencyInjection
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.BadRequest,
+                        [
+                            _requestBodyMissingError
+                        ]
+                    );
 
                 var errors = context.HttpContext.RequestServices
                     .GetRequiredService<IValidator<T>>()
                     .Validate(request);
                 
                 if (errors.Count > 0)
-                    return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, errors);
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.BadRequest,
+                        errors
+                    );
 
                 return await next(context);
             });
@@ -48,14 +53,22 @@ namespace Shared.Http.DependencyInjection
             {
                 var request = context.Arguments.OfType<T>().FirstOrDefault();
                 if (request == null)
-                    return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, [_requestBodyMissingError]);
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.BadRequest,
+                        [
+                            _requestBodyMissingError
+                        ]
+                    );
 
                 var errors = await context.HttpContext.RequestServices
                     .GetRequiredService<IAsyncValidator<T>>()
                     .ValidateAsync(request, context.HttpContext.RequestAborted);
                 
                 if (errors.Count > 0)
-                    return JsonResponseBuilder.Error(HttpStatusCode.BadRequest, errors);
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.BadRequest,
+                        errors
+                    );
 
                 return await next(context);
             });
