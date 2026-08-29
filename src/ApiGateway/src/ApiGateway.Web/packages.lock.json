@@ -90,7 +90,10 @@
         "type": "Project"
       },
       "shared.http": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
+        }
       },
       "shared.logging": {
         "type": "Project"

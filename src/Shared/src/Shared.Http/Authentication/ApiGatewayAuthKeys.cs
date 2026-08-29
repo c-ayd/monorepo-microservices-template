@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Security.Claims;
 using Shared.Http.Authentication.Structures;
 
 namespace Shared.Http.Authentication
@@ -10,10 +9,10 @@ namespace Shared.Http.Authentication
 
         public static class Claims
         {
-            public static readonly UserClaim Id = new UserClaim(ClaimTypes.NameIdentifier, "X-User-Id", IsMultiple: false);
-            public static readonly UserClaim Roles = new UserClaim(ClaimTypes.Role, "X-User-Roles", IsMultiple: true);
-            public static readonly UserClaim EmailVerified = new UserClaim("email_verified", "X-User-Email-Verified", IsMultiple: false);
-            public static readonly UserClaim PreferredLanguage = new UserClaim("preferred_language", "X-User-Preferred-Language", IsMultiple: false);
+            public static readonly UserClaim Id = new UserClaim(JwtClaimTypes.Id, "X-User-Id", IsMultiple: false);
+            public static readonly UserClaim Roles = new UserClaim(JwtClaimTypes.Role, "X-User-Roles", IsMultiple: true);
+            public static readonly UserClaim EmailVerified = new UserClaim(JwtClaimTypes.EmailVerified, "X-User-Email-Verified", IsMultiple: false);
+            public static readonly UserClaim PreferredLanguage = new UserClaim(JwtClaimTypes.PreferredLanguage, "X-User-Preferred-Language", IsMultiple: false);
 
             public static readonly List<UserClaim> AllUserClaims = typeof(ApiGatewayAuthKeys.Claims)
                 .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
