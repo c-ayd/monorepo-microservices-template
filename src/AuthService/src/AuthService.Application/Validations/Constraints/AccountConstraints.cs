@@ -9,5 +9,9 @@ namespace AuthService.Application.Validations.Constraints
         public const string PasswordSpecialCharacters = "!@#$%^&*()_+-=[]{};':\",./<>?\\|";
 
         public const int PreferredLanguageMaxLength = 3;
+        public static readonly List<string> SuppoertedLanguages = new List<string>()
+        {
+            "en", "de"
+        };
     }
 }
