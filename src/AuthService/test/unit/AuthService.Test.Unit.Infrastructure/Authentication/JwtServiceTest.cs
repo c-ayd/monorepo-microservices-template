@@ -6,6 +6,7 @@ using AuthService.Test.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Http.Authentication;
 using Shared.Test.Generators;
 using Shared.Test.Helpers;
 
@@ -39,7 +40,10 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
                 ValidAudience = _jwtOptions.Audience,
                 ValidIssuer = _jwtOptions.Issuer,
-                IssuerSigningKey = _jwtKeyService.PublicKey
+                IssuerSigningKey = _jwtKeyService.PublicKey,
+
+                NameClaimType = ApiGatewayAuthKeys.Claims.Id.ClaimType,
+                RoleClaimType = ApiGatewayAuthKeys.Claims.Roles.ClaimType
             };
 
             try
@@ -51,7 +55,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
                     return (null, null, null);
                 }
 
-                return (claimsPrincipal.Claims.ToList(), jwtToken.ValidFrom, jwtToken.ValidTo);
+                return (jwtToken.Claims.ToList(), jwtToken.ValidFrom, jwtToken.ValidTo);
             }
             catch (Exception exception)
             {
@@ -111,13 +115,13 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
         public void GenerateJwtToken_WhenClaimsAreGivenButNotBeforeDateTimeIsNotGiven_ShouldGenerateToken()
         {
             // Arrange
-            var nameIdentifier = StringGenerator.GeneratePrintableAscii();
-            var email = EmailGenerator.Generate();
+            var id = StringGenerator.GeneratePrintableAscii();
+            var language = StringGenerator.GeneratePrintableAscii();
 
             var claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.NameIdentifier, nameIdentifier),
-                new Claim(ClaimTypes.Email, email)
+                new Claim(ApiGatewayAuthKeys.Claims.Id.ClaimType, id),
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, language)
             };
 
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
@@ -137,23 +141,23 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             Assert.InRange(refreshTokenLifespanInMinutes, refreshTokenLifespan - 1, refreshTokenLifespan + 1);
 
             var (decodedClaims, _, _) = DecodeAccessToken(result.AccessToken);
-            var decodedNameIdentifier = decodedClaims!.Find(c => c.Type == ClaimTypes.NameIdentifier)!.Value;
-            var decodedEmail = decodedClaims!.Find(c => c.Type == ClaimTypes.Email)!.Value;
-            Assert.Equal(nameIdentifier, decodedNameIdentifier);
-            Assert.Equal(email, decodedEmail);
+            var decodedId = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.Id.ClaimType)!.Value;
+            var decodedLanguage = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType)!.Value;
+            Assert.Equal(id, decodedId);
+            Assert.Equal(language, decodedLanguage);
         }
 
         [Fact]
         public void GenerateJwtToken_WhenClaimsAndNotBeforeDateTimeAreGiven_ShouldGenerateToken()
         {
             // Arrange
-            var nameIdentifier = StringGenerator.GeneratePrintableAscii();
-            var email = EmailGenerator.Generate();
+            var id = StringGenerator.GeneratePrintableAscii();
+            var language = StringGenerator.GeneratePrintableAscii();
 
             var claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.NameIdentifier, nameIdentifier),
-                new Claim(ClaimTypes.Email, email)
+                new Claim(ApiGatewayAuthKeys.Claims.Id.ClaimType, id),
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, language)
             };
 
             var accessTokenLifespan = _jwtOptions.AccessTokenLifespanInMinutes;
@@ -175,10 +179,10 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             Assert.InRange(refreshTokenLifespanInMinutes, refreshTokenLifespan - 1, refreshTokenLifespan + 1);
 
             var (decodedClaims, decodedNotBefore, _) = DecodeAccessToken(result.AccessToken);
-            var decodedNameIdentifier = decodedClaims!.Find(c => c.Type == ClaimTypes.NameIdentifier)!.Value;
-            var decodedEmail = decodedClaims!.Find(c => c.Type == ClaimTypes.Email)!.Value;
-            Assert.Equal(nameIdentifier, decodedNameIdentifier);
-            Assert.Equal(email, decodedEmail);
+            var decodedId = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.Id.ClaimType)!.Value;
+            var decodedLanguage = decodedClaims!.Find(c => c.Type == ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType)!.Value;
+            Assert.Equal(id, decodedId);
+            Assert.Equal(language, decodedLanguage);
             Assert.Equal(notBefore.ToString("dd-MM-yyyy HH:mm:ss"), decodedNotBefore!.Value.ToString("dd-MM-yyyy HH:mm:ss"));
         }
     }
