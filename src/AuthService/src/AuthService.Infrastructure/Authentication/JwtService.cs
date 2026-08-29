@@ -6,6 +6,7 @@ using AuthService.Infrastructure.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Crypto;
+using Shared.Http.Authentication;
 
 namespace AuthService.Infrastructure.Authentication
 {
@@ -28,10 +29,17 @@ namespace AuthService.Infrastructure.Authentication
             var accessTokenExpirationDate = now.AddMinutes(_jwtOptions.AccessTokenLifespanInMinutes);
             var refreshTokenExpirationDate = now.AddDays(_jwtOptions.RefreshTokenLifespanInDays);
 
+            if (claims == null)
+            {
+                claims = new List<Claim>();
+            }
+
+            claims.Add(new Claim(ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType, now.ToUnixTimeSeconds().ToString()));
+
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
-                claims: claims ?? Enumerable.Empty<Claim>(),
+                claims: claims,
                 notBefore: notBefore?.UtcDateTime,
                 expires: accessTokenExpirationDate.UtcDateTime,
                 signingCredentials: new SigningCredentials(_jwtKeyService.PrivateKey, SecurityAlgorithms.RsaSha256)
