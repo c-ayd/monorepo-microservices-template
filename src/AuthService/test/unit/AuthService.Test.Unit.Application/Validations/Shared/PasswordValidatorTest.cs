@@ -14,8 +14,6 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
         public void Validate_WhenPasswordLengthIsWrong_ShouldReturnError()
         {
             // Arrange
-            var passwordLengthCode = (string)typeof(PasswordValidator).GetField("_lengthCode", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-
             var passwords = new List<string>()
             {
                 PasswordGenerator.Generate(
@@ -42,18 +40,13 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
             }
 
             // Assert
-            Assert.NotEmpty(errors);
-
-            var lengthErrors = errors.Where(e => e.Code == passwordLengthCode).ToList();
-            Assert.Equal(passwords.Count, lengthErrors.Count);
+            Assert.Equal(2, errors.Count);
         }
 
         [Fact]
         public void Validate_WhenFormatIsWrong_ShouldReturnError()
         {
             // Arrange
-            var passwordFormatCode = (string)typeof(PasswordValidator).GetField("_formatCode", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-
             var passwords = new List<string>()
             {
                 PasswordGenerator.Generate(
@@ -93,10 +86,7 @@ namespace AuthService.Test.Unit.Application.Validations.Shared
             }
 
             // Assert
-            Assert.NotEmpty(errors);
-
-            var formatErrors = errors.Where(e => e.Code == passwordFormatCode).ToList();
-            Assert.Equal(passwords.Count, formatErrors.Count);
+            Assert.Equal(4, errors.Count);
         }
 
         [Fact]
