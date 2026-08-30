@@ -265,6 +265,9 @@
         "dependencies": {
           "Microsoft.Extensions.Caching.StackExchangeRedis": "[10.0.10, )"
         }
+      },
+      "shared.test.generators": {
+        "type": "Project"
       }
     }
   }
