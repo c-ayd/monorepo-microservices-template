@@ -1,0 +1,97 @@
+using System.Reflection;
+using Shared.Redis.Extensions;
+using Shared.Test.Generators;
+using Shared.Test.Integration.Redis.Collections;
+using Shared.Test.Integration.Redis.Fixtures;
+
+namespace Shared.Test.Integration.Redis.Extensions
+{
+    [Collection(nameof(RedisCollection))]
+    public class StringExtensionsTest
+    {
+        private readonly RedisFixture _redisFixture;
+
+        public StringExtensionsTest(RedisFixture redisFixture)
+        {
+            _redisFixture = redisFixture;
+        }
+
+        public static TheoryData<int, Type, object> Values()
+        {
+            return new TheoryData<int, Type, object>()
+            {
+                { 10, typeof(int), 1 },
+                { 20, typeof(double), 1.23 },
+                { 30, typeof(long), 5L },
+                { 40, typeof(string), "Test" },
+                { 50, typeof(char), 'c' },
+                { 60, typeof(bool), true },
+                { 70, typeof(TimeSpan), TimeSpan.FromSeconds(30) },
+                { 80, typeof(DateTimeOffset), DateTimeOffset.UtcNow },
+                { 90, typeof(TestRecord), new TestRecord("TestValue1", 1, 1.1) },
+                { 100, typeof(TestClass), new TestClass() { StrValue = "TestValue2", IntValue = 2, DoubleValue = 2.2 } },
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(Values))]
+        public async Task SaveAndLoadAsStringAsync_WhenValueIsSaved_ShouldLoadValueProperly(int keyLength, Type type, object value)
+        {
+            // Arrange
+            var key = StringGenerator.GenerateAlphanumeric(keyLength);
+            var saveMethodInfo = typeof(StringExtensions).GetMethod(nameof(StringExtensions.SaveAsStringAsync), BindingFlags.Public | BindingFlags.Static)!
+                .MakeGenericMethod([type]);
+            var loadMethodInfo = typeof(StringExtensions).GetMethod(nameof(StringExtensions.LoadAsStringAsync), BindingFlags.Public | BindingFlags.Static)!
+                .MakeGenericMethod([type]);
+
+            // Act
+            await (Task)saveMethodInfo.Invoke(null, [_redisFixture.Redis, key, value, TimeSpan.FromMinutes(1), null, default])!;
+            var result = await (dynamic)loadMethodInfo.Invoke(null, [_redisFixture.Redis, key, default])!;
+
+            // Assert
+            Assert.True(result.Item1, "The key is not found.");
+            Assert.NotNull(result.Item2);
+
+            if (type == typeof(int)) Assert.Equal((int)value, (int)result.Item2);
+            else if (type == typeof(double)) Assert.Equal((double)value, (double)result.Item2);
+            else if (type == typeof(float)) Assert.Equal((float)value, (float)result.Item2);
+            else if (type == typeof(long)) Assert.Equal((long)value, (long)result.Item2);
+            else if (type == typeof(string)) Assert.Equal((string)value, (string)result.Item2);
+            else if (type == typeof(char)) Assert.Equal((char)value, (char)result.Item2);
+            else if (type == typeof(bool)) Assert.Equal((bool)value, (bool)result.Item2);
+            else if (type == typeof(TimeSpan)) Assert.Equal((TimeSpan)value, (TimeSpan)result.Item2);
+            else if (type == typeof(DateTimeOffset)) Assert.Equal((DateTimeOffset)value, (DateTimeOffset)result.Item2);
+            else if (type == typeof(TestRecord)) Assert.Equal((TestRecord)value, (TestRecord)result.Item2);
+            else if (type == typeof(TestClass)) Assert.Equal((TestClass)value, (TestClass)result.Item2);
+            else Assert.Fail($"The given type {type} is not correct for the value.");
+        }
+
+        private record TestRecord(
+            string StrValue,
+            int IntValue,
+            double DoubleValue
+        );
+
+        private class TestClass
+        {
+            public required string StrValue { get; set; }
+            public required int IntValue { get; set; }
+            public required double DoubleValue { get; set; }
+
+            public override bool Equals(object? obj)
+            {
+                if (obj is not TestClass otherObj)
+                    return false;
+
+                return StrValue == otherObj.StrValue && 
+                    IntValue == otherObj.IntValue &&
+                    DoubleValue == otherObj.DoubleValue;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(StrValue, IntValue, DoubleValue);
+            }
+        }
+    }
+}
