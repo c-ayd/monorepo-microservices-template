@@ -183,7 +183,15 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             await authDbContext.Sessions.AddAsync(newSession);
             await authDbContext.SaveChangesAsync();
 
-            // Add the refresh token to cookies
+            // Add the session ID and refresh token to the cookies
+            context.Response.Cookies.Append(CookieKeys.SessionId, newSession.Id.ToString(), new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = jwt.RefreshTokenExpirationDate
+            });
+
             context.Response.Cookies.Append(CookieKeys.RefreshToken, jwt.RefreshToken, new CookieOptions()
             {
                 HttpOnly = true,

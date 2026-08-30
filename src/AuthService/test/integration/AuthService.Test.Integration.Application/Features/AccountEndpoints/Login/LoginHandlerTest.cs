@@ -222,8 +222,10 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             Assert.True(metadataElement.TryGetProperty("isEmailVerified", out _), "The isEmailVerified key does not exists in the response");
             Assert.True(metadataElement.TryGetProperty("preferredLanguage", out _), "The preferredLanguage key does not exists in the response");
 
-            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var cookieValues) &&
-                        cookieValues.Any(c => c.StartsWith(CookieKeys.RefreshToken)), "The cookie is not set for the refresh token.");
+            response.Headers.TryGetValues("Set-Cookie", out var cookieValues);
+            Assert.NotNull(cookieValues);
+            Assert.True(cookieValues.Any(c => c.StartsWith(CookieKeys.SessionId)), "The cookie is not set for the session ID.");
+            Assert.True(cookieValues.Any(c => c.StartsWith(CookieKeys.RefreshToken)), "The cookie is not set for the refresh token.");
 
             authDbContext.ChangeTracker.Clear();
             var accountFromDb = await authDbContext.Accounts
