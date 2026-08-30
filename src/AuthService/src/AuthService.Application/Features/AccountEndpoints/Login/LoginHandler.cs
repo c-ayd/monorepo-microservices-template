@@ -154,6 +154,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                 new Claim(ApiGatewayAuthKeys.Claims.EmailVerified.ClaimType, account.IsEmailVerified.ToString().ToLower()),
                 new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, account.PreferredLanguage?.ToString() ?? 
                     AccountConstraints.SuppoertedLanguages[0]),
+                new Claim(ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             };
 
             foreach (var role in account.Roles)
