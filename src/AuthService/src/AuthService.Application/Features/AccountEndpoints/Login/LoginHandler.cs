@@ -175,7 +175,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             // Add a new session to the DB
             var newSession = new Session(
                 account.Id,
-                ValueHasher.Hash(jwt.RefreshToken, hashVersions.CurrentHashVersion, hashVersions.GetCurrentHashOptions),
+                ValueHasher.Hash(jwt.RefreshToken, hashVersions.CurrentHashVersion, hashVersions.GetHashOptions),
                 jwt.RefreshTokenExpirationDate,
                 context.Connection.RemoteIpAddress,
                 context.Request.Headers.UserAgent);

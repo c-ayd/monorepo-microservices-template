@@ -19,7 +19,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                ValueHasher.Hash(value!, 1, () => hashOptions);
+                ValueHasher.Hash(value!, 1, (version) => hashOptions);
             });
 
             // Assert
@@ -35,7 +35,7 @@ namespace Shared.Test.Unit.Crypto
             var hashOptions = new HashOptions(SHA256.Create, 16);
 
             // Act
-            var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
+            var valueHashed = ValueHasher.Hash(value, 1, (version) => hashOptions);
 
             // Assert
             Assert.NotNull(valueHashed);
@@ -89,7 +89,7 @@ namespace Shared.Test.Unit.Crypto
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
-            var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
+            var valueHashed = ValueHasher.Hash(value, 1, (version) => hashOptions);
 
             // Act
             var exception = Record.Exception(() =>
@@ -108,7 +108,7 @@ namespace Shared.Test.Unit.Crypto
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
-            var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
+            var valueHashed = ValueHasher.Hash(value, 1, (version) => hashOptions);
 
             // Act
             var result = ValueHasher.Verify(valueHashed, value + "a", (version) => hashOptions, out var version);
@@ -123,7 +123,7 @@ namespace Shared.Test.Unit.Crypto
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
             var hashOptions = new HashOptions(SHA256.Create, 16);
-            var valueHashed = ValueHasher.Hash(value, 1, () => hashOptions);
+            var valueHashed = ValueHasher.Hash(value, 1, (version) => hashOptions);
 
             // Act
             var result = ValueHasher.Verify(valueHashed, value, (version) => hashOptions, out var version);
