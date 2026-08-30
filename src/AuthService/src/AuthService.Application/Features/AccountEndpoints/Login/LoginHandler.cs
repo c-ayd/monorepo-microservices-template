@@ -44,6 +44,14 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                     ]
                 );
 
+            // Check if the account is banned
+            if (account.IsBanned)
+                return JsonResponseBuilder.Error(
+                    HttpStatusCode.Forbidden,
+                    [
+                        new ErrorItem("auth_account_banned", "The account is banned.")
+                    ]);
+
             // Check if the account is locked
             if (account.IsLocked)
             {
