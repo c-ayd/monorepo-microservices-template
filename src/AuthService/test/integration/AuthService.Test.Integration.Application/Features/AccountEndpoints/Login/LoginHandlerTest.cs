@@ -42,6 +42,28 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         }
 
         [Fact]
+        public async Task Handle_WhenAccountIsBanned_ShouldReturnForbidden()
+        {
+            // Arrange
+            var email = EmailGenerator.Generate();
+            var account = new Account(email, PasswordGenerator.Generate());
+            account.IsBanned = true;
+
+            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+
+            await authDbContext.Accounts.AddAsync(account);
+            await authDbContext.SaveChangesAsync();
+
+            var request = new LoginRequest(email, PasswordGenerator.Generate());
+
+            // Act
+            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Handle_WhenAccountIsLocked_ShouldReturnLocked()
         {
             // Arrange
