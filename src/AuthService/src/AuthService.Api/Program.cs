@@ -38,7 +38,7 @@ builder.Services.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Logging.AddStructuredConsoleLogging(
-    builder.Environment.ApplicationName,
+    "Auth Service",
     builder.Environment.IsProduction());
 
 var app = builder.Build();

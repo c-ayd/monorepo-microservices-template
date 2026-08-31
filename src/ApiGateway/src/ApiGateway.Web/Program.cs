@@ -15,7 +15,7 @@ builder.Services.AddReverseProxy()
     .AddTransforms<JwtBearerTransform>();
 
 builder.Logging.AddStructuredConsoleLogging(
-    builder.Environment.ApplicationName,
+    "API Gateway",
     builder.Environment.IsProduction());
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Key).Get<JwtOptions>()!;
