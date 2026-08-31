@@ -45,7 +45,7 @@ namespace AuthService.Persistence.DistributedCaches
             // wrapped with a catch block and should throw an exception if something goes wrong.
             try
             {
-                _connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthBlacklistRedis);
+                _connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthTokenBlacklistRedis);
                 _database = _connection.GetDatabase();
             }
             finally
