@@ -1,8 +1,7 @@
 using AuthService.Domain.Entities;
 using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.SeedData;
-using AuthService.Persistence.Options;
-using AuthService.Test.Utility;
+using AuthService.Application.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

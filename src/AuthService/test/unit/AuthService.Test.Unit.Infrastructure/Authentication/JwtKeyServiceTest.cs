@@ -1,6 +1,5 @@
 using AuthService.Infrastructure.Authentication;
-using AuthService.Infrastructure.Options;
-using AuthService.Test.Utility;
+using AuthService.Application.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Shared.Test.Helpers;

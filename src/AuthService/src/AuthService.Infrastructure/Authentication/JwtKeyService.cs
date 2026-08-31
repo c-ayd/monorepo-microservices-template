@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using AuthService.Application.Abstractions.Authentication;
-using AuthService.Infrastructure.Options;
+using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

@@ -1,4 +1,4 @@
-using AuthService.Persistence.Options;
+using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 

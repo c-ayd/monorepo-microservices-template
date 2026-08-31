@@ -1,6 +1,6 @@
 using Shared.Helpers.Options;
 
-namespace AuthService.Infrastructure.Options
+namespace AuthService.Application.Options
 {
     public class RabbitMqOptions : IOptions
     {
