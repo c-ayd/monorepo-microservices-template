@@ -1,7 +1,5 @@
 using DotNet.Testcontainers.Builders;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.Options;
+using StackExchange.Redis;
 using Testcontainers.Redis;
 
 namespace Shared.Test.Integration.Redis.Fixtures
@@ -10,7 +8,8 @@ namespace Shared.Test.Integration.Redis.Fixtures
     {
         private RedisContainer _container = null!;
 
-        public IDistributedCache Redis { get; private set; } = null!;
+        private ConnectionMultiplexer _connection = null!;
+        public IDatabase Database { get; private set; } = null!;
 
         public async Task InitializeAsync()
         {
@@ -20,14 +19,15 @@ namespace Shared.Test.Integration.Redis.Fixtures
 
             await _container.StartAsync();
 
-            Redis = new RedisCache(Options.Create(new RedisCacheOptions()
-            {
-                Configuration = _container.GetConnectionString()
-            }));
+            _connection = await ConnectionMultiplexer.ConnectAsync(_container.GetConnectionString());
+            Database = _connection.GetDatabase();
         }
 
         public async Task DisposeAsync()
         {
+            await _connection.CloseAsync();
+            await _connection.DisposeAsync();
+
             await _container.StopAsync();
             await _container.DisposeAsync();
         }
