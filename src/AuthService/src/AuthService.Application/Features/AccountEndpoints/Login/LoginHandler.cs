@@ -50,7 +50,8 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                     HttpStatusCode.Forbidden,
                     [
                         new ErrorItem("auth_account_banned", "The account is banned.")
-                    ]);
+                    ]
+                );
 
             // Check if the account is locked
             if (account.IsLocked)
