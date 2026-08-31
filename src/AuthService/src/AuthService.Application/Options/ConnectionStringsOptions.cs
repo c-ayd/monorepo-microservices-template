@@ -8,5 +8,6 @@ namespace AuthService.Application.Options
 
         public required string AuthDb { get; set; }
         public required string AuthDataProtectionRedis { get; set; }
+        public required string AuthTokenBlacklistRedis { get; set; }
     }
 }

@@ -19,7 +19,8 @@ namespace AuthService.Test.Utility.Fixtures
         private PostgreSqlContainer _authDbContainer = null!;
         private RabbitMqContainer _rabbitMqContainer = null!;
         private RedisContainer _dataProtectionRedisContainer = null!;
-        
+        private RedisContainer _tokenBlacklistRedisContainer = null!;
+
         public WebApplicationFactory<Program> Factory { get; private set; } = null!;
         public HttpClient Client { get; private set; } = null!;
 
@@ -53,11 +54,19 @@ namespace AuthService.Test.Utility.Fixtures
 
             await _dataProtectionRedisContainer.StartAsync();
 
+            // Token Blacklist Redis
+            _tokenBlacklistRedisContainer = new RedisBuilder("redis:8.10")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged("Ready to accept connections"))
+                .Build();
+
+            await _tokenBlacklistRedisContainer.StartAsync();
+
             // Web API
             Factory = new AuthApiFactory(
                 _authDbContainer.GetConnectionString(),
                 _rabbitMqContainer.GetMappedPublicPort(5672).ToString(),
-                _dataProtectionRedisContainer.GetConnectionString());
+                _dataProtectionRedisContainer.GetConnectionString(),
+                _tokenBlacklistRedisContainer.GetConnectionString());
             
             Client = Factory.CreateClient();
         }
@@ -94,15 +103,18 @@ namespace AuthService.Test.Utility.Fixtures
             private readonly string _authDbConnString;
             private readonly string _rabbitMqPort;
             private readonly string _dataProtectionRedisConnString;
+            private readonly string _tokenBlacklistRedisConnString;
 
             public AuthApiFactory(
                 string authDbConnString,
                 string rabbitMqPort,
-                string dataProtectionRedisConnString)
+                string dataProtectionRedisConnString,
+                string tokenBlacklistRedisConnString)
             {
                 _authDbConnString = authDbConnString;
                 _rabbitMqPort = rabbitMqPort;
                 _dataProtectionRedisConnString = dataProtectionRedisConnString;
+                _tokenBlacklistRedisConnString = tokenBlacklistRedisConnString;
             }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -116,10 +128,12 @@ namespace AuthService.Test.Utility.Fixtures
                     config.AddInMemoryCollection([
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDb)}",
                             _authDbConnString),
-                        new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
-                            _rabbitMqPort),
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDataProtectionRedis)}",
-                            _dataProtectionRedisConnString)
+                            _dataProtectionRedisConnString),
+                        new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthTokenBlacklistRedis)}",
+                            _tokenBlacklistRedisConnString),
+                        new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
+                            _rabbitMqPort)
                     ]);
                 });
             }

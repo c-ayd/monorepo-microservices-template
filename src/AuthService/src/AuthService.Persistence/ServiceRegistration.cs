@@ -1,5 +1,7 @@
 using AuthService.Application.Abstractions.DbContexts;
+using AuthService.Application.Abstractions.DistributedCaches;
 using AuthService.Persistence.DbContexts;
+using AuthService.Persistence.DistributedCaches;
 using AuthService.Application.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +16,8 @@ namespace AuthService.Persistence
             services.AddDbContext<AuthDbContext>(_ => 
                 _.UseNpgsql(configuration.GetConnectionString(nameof(ConnectionStringsOptions.AuthDb))));
             services.AddScoped<IAuthDbContext>(sp => sp.GetRequiredService<AuthDbContext>());
+
+            services.AddSingleton<ITokenBlacklist, TokenBlacklist>();
         }
     }
 }
