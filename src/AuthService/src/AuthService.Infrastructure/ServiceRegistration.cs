@@ -18,6 +18,7 @@ namespace AuthService.Infrastructure
 
             services.AddSingleton<IPasswordHasher, Pbkdf2>();
             services.AddSingleton<IHashVersions, HashVersions>();
+            services.AddSingleton<IDataProtectionService, DataProtectionService>();
 
             services.AddSingleton<RabbitMqConnectionService>();
             services.AddSingleton<IEmailService, EmailService>();
