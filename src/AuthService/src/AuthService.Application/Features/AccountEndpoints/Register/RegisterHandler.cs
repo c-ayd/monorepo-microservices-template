@@ -53,7 +53,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             var emailVerificationToken = new Token(
                 newAccount.Id,
                 ETokenPurpose.EmailVerification,
-                ValueHasher.Hash(emailVerificationTokenValue, hashVersions.CurrentHashVersion, hashVersions.GetCurrentHashOptions),
+                ValueHasher.Hash(emailVerificationTokenValue, hashVersions.CurrentHashVersion, hashVersions.GetHashOptions),
                 DateTimeOffset.UtcNow.AddHours(tokenLifespansOptions.Value.EmailVerificationLifespanInHours));
 
             newAccount.Tokens.Add(emailVerificationToken);

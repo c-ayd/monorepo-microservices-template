@@ -11,20 +11,20 @@ namespace Shared.Crypto
     public static class ValueHasher
     {
         private const int _maxStackSize = 1024;
-    
+
         /// <summary>
         /// Hashes a given value.
         /// </summary>
         /// <param name="value">Value to hash</param>
         /// <param name="version">Version of the hash options</param>
-        /// <param name="options">Delegate that returns the latests hashing options</param>
+        /// <param name="options">Delegate that returns hashing options based on the given version</param>
         /// <returns>Returns the hashed value.</returns>
-        public static string Hash(string value, byte version, Func<HashOptions> options)
+        public static string Hash(string value, byte version, Func<byte, HashOptions> options)
         {
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentException("The value cannot be null or empty.", nameof(value));
 
-            var hashOptions = options();
+            var hashOptions = options(version);
             using var hashAlgorithm = hashOptions.Algorithm();
 
             var hashSize = hashAlgorithm.HashSize / 8;
