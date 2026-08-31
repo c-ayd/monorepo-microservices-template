@@ -48,7 +48,7 @@ namespace Shared.Redis.Extensions
         /// <param name="key">Key of the Redis entry</param>
         /// <param name="cancellationToken">Token to cancel the fetching operation</param>
         /// <returns>Returns the converted value.</returns>
-        public static async Task<(bool isKeyFound, T? value)> LoadAsStringAsync<T>(this IDistributedCache redis,
+        public static async Task<(bool isKeyFound, T? value)> LoadFromStringAsync<T>(this IDistributedCache redis,
             string key,
             CancellationToken cancellationToken = default)
         {

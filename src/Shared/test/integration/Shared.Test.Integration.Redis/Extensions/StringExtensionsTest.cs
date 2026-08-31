@@ -35,13 +35,13 @@ namespace Shared.Test.Integration.Redis.Extensions
 
         [Theory]
         [MemberData(nameof(Values))]
-        public async Task SaveAndLoadAsStringAsync_WhenValueIsSaved_ShouldLoadValueProperly(int keyLength, Type type, object value)
+        public async Task SaveAndLoadAsync_WhenValueIsSaved_ShouldLoadValueProperly(int keyLength, Type type, object value)
         {
             // Arrange
             var key = StringGenerator.GenerateAlphanumeric(keyLength);
             var saveMethodInfo = typeof(StringExtensions).GetMethod(nameof(StringExtensions.SaveAsStringAsync), BindingFlags.Public | BindingFlags.Static)!
                 .MakeGenericMethod([type]);
-            var loadMethodInfo = typeof(StringExtensions).GetMethod(nameof(StringExtensions.LoadAsStringAsync), BindingFlags.Public | BindingFlags.Static)!
+            var loadMethodInfo = typeof(StringExtensions).GetMethod(nameof(StringExtensions.LoadFromStringAsync), BindingFlags.Public | BindingFlags.Static)!
                 .MakeGenericMethod([type]);
 
             // Act
