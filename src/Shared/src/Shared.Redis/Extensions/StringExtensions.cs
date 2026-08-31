@@ -32,7 +32,7 @@ namespace Shared.Redis.Extensions
             await redis.SetStringAsync(key, json, options, cancellationToken);
         }
 
-        public static async Task<(bool isKeyFound, T? value)> LoadAsStringAsync<T>(this IDistributedCache redis,
+        public static async Task<(bool isKeyFound, T? value)> LoadFromStringAsync<T>(this IDistributedCache redis,
             string key,
             CancellationToken cancellationToken = default)
         {
