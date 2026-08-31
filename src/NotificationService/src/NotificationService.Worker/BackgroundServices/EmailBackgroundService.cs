@@ -1,5 +1,6 @@
 using System.Text.Json;
 using NotificationService.Worker.Abstractions;
+using NotificationService.Worker.Exceptions;
 using NotificationService.Worker.Services;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -47,11 +48,14 @@ namespace NotificationService.Worker.BackgroundServices
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("The email background service initialization has been canceled.");
+                throw;
             }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Something went wrong. Message: {Message}",
                     exception.Message);
+                
+                throw;
             }
 
             await base.StartAsync(cancellationToken);
@@ -61,8 +65,12 @@ namespace NotificationService.Worker.BackgroundServices
         {
             if (_channel == null)
             {
-                _logger.LogWarning("The email background service is exiting since the connection is not initialized.");
-                return;
+                var exception = new EmailBackgroundServiceConnectionException($"{nameof(_channel)} is null.");
+
+                _logger.LogError(exception, "The email background service is exiting since the connection is not initialized. Message: {Message}",
+                    exception.Message);
+
+                throw exception;
             }
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -156,7 +164,8 @@ namespace NotificationService.Worker.BackgroundServices
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, exception.Message);
+                _logger.LogError(exception, "Something went wrong. Message: {Message}",
+                    exception.Message);
             }
         }
 

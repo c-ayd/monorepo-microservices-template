@@ -28,11 +28,14 @@ namespace NotificationService.Worker.BackgroundServices
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("The template background service initialization has been canceled.");
+                throw;
             }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Something went wrong while caching the templates. Message: {Message}",
                     exception.Message);
+                
+                throw;
             }
 
             _logger.LogInformation("The template background service will recache templates every {cacheDuration} hour(s).",
@@ -45,10 +48,9 @@ namespace NotificationService.Worker.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay((int)_cacheDuration.TotalMilliseconds, stoppingToken);
-
                 try
                 {
+                    await Task.Delay((int)_cacheDuration.TotalMilliseconds, stoppingToken);
                     await _templateService.RecacheAllTemplatesAsync(stoppingToken);
 
                     _logger.LogInformation("All templates have been recached.");

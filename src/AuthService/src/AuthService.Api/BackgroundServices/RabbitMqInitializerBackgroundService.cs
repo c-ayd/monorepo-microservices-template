@@ -26,11 +26,14 @@ namespace AuthService.Api.BackgroundServices
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("The RabbitMQ connection operation has been cancelled");
+                throw;
             }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Something went wrong. Message: {Message}",
                     exception.Message);
+
+                throw;
             }
         }
 
