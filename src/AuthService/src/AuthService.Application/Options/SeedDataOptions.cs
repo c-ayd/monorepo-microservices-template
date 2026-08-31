@@ -1,6 +1,6 @@
 using Shared.Helpers.Options;
 
-namespace AuthService.Persistence.Options
+namespace AuthService.Application.Options
 {
     public class SeedDataOptions : IOptions
     {

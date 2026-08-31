@@ -1,6 +1,5 @@
-using AuthService.Infrastructure.Options;
+using AuthService.Application.Options;
 using AuthService.Persistence.DbContexts;
-using AuthService.Persistence.Options;
 using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

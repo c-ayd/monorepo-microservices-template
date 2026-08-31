@@ -1,4 +1,4 @@
-using AuthService.Infrastructure.Options;
+using AuthService.Application.Options;
 using DotNet.Testcontainers.Builders;
 using RabbitMQ.Client;
 using Testcontainers.RabbitMq;

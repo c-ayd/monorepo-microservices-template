@@ -1,4 +1,4 @@
-using AuthService.Infrastructure.Options;
+using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
