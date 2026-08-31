@@ -43,7 +43,7 @@ builder.Services.AddDataProtection()
     .SetApplicationName("AuthService")
     .PersistKeysToStackExchangeRedis(
         () => RedisInitializerBackgroundServices.DataProtection.Connection!.GetDatabase(),
-        "AuthDataProtection_")
+        "AuthDataProtection")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
 builder.Logging.AddStructuredConsoleLogging(
