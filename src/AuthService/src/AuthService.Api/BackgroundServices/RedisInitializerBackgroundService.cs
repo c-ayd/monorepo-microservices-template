@@ -1,4 +1,6 @@
+using AuthService.Application.Abstractions.DistributedCaches;
 using AuthService.Application.Options;
+using AuthService.Persistence.DistributedCaches;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -7,13 +9,16 @@ namespace AuthService.Api.BackgroundServices
     public class RedisInitializerBackgroundServices : IHostedService
     {
         private readonly ConnectionStringsOptions _connectionStrings;
+        private readonly ITokenBlacklist _tokenBlacklist;
         private readonly ILogger<RedisInitializerBackgroundServices> _logger;
 
         public RedisInitializerBackgroundServices(
             IOptions<ConnectionStringsOptions> connectionStrings,
+            ITokenBlacklist tokenBlacklist,
             ILogger<RedisInitializerBackgroundServices> logger)
         {
             _connectionStrings = connectionStrings.Value;
+            _tokenBlacklist = tokenBlacklist;
             _logger = logger;
         }
 
@@ -22,6 +27,7 @@ namespace AuthService.Api.BackgroundServices
             try
             {
                 DataProtection.Connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthDataProtectionRedis);
+                await ((TokenBlacklist)_tokenBlacklist).ConnectAsync();
             }
             catch (Exception exception)
             {
