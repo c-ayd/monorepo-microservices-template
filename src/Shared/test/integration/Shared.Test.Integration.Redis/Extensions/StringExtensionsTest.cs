@@ -45,8 +45,8 @@ namespace Shared.Test.Integration.Redis.Extensions
                 .MakeGenericMethod([type]);
 
             // Act
-            await (Task)saveMethodInfo.Invoke(null, [_redisFixture.Redis, key, value, TimeSpan.FromMinutes(1), null, default])!;
-            var result = await (dynamic)loadMethodInfo.Invoke(null, [_redisFixture.Redis, key, default])!;
+            await (Task)saveMethodInfo.Invoke(null, [_redisFixture.Database, key, value, TimeSpan.FromMinutes(1)])!;
+            var result = await (dynamic)loadMethodInfo.Invoke(null, [_redisFixture.Database, key])!;
 
             // Assert
             Assert.True(result.Item1, "The key is not found.");
@@ -64,6 +64,18 @@ namespace Shared.Test.Integration.Redis.Extensions
             else if (type == typeof(TestRecord)) Assert.Equal((TestRecord)value, (TestRecord)result.Item2);
             else if (type == typeof(TestClass)) Assert.Equal((TestClass)value, (TestClass)result.Item2);
             else Assert.Fail($"The given type {type} is not correct for the value.");
+        }
+
+        [Fact]
+        public async Task LoadFromStringAsync_WhenKeyIsNotFound_ShouldReturnNull()
+        {
+            // Act
+            var key = StringGenerator.GenerateAlphanumeric();
+            var result = await _redisFixture.Database.LoadFromStringAsync<TestClass>(key);
+
+            // Assert
+            Assert.False(result.isKeyFound, $"There is a value with the {key} key.");
+            Assert.Null(result.value);
         }
 
         private record TestRecord(

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Shared.Redis.Extensions
 {
@@ -22,23 +22,11 @@ namespace Shared.Redis.Extensions
         /// <param name="key">Key of the Redis entry</param>
         /// <param name="value">Value to serialize to a JSON string</param>
         /// <param name="expirationTime">Lifespan of the entry. The default value is 1 hour</param>
-        /// <param name="slideExpirationTime">Relative expiration time since the value is accessed</param>
-        /// <param name="cancellationToken">Token to cancel the saving process</param>
-        public static async Task SaveAsStringAsync<T>(this IDistributedCache redis,
-            string key,
-            T value,
-            TimeSpan? expirationTime = null,
-            TimeSpan? slideExpirationTime = null,
-            CancellationToken cancellationToken = default)
+        public static async Task SaveAsStringAsync<T>(this IDatabase db, string key, T value, TimeSpan? expirationTime = null)
         {
-            var options = new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = expirationTime ?? TimeSpan.FromHours(1),
-                SlidingExpiration = slideExpirationTime
-            };
-
             var json = JsonSerializer.Serialize(value, JsonWriteOptions);
-            await redis.SetStringAsync(key, json, options, cancellationToken);
+
+            await db.StringSetAsync(key, json, expirationTime ?? TimeSpan.FromHours(1));
         }
 
         /// <summary>
@@ -48,15 +36,13 @@ namespace Shared.Redis.Extensions
         /// <param name="key">Key of the Redis entry</param>
         /// <param name="cancellationToken">Token to cancel the fetching operation</param>
         /// <returns>Returns the converted value.</returns>
-        public static async Task<(bool isKeyFound, T? value)> LoadFromStringAsync<T>(this IDistributedCache redis,
-            string key,
-            CancellationToken cancellationToken = default)
+        public static async Task<(bool isKeyFound, T? value)> LoadFromStringAsync<T>(this IDatabase db, string key)
         {
-            var json = await redis.GetStringAsync(key, cancellationToken);
-            if (json == null)
+            var json = await db.StringGetAsync(key);
+            if (!json.HasValue)
                 return (false, default);
 
-            var value = JsonSerializer.Deserialize<T>(json, JsonReadOptions);
+            var value = JsonSerializer.Deserialize<T>(json.ToString(), JsonReadOptions);
             return (true, value);
         }
     }
