@@ -21,7 +21,7 @@ namespace AuthService.Api.BackgroundServices
         {
             try
             {
-                DataProtection.SetConnection(await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthDataProtectionRedis));
+                DataProtection.Connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthDataProtectionRedis);
             }
             catch (Exception exception)
             {
@@ -47,9 +47,7 @@ namespace AuthService.Api.BackgroundServices
         /// </summary>
         public static class DataProtection
         {
-            private static ConnectionMultiplexer? _connection;
-            public static ConnectionMultiplexer? Connection => _connection;
-            public static void SetConnection(ConnectionMultiplexer connection) => _connection = connection;
+            public static ConnectionMultiplexer? Connection;
         }
     }
 }
