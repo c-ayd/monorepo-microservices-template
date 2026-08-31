@@ -25,7 +25,7 @@ builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
 
 builder.Logging.AddStructuredConsoleLogging(
-    builder.Environment.ApplicationName,
+    "Notification Service",
     builder.Environment.IsProduction());
 
 var host = builder.Build();
