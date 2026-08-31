@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Shared.Helpers.Options;
 using Shared.Test.Helpers;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
+using Testcontainers.Redis;
 
 namespace AuthService.Test.Utility.Fixtures
 {
@@ -19,6 +19,7 @@ namespace AuthService.Test.Utility.Fixtures
     {
         private PostgreSqlContainer _authDbContainer = null!;
         private RabbitMqContainer _rabbitMqContainer = null!;
+        private RedisContainer _dataProtectionRedisContainer = null!;
         
         public WebApplicationFactory<Program> Factory { get; private set; } = null!;
         public HttpClient Client { get; private set; } = null!;
@@ -43,11 +44,22 @@ namespace AuthService.Test.Utility.Fixtures
                 .WithEnvironment("RABBITMQ_DEFAULT_PASS", "guest")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*Server startup complete.*"))
                 .Build();
+            
             await _rabbitMqContainer.StartAsync();
 
+            // Data Protection Redis
+            _dataProtectionRedisContainer = new RedisBuilder("redis:8.10")
+                .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged("Ready to accept connections"))
+                .Build();
+
+            await _dataProtectionRedisContainer.StartAsync();
+
             // Web API
-            Factory = new AuthApiFactory(_authDbContainer.GetConnectionString(),
-                _rabbitMqContainer.GetMappedPublicPort(5672).ToString());
+            Factory = new AuthApiFactory(
+                _authDbContainer.GetConnectionString(),
+                _rabbitMqContainer.GetMappedPublicPort(5672).ToString(),
+                _dataProtectionRedisContainer.GetConnectionString());
+            
             Client = Factory.CreateClient();
         }
 
@@ -68,17 +80,30 @@ namespace AuthService.Test.Utility.Fixtures
         {
             Client.Dispose();
             await Factory.DisposeAsync();
+
+            await _authDbContainer.StopAsync();
+            await _rabbitMqContainer.StopAsync();
+            await _dataProtectionRedisContainer.StopAsync();
+
+            await _authDbContainer.DisposeAsync();
+            await _rabbitMqContainer.DisposeAsync();
+            await _dataProtectionRedisContainer.DisposeAsync();
         }
 
         private class AuthApiFactory : WebApplicationFactory<Program>
         {
             private readonly string _authDbConnString;
             private readonly string _rabbitMqPort;
+            private readonly string _dataProtectionRedisConnString;
 
-            public AuthApiFactory(string authDbConnString, string rabbitMqPort)
+            public AuthApiFactory(
+                string authDbConnString,
+                string rabbitMqPort,
+                string dataProtectionRedisConnString)
             {
                 _authDbConnString = authDbConnString;
                 _rabbitMqPort = rabbitMqPort;
+                _dataProtectionRedisConnString = dataProtectionRedisConnString;
             }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -93,7 +118,9 @@ namespace AuthService.Test.Utility.Fixtures
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDb)}",
                             _authDbConnString),
                         new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
-                            _rabbitMqPort)
+                            _rabbitMqPort),
+                        new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDataProtectionRedis)}",
+                            _dataProtectionRedisConnString)
                     ]);
                 });
             }

@@ -670,6 +670,14 @@
           "Testcontainers": "4.14.0"
         }
       },
+      "Testcontainers.Redis": {
+        "type": "Transitive",
+        "resolved": "4.14.0",
+        "contentHash": "PxqR44lftGtHxiIXtQtCsfQkjJmWnDuWk/Mz20p1pt9CUo+SRqpotGwG0EYgsOq9Qv5diZgMQp0Cyo2FzCqocg==",
+        "dependencies": {
+          "Testcontainers": "4.14.0"
+        }
+      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -761,6 +769,7 @@
           "Testcontainers": "[4.14.0, )",
           "Testcontainers.PostgreSql": "[4.14.0, )",
           "Testcontainers.RabbitMq": "[4.14.0, )",
+          "Testcontainers.Redis": "[4.14.0, )",
           "coverlet.collector": "[6.0.4, )",
           "xunit": "[2.9.3, )",
           "xunit.runner.visualstudio": "[3.1.4, )"
