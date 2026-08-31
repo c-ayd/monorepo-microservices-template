@@ -14,6 +14,7 @@ using Shared.Logging.Middlewares;
 using AuthService.Application.Features.AccountEndpoints;
 using AuthService.Application;
 using Shared.Http.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddApplicationServices();
 //~ End
 
 builder.Services.AddHostedService<RabbitMqInitializerBackgroundService>();
+builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
 
 builder.RegisterOptionsFromAssemblies(
     Assembly.GetAssembly(typeof(AuthService.Persistence.ServiceRegistration))!,
@@ -36,6 +38,13 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(AuthServi
 builder.Services.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
     .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
 builder.Services.AddAuthorization();
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("AuthService")
+    .PersistKeysToStackExchangeRedis(
+        () => RedisInitializerBackgroundServices.DataProtection.Connection!.GetDatabase(),
+        "AuthDataProtection_")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.ApplicationName,

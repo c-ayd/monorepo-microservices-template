@@ -2,6 +2,15 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
+      "Microsoft.AspNetCore.DataProtection.StackExchangeRedis": {
+        "type": "Direct",
+        "requested": "[10.0.10, )",
+        "resolved": "10.0.10",
+        "contentHash": "cbAS0fCaHRF201gdtopfEwxW3CbWRX5/ScaAixbG0h33fQIoHUFMktCSVvpnfCvgUs6l9fmn/ZU2FeJGZ2/rGg==",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.27"
+        }
+      },
       "Microsoft.EntityFrameworkCore.Tools": {
         "type": "Direct",
         "requested": "[10.0.10, )",
@@ -129,6 +138,14 @@
           "Microsoft.EntityFrameworkCore": "10.0.10"
         }
       },
+      "Microsoft.Extensions.Caching.StackExchangeRedis": {
+        "type": "Transitive",
+        "resolved": "10.0.10",
+        "contentHash": "E+3pfEY68WQh1ZVFTGDNK0JCoayzL3aIDgVHHM85HIbQO7MiABG14A7+ajHH2P/y3a4W2Rla5p2nzut3+mzoyQ==",
+        "dependencies": {
+          "StackExchange.Redis": "2.7.27"
+        }
+      },
       "Microsoft.Extensions.DependencyModel": {
         "type": "Transitive",
         "resolved": "10.0.10",
@@ -197,10 +214,23 @@
           "Npgsql": "10.0.3"
         }
       },
+      "Pipelines.Sockets.Unofficial": {
+        "type": "Transitive",
+        "resolved": "2.2.8",
+        "contentHash": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ=="
+      },
       "RabbitMQ.Client": {
         "type": "Transitive",
         "resolved": "7.2.1",
         "contentHash": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg=="
+      },
+      "StackExchange.Redis": {
+        "type": "Transitive",
+        "resolved": "2.7.27",
+        "contentHash": "Uqc2OQHglqj9/FfGQ6RkKFkZfHySfZlfmbCl+hc+u2I/IqunfelQ7QJi7ZhvAJxUtu80pildVX6NPLdDaUffOw==",
+        "dependencies": {
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        }
       },
       "System.CodeDom": {
         "type": "Transitive",
@@ -273,6 +303,7 @@
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )",
+          "Shared.Redis": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       },
@@ -311,6 +342,12 @@
       },
       "shared.rabbitmq.notifications": {
         "type": "Project"
+      },
+      "shared.redis": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.StackExchangeRedis": "[10.0.10, )"
+        }
       }
     }
   }

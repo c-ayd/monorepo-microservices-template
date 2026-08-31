@@ -7,5 +7,6 @@ namespace AuthService.Persistence.Options
         public static string Key => "ConnectionStrings";
 
         public required string AuthDb { get; set; }
+        public required string AuthDataProtectionRedis { get; set; }
     }
 }
