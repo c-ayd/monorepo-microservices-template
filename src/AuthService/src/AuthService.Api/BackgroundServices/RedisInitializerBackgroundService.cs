@@ -27,6 +27,8 @@ namespace AuthService.Api.BackgroundServices
             {
                 _logger.LogError(exception, "Something went wrong. Message: {Message}",
                     exception.Message);
+
+                throw;
             }
         }
 
