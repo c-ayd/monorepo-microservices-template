@@ -28,6 +28,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             IJwtService jwtService,
             IHashVersions hashVersions,
             HttpContext context,
+            IDataProtectionService dataProtectionService,
             ILogger<LoginHandler> logger)
         {
             // Check if the account exists
@@ -184,7 +185,8 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             await authDbContext.SaveChangesAsync();
 
             // Add the session ID and refresh token to the cookies
-            context.Response.Cookies.Append(CookieKeys.SessionId, newSession.Id.ToString(), new CookieOptions()
+            var protectedSessionId = dataProtectionService.Protect(dataProtectionService.CookieProtector, newSession.Id.ToString());
+            context.Response.Cookies.Append(CookieKeys.SessionId, protectedSessionId, new CookieOptions()
             {
                 HttpOnly = true,
                 Secure = true,
@@ -192,7 +194,8 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                 Expires = jwt.RefreshTokenExpirationDate
             });
 
-            context.Response.Cookies.Append(CookieKeys.RefreshToken, jwt.RefreshToken, new CookieOptions()
+            var protectedRefreshToken = dataProtectionService.Protect(dataProtectionService.CookieProtector, jwt.RefreshToken);
+            context.Response.Cookies.Append(CookieKeys.RefreshToken, protectedRefreshToken, new CookieOptions()
             {
                 HttpOnly = true,
                 Secure = true,
