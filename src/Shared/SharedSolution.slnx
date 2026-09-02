@@ -13,6 +13,7 @@
   <Folder Name="/test/integration/">
     <Project Path="test/integration/Shared.Test.Integration.Helpers/Shared.Test.Integration.Helpers.csproj" />
     <Project Path="test/integration/Shared.Test.Integration.Http/Shared.Test.Integration.Http.csproj" />
+    <Project Path="test/integration/Shared.Test.Integration.RabbitMq.Helpers/Shared.Test.Integration.RabbitMq.Helpers.csproj" />
     <Project Path="test/integration/Shared.Test.Integration.Redis/Shared.Test.Integration.Redis.csproj" />
   </Folder>
   <Folder Name="/test/unit/">
