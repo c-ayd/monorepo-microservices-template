@@ -231,6 +231,9 @@
         "dependencies": {
           "RabbitMQ.Client": "[7.2.1, )"
         }
+      },
+      "shared.test.generators": {
+        "type": "Project"
       }
     }
   }
