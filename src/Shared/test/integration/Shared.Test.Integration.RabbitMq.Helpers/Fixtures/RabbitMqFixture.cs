@@ -21,15 +21,18 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.Fixtures
                 .Build();
             await _container.StartAsync();
 
-            var factory = new ConnectionFactory()
+            Connection = await CreateConnectionFactory().CreateConnectionAsync();
+        }
+
+        public ConnectionFactory CreateConnectionFactory()
+        {
+            return new ConnectionFactory()
             {
                 UserName = "guest",
                 Password = "guest",
                 HostName = "localhost",
                 Port = _container.GetMappedPublicPort(5672)
             };
-
-            Connection = await factory.CreateConnectionAsync();
         }
 
         public async Task DisposeAsync()
