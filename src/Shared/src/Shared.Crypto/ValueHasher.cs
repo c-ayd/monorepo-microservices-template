@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Shared.Crypto.Exceptions;
-using Shared.Crypto.Options;
+using Shared.Crypto.Structures;
 
 namespace Shared.Crypto
 {

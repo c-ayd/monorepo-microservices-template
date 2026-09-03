@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Shared.Crypto.Options
+namespace Shared.Crypto.Structures
 {
     public record HashOptions(
         Func<HashAlgorithm> Algorithm,

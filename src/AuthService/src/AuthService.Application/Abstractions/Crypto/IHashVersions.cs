@@ -1,4 +1,4 @@
-using Shared.Crypto.Options;
+using Shared.Crypto.Structures;
 
 namespace AuthService.Application.Abstractions.Crypto
 {
