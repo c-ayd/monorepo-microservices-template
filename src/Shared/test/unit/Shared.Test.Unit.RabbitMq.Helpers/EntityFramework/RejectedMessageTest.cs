@@ -1,0 +1,136 @@
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using RabbitMQ.Client;
+using Shared.RabbitMq.Helpers.EntityFramework;
+
+namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
+{
+    public class RejectedMessageTest
+    {
+        private const string _publisherName = "TestPublisher";
+        private const string _exchangeName = "TestExchange";
+        private const string _routingKey = "RoutingKey";
+
+        private readonly Dictionary<string, object?> TestHeaders = new Dictionary<string, object?>
+        {
+            { "Key1", 10 },
+            { "Key2", "Test value" },
+            { "Key3", true },
+            { "Key4", 10.10 },
+            { "Key5", new int[] { 1, 2, 3, 4, 5 } },
+            { "Key6", new byte[] { 5, 4, 3, 2, 1 } },
+            { "Key7", new TestClass() },
+            { "Key8", new Dictionary<int, string>() { { 1, "abc" }, { 2, "def" } } },
+            { "Key9", null }
+        };
+        private readonly BasicProperties TestProperties = new BasicProperties()
+        {
+            DeliveryMode = DeliveryModes.Persistent,
+            CorrelationId = Guid.NewGuid().ToString(),
+            AppId = Guid.NewGuid().ToString(),
+            MessageId = Guid.NewGuid().ToString(),
+            Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+        };
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Constructor_WhenPropertiesAreJsonStrings_ShouldConvertVariablesCorrectly(bool addHeaders)
+        {
+            // Arrange
+            var body = Encoding.UTF8.GetBytes("Test message!");
+            var properties = new BasicProperties(TestProperties);
+
+            if (addHeaders)
+            {
+                properties.Headers = new Dictionary<string, object?>(TestHeaders);
+                foreach (var header in properties.Headers!)
+                {
+                    properties.Headers[header.Key] = JsonSerializer.Serialize(header.Value);
+                }
+            }
+
+            // Act
+            var rejectedMessage = new RejectedMessage(_publisherName, _exchangeName, _routingKey, properties, body);
+
+            // Assert
+            Assert.Equal(_publisherName, rejectedMessage.PublisherName);
+            Assert.Equal(_exchangeName, rejectedMessage.ExchangeName);
+            Assert.Equal(_routingKey, rejectedMessage.RoutingKey);
+            Assert.True(body.SequenceEqual(rejectedMessage.BodyEncrypted), "The body property differs.");
+
+            CheckBasicProperties(rejectedMessage.GetBasicProperties());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Constructor_WhenPropertiesAreByteArrays_ShouldConvertVariablesCorrectly(bool addHeaders)
+        {
+            // Arrange
+            var body = Encoding.UTF8.GetBytes("Test message!");
+            var properties = new BasicProperties(TestProperties);
+
+            if (addHeaders)
+            {
+                properties.Headers = new Dictionary<string, object?>(TestHeaders);
+                foreach (var header in properties.Headers!)
+                {
+                    properties.Headers[header.Key] = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(header.Value));
+                }
+            }
+
+            // Act
+            var rejectedMessage = new RejectedMessage(_publisherName, _exchangeName, _routingKey, properties, body);
+
+            // Assert
+            Assert.Equal(_publisherName, rejectedMessage.PublisherName);
+            Assert.Equal(_exchangeName, rejectedMessage.ExchangeName);
+            Assert.Equal(_routingKey, rejectedMessage.RoutingKey);
+            Assert.True(body.SequenceEqual(rejectedMessage.BodyEncrypted), "The body property differs.");
+
+            CheckBasicProperties(rejectedMessage.GetBasicProperties());
+        }
+        
+        private void CheckBasicProperties(BasicProperties properties)
+        {
+            Assert.Equal(TestProperties.DeliveryMode, properties.DeliveryMode);
+            Assert.Equal(TestProperties.CorrelationId, properties.CorrelationId);
+            Assert.Equal(TestProperties.AppId, properties.AppId);
+            Assert.Equal(TestProperties.MessageId, properties.MessageId);
+            Assert.Equal(TestProperties.Timestamp, properties.Timestamp);
+
+            if (properties.Headers == null)
+                return;
+
+            var key1Value = JsonSerializer.Deserialize<int>((string)properties.Headers!["Key1"]!);
+            var key2Value = JsonSerializer.Deserialize<string>((string)properties.Headers!["Key2"]!)!;
+            var key3Value = JsonSerializer.Deserialize<bool>((string)properties.Headers!["Key3"]!);
+            var key4Value = JsonSerializer.Deserialize<double>((string)properties.Headers!["Key4"]!);
+            var key5Value = JsonSerializer.Deserialize<int[]>((string)properties.Headers!["Key5"]!)!;
+            var key6Value = JsonSerializer.Deserialize<byte[]>((string)properties.Headers!["Key6"]!)!;
+            var key7Value = JsonSerializer.Deserialize<TestClass>((string)properties.Headers!["Key7"]!)!;
+            var key8Value = JsonSerializer.Deserialize<Dictionary<int, string>>((string)properties.Headers!["Key8"]!)!;
+            var key9Value = JsonSerializer.Deserialize<string>((string)properties.Headers!["Key9"]!)!;
+
+            Assert.Equal((int)TestHeaders["Key1"]!, key1Value);
+            Assert.Equal((string)TestHeaders["Key2"]!, key2Value);
+            Assert.Equal((bool)TestHeaders["Key3"]!, key3Value);
+            Assert.Equal((double)TestHeaders["Key4"]!, key4Value);
+            Assert.True(((int[])TestHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
+            Assert.True(((byte[])TestHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
+            Assert.Equal(((TestClass)TestHeaders["Key7"]!).IntValue, key7Value.IntValue);
+            Assert.Equal(((TestClass)TestHeaders["Key7"]!).StrValue, key7Value.StrValue);
+            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[1], key8Value[1]);
+            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[2], key8Value[2]);
+            Assert.Equal((string)TestHeaders["Key9"]!, key9Value);
+        }
+
+        public class TestClass
+        {
+            public int IntValue { get; set; } = 5;
+            public string StrValue { get; set; } = "StrValue";
+        }
+    }
+}
