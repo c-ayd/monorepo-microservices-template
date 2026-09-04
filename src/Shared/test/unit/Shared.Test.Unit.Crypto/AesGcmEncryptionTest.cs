@@ -17,7 +17,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Encrypt(value!, 1, _validKey);
+                AesGcmEncryption.Encrypt(value!, 1, (version) => _validKey);
             });
 
             // Assert
@@ -36,7 +36,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Encrypt(value, 1, key!);
+                AesGcmEncryption.Encrypt(value, 1, (version) => key!);
             });
 
             // Assert
@@ -53,7 +53,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Encrypt(value, 1, _invalidKey);
+                AesGcmEncryption.Encrypt(value, 1, (version) => _invalidKey);
             });
 
             // Assert
@@ -62,13 +62,28 @@ namespace Shared.Test.Unit.Crypto
         }
 
         [Fact]
-        public void Encrypt_WhenParametersAreValid_ShouldEncryptValue()
+        public void Encrypt_WhenParametersAreValidAndValueIsString_ShouldEncryptValue()
         {
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
 
             // Act
-            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, (version) => _validKey);
+
+            // Assert
+            Assert.NotNull(valueEncrypted);
+            Assert.NotEmpty(valueEncrypted);
+            Assert.NotEqual(value, valueEncrypted);
+        }
+
+        [Fact]
+        public void Encrypt_WhenParametersAreValidAndValueIsByteArray_ShouldEncryptValue()
+        {
+            // Arrange
+            var value = new byte[] { 0, 4, 2, 1, 5, 3 };
+
+            // Act
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, (version) => _validKey);
 
             // Assert
             Assert.NotNull(valueEncrypted);
@@ -84,7 +99,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Decrypt(value!, (version) => _validKey, out var version);
+                AesGcmEncryption.Decrypt(value!, (version) => _validKey, out var _);
             });
 
             // Assert
@@ -97,12 +112,12 @@ namespace Shared.Test.Unit.Crypto
         {
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
-            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, (version) => _validKey);
 
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Decrypt(valueEncrypted, (version) => _invalidKey, out var version);
+                AesGcmEncryption.Decrypt(valueEncrypted, (version) => _invalidKey, out var _);
             });
 
             // Assert
@@ -111,11 +126,12 @@ namespace Shared.Test.Unit.Crypto
         }
 
         [Fact]
-        public void Decrypt_WhenParametersAreValid_ShouldDecryptValue()
+        public void Decrypt_WhenParametersAreValidAndValueIsString_ShouldDecryptValue()
         {
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
-            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
+            ushort version = 1;
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, version, (version) => _validKey);
 
             // Act
             var valueDecrypted = AesGcmEncryption.Decrypt(valueEncrypted, (version) =>
@@ -126,12 +142,39 @@ namespace Shared.Test.Unit.Crypto
                     2 => _invalidKey,
                     _ => throw new ArgumentException("The version dos not exist")
                 };
-            }, out var version);
+            }, out var versionResult);
 
             // Assert
             Assert.NotNull(valueDecrypted);
             Assert.NotEmpty(valueDecrypted);
             Assert.Equal(value, valueDecrypted);
+            Assert.Equal(version, versionResult);
+        }
+
+        [Fact]
+        public void Decrypt_WhenParametersAreValidAndValueIsByteArray_ShouldDecryptValue()
+        {
+            // Arrange
+            var value = new byte[] { 0, 4, 2, 1, 5, 3 };
+            ushort version = 1;
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, version, (version) => _validKey);
+
+            // Act
+            var valueDecrypted = AesGcmEncryption.Decrypt(valueEncrypted, (version) =>
+            {
+                return version switch
+                {
+                    1 => _validKey,
+                    2 => _invalidKey,
+                    _ => throw new ArgumentException("The version dos not exist")
+                };
+            }, out var versionResult);
+
+            // Assert
+            Assert.NotNull(valueDecrypted);
+            Assert.NotEmpty(valueDecrypted);
+            Assert.Equal(value, valueDecrypted);
+            Assert.Equal(version, versionResult);
         }
 
         [Theory]
@@ -145,7 +188,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Compare(valueEncrypted!, value, (version) => _validKey, out var version);
+                AesGcmEncryption.Compare(valueEncrypted!, value, (version) => _validKey, out var _);
             });
 
             // Assert
@@ -164,7 +207,7 @@ namespace Shared.Test.Unit.Crypto
             // Act
             var exception = Record.Exception(() =>
             {
-                AesGcmEncryption.Compare(valueEncrypted, valuePlain!, (version) => _validKey, out var version);
+                AesGcmEncryption.Compare(valueEncrypted, valuePlain!, (version) => _validKey, out var _);
             });
 
             // Assert
@@ -173,31 +216,63 @@ namespace Shared.Test.Unit.Crypto
         }
 
         [Fact]
-        public void Compare_WhenValuesAreDifferent_ShouldReturnFalse()
+        public void Compare_WhenValuesAreDifferentAndStrings_ShouldReturnFalse()
         {
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
-            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, (version) => _validKey);
 
             // Act
-            var result = AesGcmEncryption.Compare(valueEncrypted, value + "a", (version) => _validKey, out var version);
+            var result = AesGcmEncryption.Compare(valueEncrypted, value + "a", (version) => _validKey, out var _);
 
             // Assert
             Assert.False(result, "The comparison returned true.");
         }
 
         [Fact]
-        public void Compare_WhenValuesAreDifferent_ShouldReturnTrue()
+        public void Compare_WhenValuesAreDifferentAndStrings_ShouldReturnTrue()
         {
             // Arrange
             var value = StringGenerator.GeneratePrintableAscii();
-            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, _validKey);
+            ushort version = 1;
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, version, (version) => _validKey);
 
             // Act
-            var result = AesGcmEncryption.Compare(valueEncrypted, value, (version) => _validKey, out var version);
+            var result = AesGcmEncryption.Compare(valueEncrypted, value, (version) => _validKey, out var versionResult);
 
             // Assert
             Assert.True(result, "The comparison returned false.");
+            Assert.Equal(version, versionResult);
+        }
+
+        [Fact]
+        public void Compare_WhenValuesAreDifferentAndByteArrays_ShouldReturnFalse()
+        {
+            // Arrange
+            var value = new byte[] { 0, 4, 2, 1, 5, 3 };
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, 1, (version) => _validKey);
+
+            // Act
+            var result = AesGcmEncryption.Compare(valueEncrypted, value.Concat(new byte[] { 6 }).ToArray(), (version) => _validKey, out var _);
+
+            // Assert
+            Assert.False(result, "The comparison returned true.");
+        }
+
+        [Fact]
+        public void Compare_WhenValuesAreDifferentAndByteArrays_ShouldReturnTrue()
+        {
+            // Arrange
+            var value = new byte[] { 0, 4, 2, 1, 5, 3 };
+            ushort version = 1;
+            var valueEncrypted = AesGcmEncryption.Encrypt(value, version, (version) => _validKey);
+
+            // Act
+            var result = AesGcmEncryption.Compare(valueEncrypted, value, (version) => _validKey, out var versionResult);
+
+            // Assert
+            Assert.True(result, "The comparison returned false.");
+            Assert.Equal(version, versionResult);
         }
     }
 }

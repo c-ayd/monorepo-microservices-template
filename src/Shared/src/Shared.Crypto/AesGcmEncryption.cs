@@ -9,6 +9,8 @@ namespace Shared.Crypto
     /// </summary>
     public static class AesGcmEncryption
     {
+        private const int _maxStackSize = 1024;
+
         private const int _versionSize = sizeof(ushort);
         private const int _keySize = 32;
         private const int _nonceSize = 12;
@@ -21,30 +23,44 @@ namespace Shared.Crypto
         /// <param name="keyVersion">Version of the encryption key, which is used for decryption</param>
         /// <param name="key">Encryption key</param>
         /// <returns>Returns the encrypted value.</returns>
-        public static string Encrypt(string value, ushort keyVersion, string key)
+        public static string Encrypt(string value, ushort keyVersion, Func<ushort, string> key)
         {
             if (string.IsNullOrEmpty(value))
                 throw new ArgumentException("The value cannot be null or empty.", nameof(value));
-            if (string.IsNullOrEmpty(key))
-                throw new ArgumentException("The key cannot be null or empty.", nameof(key));
-            
+
+            var bytes = Encrypt(Encoding.UTF8.GetBytes(value).AsSpan(), keyVersion, key);
+            return Convert.ToBase64String(bytes);
+        }
+
+        /// <summary>
+        /// Encrypts a given value.
+        /// </summary>
+        /// <param name="value">Value to encrypt</param>
+        /// <param name="keyVersion">Version of the encryption key, which is used for decryption</param>
+        /// <param name="key">Encryption key</param>
+        /// <returns>Returns the encrypted value.</returns>
+        public static byte[] Encrypt(ReadOnlySpan<byte> value, ushort keyVersion, Func<ushort, string> key)
+        {
             // The given key must be a specific length for AES-256-GCM.
-            var keyBytes = Convert.FromBase64String(key).AsSpan();
+            var keyValue = key(keyVersion);
+            if (string.IsNullOrEmpty(keyValue))
+                throw new ArgumentException("The value cannot be null or empty.", nameof(keyValue));
+
+            var keyBytes = Convert.FromBase64String(keyValue).AsSpan();
             if (keyBytes.Length != _keySize)
                 throw new InvalidEncryptionKeySizeException(_keySize, keyBytes.Length);
 
             // Encrypted value bytes are: {Version}{Nonce}{Tag}{Cipher}
             // Version bytes are 16 bits (2 bytes)
-            var valueBytes = Encoding.UTF8.GetBytes(value).AsSpan();
-            var encryptedDataLength = _versionSize + _nonceSize + _tagSize + valueBytes.Length;
-            Span<byte> bytes = encryptedDataLength <= 1024 ?
+            var encryptedDataLength = _versionSize + _nonceSize + _tagSize + value.Length;
+            Span<byte> bytes = encryptedDataLength <= _maxStackSize ?
                 stackalloc byte[encryptedDataLength] :
                 new byte[encryptedDataLength];
 
             var versionBytes = bytes.Slice(0, _versionSize);
             var nonceBytes = bytes.Slice(_versionSize, _nonceSize);
             var tagBytes = bytes.Slice(_versionSize + _nonceSize, _tagSize);
-            var cipherBytes = bytes.Slice(_versionSize + _nonceSize + _tagSize, valueBytes.Length);
+            var cipherBytes = bytes.Slice(_versionSize + _nonceSize + _tagSize, value.Length);
 
             // Fill the bytes
             versionBytes[0] = (byte)(keyVersion >> 8);
@@ -52,9 +68,9 @@ namespace Shared.Crypto
             RandomNumberGenerator.Fill(nonceBytes);
 
             using var aesGcm = new AesGcm(keyBytes, _tagSize);
-            aesGcm.Encrypt(nonceBytes, valueBytes, cipherBytes, tagBytes);
+            aesGcm.Encrypt(nonceBytes, value, cipherBytes, tagBytes);
 
-            return Convert.ToBase64String(bytes);
+            return bytes.ToArray();
         }
 
         /// <summary>
@@ -69,11 +85,15 @@ namespace Shared.Crypto
             if (string.IsNullOrEmpty(valueEncrypted))
                 throw new ArgumentException("The encrypted value cannot be null or empty.", nameof(valueEncrypted));
 
+            var decryptedBytes = Decrypt(Convert.FromBase64String(valueEncrypted).AsSpan(), key, out version);
+            return Encoding.UTF8.GetString(decryptedBytes);
+        }
+
+        public static byte[] Decrypt(ReadOnlySpan<byte> valueEncrypted, Func<ushort, string> key, out ushort version)
+        {
             // Encrypted value bytes are: {Version}{Nonce}{Tag}{Cipher}
             // Version bytes are 16 bits (2 bytes)
-            Span<byte> bytes = Convert.FromBase64String(valueEncrypted).AsSpan();
-
-            var versionBytes = bytes.Slice(0, _versionSize);
+            var versionBytes = valueEncrypted.Slice(0, _versionSize);
             version = (ushort)(versionBytes[0] << 8 | versionBytes[1]);
             var keyValue = key(version);
 
@@ -82,21 +102,21 @@ namespace Shared.Crypto
             if (keyBytes.Length != _keySize)
                 throw new InvalidEncryptionKeySizeException(_keySize, keyBytes.Length);
 
-            var cipherSize = bytes.Length - (_versionSize + _nonceSize + _tagSize);
+            var cipherSize = valueEncrypted.Length - (_versionSize + _nonceSize + _tagSize);
 
-            var nonceBytes = bytes.Slice(_versionSize, _nonceSize);
-            var tagBytes = bytes.Slice(_versionSize + _nonceSize, _tagSize);
-            var cipherBytes = bytes.Slice(_versionSize + _nonceSize + _tagSize, cipherSize);
+            var nonceBytes = valueEncrypted.Slice(_versionSize, _nonceSize);
+            var tagBytes = valueEncrypted.Slice(_versionSize + _nonceSize, _tagSize);
+            var cipherBytes = valueEncrypted.Slice(_versionSize + _nonceSize + _tagSize, cipherSize);
 
             // Decrypt
-            Span<byte> decryptedValueBytes = cipherSize <= 1024 ?
+            Span<byte> decryptedBytes = cipherSize <= _maxStackSize ?
                 stackalloc byte[cipherSize] :
                 new byte[cipherSize];
 
             using var aesGcm = new AesGcm(keyBytes, _tagSize);
-            aesGcm.Decrypt(nonceBytes, cipherBytes, tagBytes, decryptedValueBytes);
+            aesGcm.Decrypt(nonceBytes, cipherBytes, tagBytes, decryptedBytes);
 
-            return Encoding.UTF8.GetString(decryptedValueBytes);
+            return decryptedBytes.ToArray();
         }
 
         /// <summary>
@@ -114,13 +134,15 @@ namespace Shared.Crypto
             if (string.IsNullOrEmpty(valuePlain))
                 throw new ArgumentException("The plain value cannot be null or empty.", nameof(valuePlain));
 
+            return Compare(Convert.FromBase64String(valueEncrypted).AsSpan(), Encoding.UTF8.GetBytes(valuePlain).AsSpan(), key, out version);
+        }
+
+        public static bool Compare(ReadOnlySpan<byte> valueEncrypted, ReadOnlySpan<byte> valuePlain, Func<ushort, string> key, out ushort version)
+        {
             var valueDecrypted = Decrypt(valueEncrypted, key, out version);
 
-            var decryptedBytes = Encoding.UTF8.GetBytes(valueDecrypted).AsSpan();
-            var valueBytes = Encoding.UTF8.GetBytes(valuePlain).AsSpan();
-
             // To prevent timing attack, the comparison is made over CryptographicOperations
-            return CryptographicOperations.FixedTimeEquals(decryptedBytes, valueBytes);
+            return CryptographicOperations.FixedTimeEquals(valueDecrypted, valuePlain);
         }
     }
 }
