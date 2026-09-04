@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Shared.Crypto;
 using Shared.Crypto.Exceptions;
-using Shared.Crypto.Options;
+using Shared.Crypto.Structures;
 using Shared.Test.Generators;
 
 namespace Shared.Test.Unit.Crypto
