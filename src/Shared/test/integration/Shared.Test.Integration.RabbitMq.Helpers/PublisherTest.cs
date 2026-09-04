@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers;
@@ -24,6 +25,19 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         public const string _normalQueue = "test.publisher.queue";
         public const string _rejectQueue = "test.publisher.queue.reject";
 
+        private readonly Dictionary<string, object?> TestHeaders = new Dictionary<string, object?>
+        {
+            { "Key1", 10 },
+            { "Key2", "Test value" },
+            { "Key3", true },
+            { "Key4", 10.10 },
+            { "Key5", new int[] { 1, 2, 3, 4, 5 } },
+            { "Key6", new byte[] { 5, 4, 3, 2, 1 } },
+            { "Key7", new TestClass() },
+            { "Key8", new Dictionary<int, string>() { { 1, "abc" }, { 2, "def" } } },
+            { "Key9", null }
+        };
+
         private readonly TimeSpan TimeoutSpan = TimeSpan.FromSeconds(30);
 
         private readonly RabbitMqFixture _rabbitMqFixture;
@@ -34,13 +48,14 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         }
 
         [Fact]
-        public async Task PublishMessageAsync_WhenMessageIsNotRouted_ShouldAddMessageToDroppedMessages()
+        public async Task PublishMessageAsync_WhenMessageIsNotRouted_ShouldAddMessageToDroppedMessagesWithCorrectHeaders()
         {
             // Arrange
             var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
-                CorrelationId = Guid.NewGuid().ToString()
+                CorrelationId = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, object?>(TestHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -64,16 +79,20 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
 
             var droppedMessages = GetDroppedMessages(publisher);
             Assert.Single(droppedMessages);
+
+            var headers = droppedMessages.Values.First().Properties.Headers;
+            CheckHeaders(headers, true);
         }
 
         [Fact]
-        public async Task PublishMessageAsync_WhenMessageIsNotAcknowledged_ShouldSetMessagePendingToFalse()
+        public async Task PublishMessageAsync_WhenMessageIsNotAcknowledged_ShouldSetMessagePendingToFalseWithCorrectHeaders()
         {
             // Arrange
             var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
-                CorrelationId = Guid.NewGuid().ToString()
+                CorrelationId = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, object?>(TestHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -98,6 +117,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var pendingMessages = GetPendingMessages(publisher);
             Assert.Single(pendingMessages);
             Assert.False(GetIsPending(pendingMessages.Values.First()), "The pending value is true.");
+
+            var headers = pendingMessages.Values.First().Properties.Headers;
+            CheckHeaders(headers, false);
         }
 
         [Fact]
@@ -141,18 +163,19 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         }
 
         [Fact]
-        public async Task PublishMessageAsync_WhenChannelIsNotOpen_ShouldAddMessageToDroppedMessages()
+        public async Task PublishMessageAsync_WhenChannelIsNotOpen_ShouldAddMessageToDroppedMessagesWithCorrectHeaders()
         {
             // Arrange
             var properties = new BasicProperties()
             {
-                CorrelationId = Guid.NewGuid().ToString()
+                CorrelationId = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, object?>(TestHeaders)
             };
 
             var publisher = new TestPublisher();
             await InitializePublisherAsync(publisher);
 
-            var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.Public | BindingFlags.Instance)!;
             channelPropertyInfo.SetValue(publisher, null);
 
             // Act
@@ -167,6 +190,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var droppedMessages = GetDroppedMessages(publisher);
             Assert.Empty(pendingMessages);
             Assert.Single(droppedMessages);
+
+            var headers = droppedMessages.Values.First().Properties.Headers;
+            CheckHeaders(headers, false);
         }
 
         private async Task InitializePublisherAsync(TestPublisher publisher,
@@ -198,6 +224,58 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         {
             var propertyInfo = typeof(Message).GetProperty("IsPending", BindingFlags.NonPublic | BindingFlags.Instance)!;
             return (bool)propertyInfo.GetValue(message)!;
+        }
+
+        private void CheckHeaders(IDictionary<string, object?>? headers, bool isReturned)
+        {
+            Assert.NotNull(headers);
+
+            int key1Value;
+            string key2Value;
+            bool key3Value;
+            double key4Value;
+            int[] key5Value;
+            byte[] key6Value;
+            TestClass key7Value;
+            Dictionary<int, string> key8Value;
+            string key9Value;
+
+            if (isReturned)
+            {
+                key1Value = JsonSerializer.Deserialize<int>((byte[])headers["Key1"]!);
+                key2Value = JsonSerializer.Deserialize<string>((byte[])headers["Key2"]!)!;
+                key3Value = JsonSerializer.Deserialize<bool>((byte[])headers["Key3"]!);
+                key4Value = JsonSerializer.Deserialize<double>((byte[])headers["Key4"]!);
+                key5Value = JsonSerializer.Deserialize<int[]>((byte[])headers["Key5"]!)!;
+                key6Value = JsonSerializer.Deserialize<byte[]>((byte[])headers["Key6"]!)!;
+                key7Value = JsonSerializer.Deserialize<TestClass>((byte[])headers["Key7"]!)!;
+                key8Value = JsonSerializer.Deserialize<Dictionary<int, string>>((byte[])headers["Key8"]!)!;
+                key9Value = JsonSerializer.Deserialize<string>((byte[])headers["Key9"]!)!;
+            }
+            else
+            {
+                key1Value = JsonSerializer.Deserialize<int>((string)headers["Key1"]!);
+                key2Value = JsonSerializer.Deserialize<string>((string)headers["Key2"]!)!;
+                key3Value = JsonSerializer.Deserialize<bool>((string)headers["Key3"]!);
+                key4Value = JsonSerializer.Deserialize<double>((string)headers["Key4"]!);
+                key5Value = JsonSerializer.Deserialize<int[]>((string)headers["Key5"]!)!;
+                key6Value = JsonSerializer.Deserialize<byte[]>((string)headers["Key6"]!)!;
+                key7Value = JsonSerializer.Deserialize<TestClass>((string)headers["Key7"]!)!;
+                key8Value = JsonSerializer.Deserialize<Dictionary<int, string>>((string)headers["Key8"]!)!;
+                key9Value = JsonSerializer.Deserialize<string>((string)headers["Key9"]!)!;
+            }
+
+            Assert.Equal((int)TestHeaders["Key1"]!, key1Value);
+            Assert.Equal((string)TestHeaders["Key2"]!, key2Value);
+            Assert.Equal((bool)TestHeaders["Key3"]!, key3Value);
+            Assert.Equal((double)TestHeaders["Key4"]!, key4Value);
+            Assert.True(((int[])TestHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
+            Assert.True(((byte[])TestHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
+            Assert.Equal(((TestClass)TestHeaders["Key7"]!).IntValue, key7Value.IntValue);
+            Assert.Equal(((TestClass)TestHeaders["Key7"]!).StrValue, key7Value.StrValue);
+            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[1], key8Value[1]);
+            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[2], key8Value[2]);
+            Assert.Equal((string)TestHeaders["Key9"]!, key9Value);
         }
 
         private class TestPublisher : Publisher
@@ -252,6 +330,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                     exchange: _rejectExchange,
                     routingKey: _rejectRouting);
             }
+        }
+
+        public class TestClass
+        {
+            public int IntValue { get; set; } = 5;
+            public string StrValue { get; set; } = "StrValue";
         }
     }
 }
