@@ -262,7 +262,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             var declareExchangeMethodInfo = typeof(Publisher).GetMethod("DeclareExchangesAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
             await (Task)declareExchangeMethodInfo.Invoke(publisher, [channel, default])!;
 
-            var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.Public | BindingFlags.Instance)!;
             channelPropertyInfo.SetValue(publisher, channel);
         }
 
