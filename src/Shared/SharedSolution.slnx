@@ -18,6 +18,7 @@
   </Folder>
   <Folder Name="/test/unit/">
     <Project Path="test/unit/Shared.Test.Unit.Crypto/Shared.Test.Unit.Crypto.csproj" />
+    <Project Path="test/unit/Shared.Test.Unit.RabbitMq.Helpers/Shared.Test.Unit.RabbitMq.Helpers.csproj" />
     <Project Path="test/unit/Shared.Test.Unit.Test.Generators/Shared.Test.Unit.Test.Generators.csproj" />
   </Folder>
 </Solution>
