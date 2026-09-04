@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers.Structs;
@@ -83,6 +84,19 @@ namespace Shared.RabbitMq.Helpers
             CancellationToken cancellationToken = default)
         {
             var message = new Message(_publisherName, exchangeName, routingKey, properties, body);
+
+            // To standardize the type of the header values for consumers, the header values are converted to
+            // JSON strings. By doing this, when rejected messages are saved somewhere and are sent again later,
+            // consumers do not need to know the source. They can directly threat all header values as JSON strings.
+            // This not just allows publishers to add any value type to the headers without conversions, but also
+            // services trying to resend rejected messages can directly use the header values without conversions.
+            if (properties.Headers != null)
+            {
+                foreach (var header in properties.Headers)
+                {
+                    properties.Headers[header.Key] = JsonSerializer.Serialize(header.Value);
+                }
+            }
 
             await PublishMessageAsync(message, cancellationToken);
         }
