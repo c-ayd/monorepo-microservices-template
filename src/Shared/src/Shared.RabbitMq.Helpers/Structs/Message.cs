@@ -55,7 +55,11 @@ namespace Shared.RabbitMq.Helpers.Structs
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Properties.CorrelationId!.GetHashCode(), PublisherName);
+            return HashCode.Combine(
+                PublisherName,
+                ExchangeName,
+                RoutingKey,
+                Properties.CorrelationId!.GetHashCode());
         }
     }
 }
