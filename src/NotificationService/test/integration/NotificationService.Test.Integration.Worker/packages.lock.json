@@ -584,9 +584,9 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
           "Microsoft.Extensions.Hosting": "[10.0.10, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
-          "RabbitMQ.Client": "[7.2.1, )",
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
+          "Shared.RabbitMq.Helpers": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )"
         }
       },
@@ -595,6 +595,12 @@
       },
       "shared.logging": {
         "type": "Project"
+      },
+      "shared.rabbitmq.helpers": {
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
+        }
       },
       "shared.rabbitmq.notifications": {
         "type": "Project",

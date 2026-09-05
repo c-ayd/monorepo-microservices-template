@@ -87,15 +87,6 @@
           "Npgsql": "10.0.3"
         }
       },
-      "RabbitMQ.Client": {
-        "type": "Direct",
-        "requested": "[7.2.1, )",
-        "resolved": "7.2.1",
-        "contentHash": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg==",
-        "dependencies": {
-          "System.Threading.RateLimiting": "8.0.0"
-        }
-      },
       "Humanizer.Core": {
         "type": "Transitive",
         "resolved": "2.14.1",
@@ -482,6 +473,14 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         }
       },
+      "RabbitMQ.Client": {
+        "type": "Transitive",
+        "resolved": "7.2.1",
+        "contentHash": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg==",
+        "dependencies": {
+          "System.Threading.RateLimiting": "8.0.0"
+        }
+      },
       "System.CodeDom": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -550,6 +549,12 @@
       },
       "shared.logging": {
         "type": "Project"
+      },
+      "shared.rabbitmq.helpers": {
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
+        }
       },
       "shared.rabbitmq.notifications": {
         "type": "Project",

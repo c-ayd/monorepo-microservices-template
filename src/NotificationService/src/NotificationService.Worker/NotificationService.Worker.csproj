@@ -17,12 +17,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
-    <PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\src\Shared.Helpers\Shared.Helpers.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Notifications\Shared.RabbitMq.Notifications.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Logging\Shared.Logging.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Helpers\Shared.RabbitMq.Helpers.csproj" />
   </ItemGroup>
 </Project>
