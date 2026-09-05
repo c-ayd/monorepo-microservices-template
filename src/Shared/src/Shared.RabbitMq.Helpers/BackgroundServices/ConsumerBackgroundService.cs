@@ -163,13 +163,21 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
             if (Channel != null)
             {
-                await Channel.CloseAsync();
+                if (Channel.IsOpen)
+                {
+                    await Channel.CloseAsync();
+                }
+
                 await Channel.DisposeAsync();
             }
 
             if (_connection != null)
             {
-                await _connection.CloseAsync();
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+                
                 await _connection.DisposeAsync();
             }
 
