@@ -281,6 +281,14 @@
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
         }
       },
+      "RabbitMQ.Client": {
+        "type": "Transitive",
+        "resolved": "7.2.1",
+        "contentHash": "YKXEfg9fVQiTKgZlvIhAfPSFaamEgi8DsQmisCH0IAsU4FYLrtoguDrDj6JtJVGUt40QPnBLRH6fTQcAC4qsOg==",
+        "dependencies": {
+          "System.Threading.RateLimiting": "8.0.0"
+        }
+      },
       "RESPite": {
         "type": "Transitive",
         "resolved": "3.1.31",
@@ -363,6 +371,11 @@
         "resolved": "10.0.5",
         "contentHash": "8IBJWcCT9+e4Bmevm4T7+fQEiAh133KGiz4oiVTgJckd3Q76OFdR1falgn9lpz7+C4HJvogCDJeAa2QmvbeVtg=="
       },
+      "System.Threading.RateLimiting": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "7mu9v0QDv66ar3DpGSZHg9NuNcxDaaAcnMULuZlaTpP9+hwXhrxNGsF5GmLkSHxFdb5bBc1TzeujsRgTrPWi+Q=="
+      },
       "authservice.application": {
         "type": "Project",
         "dependencies": {
@@ -392,7 +405,10 @@
         }
       },
       "shared.rabbitmq.notifications": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
+        }
       },
       "shared.redis": {
         "type": "Project",

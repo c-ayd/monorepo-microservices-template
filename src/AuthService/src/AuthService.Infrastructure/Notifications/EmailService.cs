@@ -28,13 +28,13 @@ namespace AuthService.Infrastructure.Notifications
                 publisherConfirmationTrackingEnabled: false));
 
             await channel.ExchangeDeclareAsync(
-                exchange: RabbitMqEmailConfiguration.ExchangeName,
-                type: ExchangeType.Topic,
+                exchange: EmailConfiguration.ExchangeName,
+                type: EmailConfiguration.ExchangeType,
                 durable: true,
                 autoDelete: false);
             await channel.ExchangeDeclareAsync(
-                exchange: RabbitMqEmailConfiguration.DlxName,
-                type: ExchangeType.Topic,
+                exchange: EmailConfiguration.DlxName,
+                type: EmailConfiguration.DlxExchangeType,
                 durable: true,
                 autoDelete: false);
 
@@ -44,8 +44,8 @@ namespace AuthService.Infrastructure.Notifications
 
                 var properties = new BasicProperties(args.BasicProperties);
                 await channel.BasicPublishAsync(
-                    exchange: RabbitMqEmailConfiguration.DlxName,
-                    routingKey: RabbitMqEmailConfiguration.DeadLetterRoutingKey,
+                    exchange: EmailConfiguration.DlxName,
+                    routingKey: EmailConfiguration.DeadLetterRoutingKey,
                     mandatory: false,
                     basicProperties: properties,
                     body: args.Body,
@@ -55,7 +55,7 @@ namespace AuthService.Infrastructure.Notifications
             return channel;
         }
 
-        public async Task SendAsync(RabbitMqEmailMessage message, CancellationToken cancellationToken = default)
+        public async Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default)
         {
             var channel = await _channel.Value;
 
@@ -66,8 +66,8 @@ namespace AuthService.Infrastructure.Notifications
             };
 
             await channel.BasicPublishAsync(
-                exchange: RabbitMqEmailConfiguration.ExchangeName,
-                routingKey: RabbitMqEmailConfiguration.RoutingKey,
+                exchange: EmailConfiguration.ExchangeName,
+                routingKey: EmailConfiguration.RoutingKey,
                 mandatory: true,
                 basicProperties: properties,
                 body: JsonSerializer.SerializeToUtf8Bytes(message),

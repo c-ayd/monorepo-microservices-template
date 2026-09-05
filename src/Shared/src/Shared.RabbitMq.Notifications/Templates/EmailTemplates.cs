@@ -1,6 +1,6 @@
 namespace Shared.RabbitMq.Notifications.Templates
 {
-    public static class RabbitMqEmailTemplates
+    public static class EmailTemplates
     {
         /// <summary>
         /// This template requires the following parameters.
