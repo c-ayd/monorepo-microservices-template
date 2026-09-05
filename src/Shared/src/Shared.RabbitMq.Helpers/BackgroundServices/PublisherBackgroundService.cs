@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using Shared.RabbitMq.Helpers.Exceptions;
 using Shared.RabbitMq.Helpers.Structures;
 
 namespace Shared.RabbitMq.Helpers.BackgroundServices
@@ -54,6 +53,16 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
         private async Task InitializeAsync(CancellationToken cancellationToken)
         {
+            if (_connection != null)
+            {
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+
+                await _connection.DisposeAsync();
+            }
+
             _connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
 
             foreach (var publisher in _publishers)
@@ -64,15 +73,6 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_connection == null)
-            {
-                var exception = new ConnectionNotEstablishedException();
-                _logger.LogError(exception, "The connection to RabbitMQ is null. Message: {Message}",
-                    exception.Message);
-
-                throw exception;
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay((int)_retryPublishTime.TotalMilliseconds, stoppingToken);
@@ -80,7 +80,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 foreach (var publisher in _publishers)
                 {
                     // Check connection and channel statuses
-                    if (!_connection.IsOpen)
+                    if (_connection == null || !_connection.IsOpen)
                     {
                         await InitializeAsync(stoppingToken);
                     }
@@ -188,15 +188,23 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             {
                 if (publisher.Channel != null)
                 {
-                    await publisher.Channel!.CloseAsync();
-                    await publisher.Channel!.DisposeAsync();
+                    if (publisher.Channel.IsOpen)
+                    {
+                        await publisher.Channel.CloseAsync();
+                    }
+
+                    await publisher.Channel.DisposeAsync();
                 }
             }
 
             if (_connection != null)
             {
-                await _connection!.CloseAsync();
-                await _connection!.DisposeAsync();
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+
+                await _connection.DisposeAsync();
             }
 
             await base.StopAsync(cancellationToken);
