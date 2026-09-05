@@ -259,11 +259,11 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             channel.BasicNacksAsync += (AsyncEventHandler<BasicNackEventArgs>)notAcknowledgeEvent;
             channel.BasicReturnAsync += (AsyncEventHandler<BasicReturnEventArgs>)returnEvent;
 
-            var declareExchangeMethodInfo = typeof(Publisher).GetMethod("DeclareExchangesAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            await (Task)declareExchangeMethodInfo.Invoke(publisher, [channel, default])!;
-
             var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.Public | BindingFlags.Instance)!;
             channelPropertyInfo.SetValue(publisher, channel);
+
+            var declareExchangeMethodInfo = typeof(Publisher).GetMethod("DeclareExchangesAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            await (Task)declareExchangeMethodInfo.Invoke(publisher, [default])!;
         }
 
         private IConnection GetConnection(TestBackgroundService backgroundService)
@@ -339,21 +339,21 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             {
             }
 
-            protected override async Task DeclareExchangesAsync(IChannel channel, CancellationToken cancellationToken = default)
+            protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken = default)
             {
-                await channel.ExchangeDeclareAsync(
+                await Channel!.ExchangeDeclareAsync(
                     exchange: _exchangeName,
                     type: ExchangeType.Direct,
                     durable: true,
                     autoDelete: false);
 
                 // Declare queues for test
-                await channel.QueueDeclareAsync(
+                await Channel.QueueDeclareAsync(
                     queue: _queueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false);
-                await channel.QueueBindAsync(
+                await Channel.QueueBindAsync(
                     queue: _queueName,
                     exchange: _exchangeName,
                     routingKey: _routingKey);

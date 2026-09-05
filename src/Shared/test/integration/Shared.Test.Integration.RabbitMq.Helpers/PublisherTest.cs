@@ -284,38 +284,38 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             {
             }
 
-            protected override async Task DeclareExchangesAsync(IChannel channel, CancellationToken cancellationToken = default)
+            protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken = default)
             {
-                await channel.ExchangeDeclareAsync(
+                await Channel!.ExchangeDeclareAsync(
                     exchange: _normalExchange,
                     type: ExchangeType.Direct,
                     durable: true,
                     autoDelete: false);
 
-                await channel.ExchangeDeclareAsync(
+                await Channel.ExchangeDeclareAsync(
                     exchange: _rejectExchange,
                     type: ExchangeType.Direct,
                     durable: true,
                     autoDelete: false);
                 
-                await channel.ExchangeDeclareAsync(
+                await Channel.ExchangeDeclareAsync(
                     exchange: _noQueueExchange,
                     type: ExchangeType.Direct,
                     durable: true,
                     autoDelete: false);
 
                 // Declare queues for test
-                await channel.QueueDeclareAsync(
+                await Channel.QueueDeclareAsync(
                     queue: _normalQueue,
                     durable: true,
                     exclusive: false,
                     autoDelete: false);
-                await channel.QueueBindAsync(
+                await Channel.QueueBindAsync(
                     queue: _normalQueue,
                     exchange: _normalExchange,
                     routingKey: _normalRouting);
 
-                await channel.QueueDeclareAsync(
+                await Channel.QueueDeclareAsync(
                     queue: _rejectQueue,
                     durable: true,
                     exclusive: false,
@@ -325,7 +325,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                         { "x-max-length", 0 },
                         { "x-overflow", "reject-publish" }
                     });
-                await channel.QueueBindAsync(
+                await Channel.QueueBindAsync(
                     queue: _rejectQueue,
                     exchange: _rejectExchange,
                     routingKey: _rejectRouting);
