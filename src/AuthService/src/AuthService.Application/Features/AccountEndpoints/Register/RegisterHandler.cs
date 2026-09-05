@@ -1,6 +1,7 @@
 using System.Net;
 using AuthService.Application.Abstractions.Crypto;
 using AuthService.Application.Abstractions.DbContexts;
+using AuthService.Application.Abstractions.MessageBrokers;
 using AuthService.Application.Options;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
@@ -11,6 +12,8 @@ using Microsoft.Extensions.Options;
 using Shared.Crypto;
 using Shared.Http.Response;
 using Shared.Http.Response.Structures;
+using Shared.RabbitMq.Notifications.Messages;
+using Shared.RabbitMq.Notifications.Templates;
 
 namespace AuthService.Application.Features.AccountEndpoints.Register
 {
@@ -22,6 +25,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             IPasswordHasher passwordHasher,
             IHashVersions hashVersions,
             IOptions<TokenLifespansOptions> tokenLifespansOptions,
+            IEmailService emailService,
             HttpContext context,
             ILogger<RegisterHandler> logger)
         {
@@ -57,22 +61,12 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             await authDbContext.SaveChangesAsync();
 
             // Send an email verification message to the message broker
-            // try
-            // {
-            //     await emailService.SendAsync(new EmailMessage(
-            //         To: [request.Email!],
-            //         TemplateId: EmailTemplates.EmailVerification,
-            //         Language: newAccount.PreferredLanguage,
-            //         BodyParameters: [emailVerificationTokenValue]
-            //     ));
-            // }
-            // catch (Exception exception)
-            // {
-            //     logger.LogError(exception, "Something went wrong while sending an email message to the message broker. Message: {Message}",
-            //         exception.Message);
-
-            //     return JsonResponseBuilder.Success(HttpStatusCode.MultiStatus);
-            // }
+            await emailService.SendAsync(new EmailMessage(
+                To: [request.Email!],
+                TemplateId: EmailTemplates.EmailVerification,
+                Language: newAccount.PreferredLanguage,
+                BodyParameters: [emailVerificationTokenValue])
+            );
 
             return JsonResponseBuilder.Success(HttpStatusCode.OK);
         }
