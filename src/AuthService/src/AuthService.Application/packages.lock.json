@@ -183,6 +183,12 @@
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
       },
+      "shared.rabbitmq.helpers": {
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
+        }
+      },
       "shared.rabbitmq.notifications": {
         "type": "Project",
         "dependencies": {

@@ -17,6 +17,9 @@ namespace AuthService.Persistence
                 _.UseNpgsql(configuration.GetConnectionString(nameof(ConnectionStringsOptions.AuthDb))));
             services.AddScoped<IAuthDbContext>(sp => sp.GetRequiredService<AuthDbContext>());
 
+            services.AddDbContext<AuthRejectedMessagesDbContext>(_ =>
+                _.UseNpgsql(configuration.GetConnectionString(nameof(ConnectionStringsOptions.AuthRejectedMessagesDb))));
+
             services.AddSingleton<ITokenBlacklist, TokenBlacklist>();
         }
     }
