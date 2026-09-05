@@ -7,7 +7,7 @@ namespace AuthService.Application.Abstractions.Crypto
     /// </summary>
     public interface IHashVersions
     {
-        byte CurrentHashVersion { get; }
+        byte CurrentVersion { get; }
 
         /// <summary>
         /// Gets the hash options based on a given version.
