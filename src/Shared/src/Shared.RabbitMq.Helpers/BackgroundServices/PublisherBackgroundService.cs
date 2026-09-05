@@ -53,6 +53,16 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
         private async Task InitializeAsync(CancellationToken cancellationToken)
         {
+            if (_connection != null)
+            {
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+
+                await _connection.DisposeAsync();
+            }
+
             _connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
 
             foreach (var publisher in _publishers)

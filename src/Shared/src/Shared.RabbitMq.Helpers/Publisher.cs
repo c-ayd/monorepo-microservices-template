@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers.Structures;
@@ -33,6 +34,16 @@ namespace Shared.RabbitMq.Helpers
 
         internal async Task InitializeAsync(IConnection connection, CancellationToken cancellationToken = default)
         {
+            if (Channel != null)
+            {
+                if (Channel.IsOpen)
+                {
+                    await Channel.CloseAsync();
+                }
+
+                await Channel.DisposeAsync();
+            }
+
             Channel = await connection.CreateChannelAsync(new CreateChannelOptions(
                 publisherConfirmationsEnabled: true,
                 publisherConfirmationTrackingEnabled: false));
