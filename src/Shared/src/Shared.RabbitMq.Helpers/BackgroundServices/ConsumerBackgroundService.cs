@@ -57,6 +57,11 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         {
             if (_connection != null)
             {
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+
                 await _connection.DisposeAsync();
             }
 
@@ -69,6 +74,11 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         {
             if (Channel != null)
             {
+                if (Channel.IsOpen)
+                {
+                    await Channel.CloseAsync();
+                }
+
                 await Channel.DisposeAsync();
             }
 
