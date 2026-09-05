@@ -6,7 +6,7 @@ namespace AuthService.Infrastructure.Crypto
 {
     public class HashVersions : IHashVersions
     {
-        public byte CurrentHashVersion { get; private set; } = 1;
+        public byte CurrentVersion { get; private set; } = 1;
 
         public HashOptions GetHashOptions(byte version)
         {
