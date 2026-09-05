@@ -2,7 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using Shared.RabbitMq.Helpers.Exceptions;
-using Shared.RabbitMq.Helpers.Structs;
+using Shared.RabbitMq.Helpers.Structures;
 
 namespace Shared.RabbitMq.Helpers.BackgroundServices
 {

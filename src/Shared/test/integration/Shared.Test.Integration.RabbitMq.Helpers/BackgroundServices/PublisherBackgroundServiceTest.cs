@@ -7,7 +7,7 @@ using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers;
 using Shared.RabbitMq.Helpers.BackgroundServices;
 using Shared.RabbitMq.Helpers.Exceptions;
-using Shared.RabbitMq.Helpers.Structs;
+using Shared.RabbitMq.Helpers.Structures;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.RabbitMq.Helpers.Collections;

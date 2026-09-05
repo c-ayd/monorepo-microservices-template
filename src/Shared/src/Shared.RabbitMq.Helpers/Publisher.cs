@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Shared.RabbitMq.Helpers.Structs;
+using Shared.RabbitMq.Helpers.Structures;
 
 namespace Shared.RabbitMq.Helpers
 {

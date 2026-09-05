@@ -1,6 +1,6 @@
 using RabbitMQ.Client;
 
-namespace Shared.RabbitMq.Helpers.Structs
+namespace Shared.RabbitMq.Helpers.Structures
 {
     /// <summary>
     /// Represents a message that is sent to RabbitMQ.

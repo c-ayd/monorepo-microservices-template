@@ -5,7 +5,7 @@ using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers;
-using Shared.RabbitMq.Helpers.Structs;
+using Shared.RabbitMq.Helpers.Structures;
 using Shared.Test.Generators;
 using Shared.Test.Integration.RabbitMq.Helpers.Collections;
 using Shared.Test.Integration.RabbitMq.Helpers.Fixtures;
