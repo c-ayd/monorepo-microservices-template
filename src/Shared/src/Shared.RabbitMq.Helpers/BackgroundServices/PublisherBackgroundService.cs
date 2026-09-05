@@ -178,15 +178,23 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             {
                 if (publisher.Channel != null)
                 {
-                    await publisher.Channel!.CloseAsync();
-                    await publisher.Channel!.DisposeAsync();
+                    if (publisher.Channel.IsOpen)
+                    {
+                        await publisher.Channel.CloseAsync();
+                    }
+
+                    await publisher.Channel.DisposeAsync();
                 }
             }
 
             if (_connection != null)
             {
-                await _connection!.CloseAsync();
-                await _connection!.DisposeAsync();
+                if (_connection.IsOpen)
+                {
+                    await _connection.CloseAsync();
+                }
+
+                await _connection.DisposeAsync();
             }
 
             await base.StopAsync(cancellationToken);
