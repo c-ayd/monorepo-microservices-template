@@ -31,11 +31,6 @@ namespace Shared.RabbitMq.Helpers
             MaxRetry = maxRetryForMesages;
         }
 
-        /// <summary>
-        /// Initializes the channel and declares the exchanges.
-        /// </summary>
-        /// <param name="connection">RabbitMQ connection</param>
-        /// <param name="cancellationToken">Token to cancel the initialization</param>
         internal async Task InitializeAsync(IConnection connection, CancellationToken cancellationToken = default)
         {
             Channel = await connection.CreateChannelAsync(new CreateChannelOptions(
@@ -59,14 +54,14 @@ namespace Shared.RabbitMq.Helpers
                 }
             }
 
-            await DeclareExchangesAsync(Channel, cancellationToken);
+            await DeclareExchangesAsync(cancellationToken);
         }
 
         /// <summary>
         /// Declares exchanges.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
-        protected abstract Task DeclareExchangesAsync(IChannel channel, CancellationToken cancellationToken = default);
+        protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Publishes a message.
