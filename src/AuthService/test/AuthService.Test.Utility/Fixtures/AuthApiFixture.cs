@@ -92,10 +92,12 @@ namespace AuthService.Test.Utility.Fixtures
             await _authDbContainer.StopAsync();
             await _rabbitMqContainer.StopAsync();
             await _dataProtectionRedisContainer.StopAsync();
+            await _tokenBlacklistRedisContainer.StopAsync();
 
             await _authDbContainer.DisposeAsync();
             await _rabbitMqContainer.DisposeAsync();
             await _dataProtectionRedisContainer.DisposeAsync();
+            await _tokenBlacklistRedisContainer.DisposeAsync();
         }
 
         private class AuthApiFactory : WebApplicationFactory<Program>

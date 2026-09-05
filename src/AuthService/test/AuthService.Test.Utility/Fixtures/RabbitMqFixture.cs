@@ -49,9 +49,9 @@ namespace AuthService.Test.Utility.Fixtures
         public async Task DisposeAsync()
         {
             await Connection.CloseAsync();
-            await _container.StopAsync();
-
             await Connection.DisposeAsync();
+
+            await _container.StopAsync();
             await _container.DisposeAsync();
         }
     }
