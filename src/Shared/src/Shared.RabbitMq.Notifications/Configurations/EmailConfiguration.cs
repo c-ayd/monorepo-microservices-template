@@ -1,6 +1,6 @@
 namespace Shared.RabbitMq.Notifications.Configurations
 {
-    public static class RabbitMqEmailConfiguration
+    public static class EmailConfiguration
     {
         public const string ExchangeName = "notification.events";
         public const string DlxName = "notification.dlx";

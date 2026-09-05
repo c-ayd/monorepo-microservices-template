@@ -80,12 +80,12 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
             var to = EmailGenerator.Generate();
 
             await _workerFixture.PublishMessageAsync(
-                new RabbitMqEmailMessage(
+                new EmailMessage(
                     [to],
                     emailTemplate.TemplateId,
                     emailTemplate.Language),
-                RabbitMqEmailConfiguration.ExchangeName,
-                RabbitMqEmailConfiguration.RoutingKey,
+                EmailConfiguration.ExchangeName,
+                EmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
             // Act
@@ -141,14 +141,14 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
             var bodyParameters = new string[] { "123", "456" };
 
             await _workerFixture.PublishMessageAsync(
-                new RabbitMqEmailMessage(
+                new EmailMessage(
                     [to],
                     emailTemplate.TemplateId,
                     emailTemplate.Language,
                     subjectParameters,
                     bodyParameters),
-                RabbitMqEmailConfiguration.ExchangeName,
-                RabbitMqEmailConfiguration.RoutingKey,
+                EmailConfiguration.ExchangeName,
+                EmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
             // Act
@@ -193,8 +193,8 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
 
             await _workerFixture.PublishMessageAsync(
                 message,
-                RabbitMqEmailConfiguration.ExchangeName,
-                RabbitMqEmailConfiguration.RoutingKey,
+                EmailConfiguration.ExchangeName,
+                EmailConfiguration.RoutingKey,
                 TimeoutInSeconds);
 
             // Act
@@ -204,7 +204,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
             var elapsedTimeInSeconds = 0;
             while (true)
             {
-                var dlqInfo = await _workerFixture.GetQueueInfo(RabbitMqEmailConfiguration.DlqName);
+                var dlqInfo = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
                 if (dlqInfo.MessageCount == 1)
                     break;
 

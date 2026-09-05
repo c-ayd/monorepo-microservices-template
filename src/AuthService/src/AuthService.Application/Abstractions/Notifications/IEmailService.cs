@@ -12,6 +12,6 @@ namespace AuthService.Application.Abstractions.Notifications
         /// </summary>
         /// <param name="message">Message to send</param>
         /// <param name="cancellationToken">Token to cancel the publishing message process</param>
-        Task SendAsync(RabbitMqEmailMessage message, CancellationToken cancellationToken = default);
+        Task SendAsync(EmailMessage message, CancellationToken cancellationToken = default);
     }
 }

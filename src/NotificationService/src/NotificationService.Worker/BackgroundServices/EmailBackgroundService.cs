@@ -79,7 +79,7 @@ namespace NotificationService.Worker.BackgroundServices
                 try
                 {
                     // Deserialize message
-                    var message = JsonSerializer.Deserialize<RabbitMqEmailMessage>(args.Body.ToArray(), new JsonSerializerOptions()
+                    var message = JsonSerializer.Deserialize<EmailMessage>(args.Body.ToArray(), new JsonSerializerOptions()
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -149,7 +149,7 @@ namespace NotificationService.Worker.BackgroundServices
             try
             {
                 await _channel!.BasicConsumeAsync(
-                    queue: RabbitMqEmailConfiguration.QueueName,
+                    queue: EmailConfiguration.QueueName,
                     autoAck: false,
                     consumer: consumer,
                     cancellationToken: stoppingToken);
@@ -185,13 +185,13 @@ namespace NotificationService.Worker.BackgroundServices
         private async Task DeclareExchangesAsync()
         {
             await _channel!.ExchangeDeclareAsync(
-                exchange: RabbitMqEmailConfiguration.ExchangeName,
+                exchange: EmailConfiguration.ExchangeName,
                 type: ExchangeType.Topic,
                 durable: true,
                 autoDelete: false);
 
             await _channel.ExchangeDeclareAsync(
-                exchange: RabbitMqEmailConfiguration.DlxName,
+                exchange: EmailConfiguration.DlxName,
                 type: ExchangeType.Direct,
                 durable: true,
                 autoDelete: false);
@@ -200,33 +200,33 @@ namespace NotificationService.Worker.BackgroundServices
         private async Task DeclareQueuesAsync()
         {
             await _channel!.QueueDeclareAsync(
-                queue: RabbitMqEmailConfiguration.DlqName,
+                queue: EmailConfiguration.DlqName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false);
             await _channel.QueueBindAsync(
-                queue: RabbitMqEmailConfiguration.DlqName,
-                exchange: RabbitMqEmailConfiguration.DlxName,
-                routingKey: RabbitMqEmailConfiguration.DeadLetterRoutingKey);
+                queue: EmailConfiguration.DlqName,
+                exchange: EmailConfiguration.DlxName,
+                routingKey: EmailConfiguration.DeadLetterRoutingKey);
 
             var arguments = new Dictionary<string, object?>()
             {
                 { "x-queue-type", "quorum" },
                 { "delivery-limit", RetryLimit },
-                { "x-dead-letter-exchange", RabbitMqEmailConfiguration.DlxName },
-                { "x-dead-letter-routing-key", RabbitMqEmailConfiguration.DeadLetterRoutingKey }
+                { "x-dead-letter-exchange", EmailConfiguration.DlxName },
+                { "x-dead-letter-routing-key", EmailConfiguration.DeadLetterRoutingKey }
             };
 
             await _channel.QueueDeclareAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
+                queue: EmailConfiguration.QueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: arguments);
             await _channel.QueueBindAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
-                exchange: RabbitMqEmailConfiguration.ExchangeName,
-                routingKey: RabbitMqEmailConfiguration.RoutingKey);
+                queue: EmailConfiguration.QueueName,
+                exchange: EmailConfiguration.ExchangeName,
+                routingKey: EmailConfiguration.RoutingKey);
         }
     }
 }

@@ -63,9 +63,9 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             // Send an email verification message to the message broker
             try
             {
-                await emailService.SendAsync(new RabbitMqEmailMessage(
+                await emailService.SendAsync(new EmailMessage(
                     To: [request.Email!],
-                    TemplateId: RabbitMqEmailTemplates.EmailVerification,
+                    TemplateId: EmailTemplates.EmailVerification,
                     Language: newAccount.PreferredLanguage,
                     BodyParameters: [emailVerificationTokenValue]
                 ));

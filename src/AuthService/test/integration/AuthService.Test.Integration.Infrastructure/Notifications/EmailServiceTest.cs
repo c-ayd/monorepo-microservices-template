@@ -40,38 +40,38 @@ namespace AuthService.Test.Integration.Infrastructure.Notifications
         {
             // Arrange
             await _channel.QueueDeclareAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
+                queue: EmailConfiguration.QueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false);
             await _channel.QueueBindAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
-                exchange: RabbitMqEmailConfiguration.ExchangeName,
-                routingKey: RabbitMqEmailConfiguration.RoutingKey);
+                queue: EmailConfiguration.QueueName,
+                exchange: EmailConfiguration.ExchangeName,
+                routingKey: EmailConfiguration.RoutingKey);
 
             var to = new string[] {EmailGenerator.Generate() };
             var templateId = StringGenerator.GeneratePrintableAscii();
             var language = StringGenerator.GeneratePrintableAscii();
             var subjectParams = new string[] { StringGenerator.GeneratePrintableAscii() };
             var bodyParams = new string[] { StringGenerator.GeneratePrintableAscii(), StringGenerator.GeneratePrintableAscii() };
-            var message = new RabbitMqEmailMessage(to, templateId, language, subjectParams, bodyParams);
+            var message = new EmailMessage(to, templateId, language, subjectParams, bodyParams);
 
             // Act
             await _emailService.SendAsync(message);
 
             // Assert
             var result = await _channel.BasicGetAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
+                queue: EmailConfiguration.QueueName,
                 autoAck: true);
 
             await _channel.QueueDeleteAsync(
-                queue: RabbitMqEmailConfiguration.QueueName,
+                queue: EmailConfiguration.QueueName,
                 ifUnused: false,
                 ifEmpty: false);
 
             Assert.NotNull(result);
 
-            var resultMessage = JsonSerializer.Deserialize<RabbitMqEmailMessage>(result.Body.Span)!;
+            var resultMessage = JsonSerializer.Deserialize<EmailMessage>(result.Body.Span)!;
             Assert.True(to.SequenceEqual(resultMessage.To), "The target email addresses are different.");
             Assert.Equal(templateId, resultMessage.TemplateId);
             Assert.Equal(language, resultMessage.Language);
@@ -84,21 +84,21 @@ namespace AuthService.Test.Integration.Infrastructure.Notifications
         {
             // Arrange
             await _channel.QueueDeclareAsync(
-                queue: RabbitMqEmailConfiguration.DlqName,
+                queue: EmailConfiguration.DlqName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false);
             await _channel.QueueBindAsync(
-                queue: RabbitMqEmailConfiguration.DlqName,
-                exchange: RabbitMqEmailConfiguration.DlxName,
-                routingKey: RabbitMqEmailConfiguration.DeadLetterRoutingKey);
+                queue: EmailConfiguration.DlqName,
+                exchange: EmailConfiguration.DlxName,
+                routingKey: EmailConfiguration.DeadLetterRoutingKey);
 
             var to = new string[] { EmailGenerator.Generate() };
             var templateId = StringGenerator.GeneratePrintableAscii();
             var language = StringGenerator.GeneratePrintableAscii();
             var subjectParams = new string[] { StringGenerator.GeneratePrintableAscii() };
             var bodyParams = new string[] { StringGenerator.GeneratePrintableAscii(), StringGenerator.GeneratePrintableAscii() };
-            var message = new RabbitMqEmailMessage(to, templateId, language, subjectParams, bodyParams);
+            var message = new EmailMessage(to, templateId, language, subjectParams, bodyParams);
 
             // Act
             await _emailService.SendAsync(message);
@@ -111,7 +111,7 @@ namespace AuthService.Test.Integration.Infrastructure.Notifications
                 await Task.Delay(1000);
                 
                 result = await _channel.BasicGetAsync(
-                    queue: RabbitMqEmailConfiguration.DlqName,
+                    queue: EmailConfiguration.DlqName,
                     autoAck: true);
 
                 if (result != null)
@@ -121,7 +121,7 @@ namespace AuthService.Test.Integration.Infrastructure.Notifications
                 if (elapsedTimeInSeconds >= TimeoutInSeconds)
                 {
                     await _channel.QueueDeleteAsync(
-                        queue: RabbitMqEmailConfiguration.DlqName,
+                        queue: EmailConfiguration.DlqName,
                         ifUnused: false,
                         ifEmpty: false);
                     
@@ -130,11 +130,11 @@ namespace AuthService.Test.Integration.Infrastructure.Notifications
             }
 
             await _channel.QueueDeleteAsync(
-                queue: RabbitMqEmailConfiguration.DlqName,
+                queue: EmailConfiguration.DlqName,
                 ifUnused: false,
                 ifEmpty: false);
 
-            var resultMessage = JsonSerializer.Deserialize<RabbitMqEmailMessage>(result.Body.Span)!;
+            var resultMessage = JsonSerializer.Deserialize<EmailMessage>(result.Body.Span)!;
             Assert.True(to.SequenceEqual(resultMessage.To), "The target email addresses are different.");
             Assert.Equal(templateId, resultMessage.TemplateId);
             Assert.Equal(language, resultMessage.Language);

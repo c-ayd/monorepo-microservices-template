@@ -1,6 +1,6 @@
 namespace Shared.RabbitMq.Notifications.Messages
 {
-    public record RabbitMqEmailMessage(
+    public record EmailMessage(
         string[] To,
         string TemplateId,
         string? Language,
