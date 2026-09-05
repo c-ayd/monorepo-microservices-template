@@ -175,7 +175,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenApplicationShutsDown_ShouldCombineLeftOverMessagesAndCallSaveRejectedMessagesAndCloseConnectionAndChannels()
+        public async Task StopAsync_WhenApplicationShutsDown_ShouldCombineLeftOverMessagesAndCallSaveRejectedMessagesAndCloseConnectionAndChannels()
         {
             // Arrange
             var publisher = new TestPublisher();
