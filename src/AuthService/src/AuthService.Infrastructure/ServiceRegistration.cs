@@ -1,10 +1,7 @@
 using AuthService.Application.Abstractions.Authentication;
 using AuthService.Application.Abstractions.Crypto;
-using AuthService.Application.Abstractions.Notifications;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Infrastructure.Crypto;
-using AuthService.Infrastructure.MessageBrokers;
-using AuthService.Infrastructure.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AuthService.Infrastructure
@@ -20,9 +17,6 @@ namespace AuthService.Infrastructure
             services.AddSingleton<IHashVersions, HashVersions>();
             services.AddSingleton<IDataProtectionService, DataProtectionService>();
             services.AddSingleton<IAesGcmEncryptionVersions, AesGcmEncryptionVersions>();
-
-            services.AddSingleton<RabbitMqConnectionService>();
-            services.AddSingleton<IEmailService, EmailService>();
         }
     }
 }

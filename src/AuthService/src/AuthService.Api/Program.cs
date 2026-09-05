@@ -24,7 +24,6 @@ builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
 //~ End
 
-builder.Services.AddHostedService<RabbitMqInitializerBackgroundService>();
 builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
 
 builder.RegisterOptionsFromAssemblies(
