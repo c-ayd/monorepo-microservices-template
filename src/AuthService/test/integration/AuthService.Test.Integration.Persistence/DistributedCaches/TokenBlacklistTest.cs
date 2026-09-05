@@ -20,6 +20,7 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             var connStrings = new ConnectionStringsOptions()
             {
                 AuthDb = "",
+                AuthRejectedMessagesDb = "",
                 AuthDataProtectionRedis = "",
                 AuthTokenBlacklistRedis = redisFixture.GetConnectionString()
             };
