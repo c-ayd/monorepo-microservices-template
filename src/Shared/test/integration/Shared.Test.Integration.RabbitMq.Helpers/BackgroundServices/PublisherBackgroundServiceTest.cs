@@ -6,7 +6,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers;
 using Shared.RabbitMq.Helpers.BackgroundServices;
-using Shared.RabbitMq.Helpers.Exceptions;
 using Shared.RabbitMq.Helpers.Structures;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
@@ -60,29 +59,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             // Assert
             Assert.NotNull(GetConnection(backgroundService));
             Assert.NotNull(publisher.Channel);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_WhenConnectionIsNull_ShouldThrowExceptionBeforeMainLoopStarts()
-        {
-            // Arrange
-            var publisher = new TestPublisher();
-            var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
-                new List<Publisher>() { publisher },
-                RetryTime,
-                _logger
-            );
-
-            // Act
-            var exception = await Record.ExceptionAsync(async () =>
-            {
-                await ExecuteAsync(backgroundService).WaitAsync(TimeoutSpan);
-            });
-
-            // Assert
-            Assert.NotNull(exception);
-            Assert.IsType<ConnectionNotEstablishedException>(exception);
         }
 
         [Fact]

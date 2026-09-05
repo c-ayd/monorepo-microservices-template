@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using Shared.RabbitMq.Helpers.Exceptions;
 using Shared.RabbitMq.Helpers.Structures;
 
 namespace Shared.RabbitMq.Helpers.BackgroundServices
@@ -64,15 +63,6 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_connection == null)
-            {
-                var exception = new ConnectionNotEstablishedException();
-                _logger.LogError(exception, "The connection to RabbitMQ is null. Message: {Message}",
-                    exception.Message);
-
-                throw exception;
-            }
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay((int)_retryPublishTime.TotalMilliseconds, stoppingToken);
@@ -80,7 +70,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 foreach (var publisher in _publishers)
                 {
                     // Check connection and channel statuses
-                    if (!_connection.IsOpen)
+                    if (_connection == null || !_connection.IsOpen)
                     {
                         await InitializeAsync(stoppingToken);
                     }
