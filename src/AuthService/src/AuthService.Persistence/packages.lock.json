@@ -384,6 +384,7 @@
           "Shared.Crypto": "[1.0.0, )",
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
+          "Shared.RabbitMq.Helpers": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )",
           "Shared.Redis": "[1.0.0, )",
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
@@ -402,6 +403,12 @@
         "type": "Project",
         "dependencies": {
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
+        }
+      },
+      "shared.rabbitmq.helpers": {
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
         }
       },
       "shared.rabbitmq.notifications": {
