@@ -339,7 +339,10 @@
         "type": "Project"
       },
       "shared.rabbitmq.notifications": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "RabbitMQ.Client": "[7.2.1, )"
+        }
       },
       "shared.redis": {
         "type": "Project",

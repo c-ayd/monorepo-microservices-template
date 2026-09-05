@@ -186,13 +186,13 @@ namespace NotificationService.Worker.BackgroundServices
         {
             await _channel!.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.ExchangeName,
-                type: ExchangeType.Topic,
+                type: EmailConfiguration.ExchangeType,
                 durable: true,
                 autoDelete: false);
 
             await _channel.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.DlxName,
-                type: ExchangeType.Direct,
+                type: EmailConfiguration.DlxExchangeType,
                 durable: true,
                 autoDelete: false);
         }

@@ -29,12 +29,12 @@ namespace AuthService.Infrastructure.Notifications
 
             await channel.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.ExchangeName,
-                type: ExchangeType.Topic,
+                type: EmailConfiguration.ExchangeType,
                 durable: true,
                 autoDelete: false);
             await channel.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.DlxName,
-                type: ExchangeType.Topic,
+                type: EmailConfiguration.DlxExchangeType,
                 durable: true,
                 autoDelete: false);
 
