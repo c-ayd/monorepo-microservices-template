@@ -16,14 +16,14 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
     public class PublisherTest
     {
         private const string _normalExchange = "test.publisher.exchange";
-        private const string _rejectExchange = "test.publisher.exchange.reject";
-        private const string _noQueueExchange = "test.publisher.exchange.no-queue";
-
         private const string _normalRouting = "test.publisher.routing.normal";
-        private const string _rejectRouting = "test.publisher.routing.reject";
-
         public const string _normalQueue = "test.publisher.queue";
+
+        private const string _rejectExchange = "test.publisher.exchange.reject";
+        private const string _rejectRouting = "test.publisher.routing.reject";
         public const string _rejectQueue = "test.publisher.queue.reject";
+
+        private const string _noQueueExchange = "test.publisher.exchange.no-queue";
 
         private readonly Dictionary<string, object?> TestHeaders = new Dictionary<string, object?>
         {

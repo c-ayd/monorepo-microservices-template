@@ -23,9 +23,13 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
         private const int _maxRetry = 3;
 
-        private const string _exchangeName = "test.publisher.background.exchange";
-        private const string _routingKey = "test.publisher.background.routing";
-        private const string _queueName = "test.publisher.background.queue";
+        private const string _normalExchange = "test.publisher.background.exchange";
+        private const string _normalRouting = "test.publisher.background.routing.normal";
+        public const string _normalQueue = "test.publisher.background.queue";
+
+        private const string _rejectExchange = "test.publisher.background.exchange.reject";
+        private const string _rejectRouting = "test.publisher.background.routing.reject";
+        public const string _rejectQueue = "test.publisher.background.queue.reject";
 
         private readonly RabbitMqFixture _rabbitMqFixture;
         private readonly LoggerFixture<PublisherBackgroundServiceTest> _logger;
@@ -82,7 +86,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenThereIsNotAcknowledgedAndDroppedMessages_ShouldRetryPublishing()
+        public async Task ExecuteAsync_WhenThereAreNotAcknowledgedAndDroppedMessages_ShouldRetryPublishing()
         {
             // Arrange
             var publisher = new TestPublisher();
@@ -95,16 +99,16 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
             var pendingMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
             SetIsPending(pendingMessage, false);
 
             var droppedMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
 
@@ -125,14 +129,14 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.Empty(GetDroppedMessages(publisher));
 
             var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
-            var queue = await channel.QueueDeclarePassiveAsync(_queueName);
+            var queue = await channel.QueueDeclarePassiveAsync(_normalQueue);
             Assert.Equal((uint)2, queue.MessageCount);
 
-            await channel.QueuePurgeAsync(_queueName);
+            await channel.QueuePurgeAsync(_normalQueue);
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenThereIsMessagesThatExceedRetryLimit_ShouldRemovedFromDictionaryAndPutIntoRejectedListAndCallSaveRejectedMessages()
+        public async Task ExecuteAsync_WhenThereAreMessagesThatExceedRetryLimit_ShouldRemovedFromDictionaryAndPutIntoRejectedListAndCallSaveRejectedMessages()
         {
             // Arrange
             var publisher = new TestPublisher();
@@ -145,22 +149,33 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
             var pendingMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
             SetIsPending(pendingMessage, false);
             SetRetryCount(pendingMessage, _maxRetry);
 
+            var pendingMessage2 = new Message(
+                "TestPublisher",
+                _rejectExchange,
+                _rejectRouting,
+                new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
+                JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
+            SetDeliveryTag(pendingMessage2, 1);
+            SetIsPending(pendingMessage2, false);
+            SetRetryCount(pendingMessage2, 1);
+
             var droppedMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
             SetRetryCount(droppedMessage, _maxRetry);
 
             GetPendingMessages(publisher).TryAdd(0, pendingMessage);
+            GetPendingMessages(publisher).TryAdd(1, pendingMessage2);
             GetDroppedMessages(publisher).TryAdd(droppedMessage.GetHashCode(), droppedMessage);
 
             await InitializeBackgroundServiceAndPublisher(backgroundService, publisher);
@@ -176,8 +191,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.Empty(GetPendingMessages(publisher));
             Assert.Empty(GetDroppedMessages(publisher));
 
-            Assert.Equal(2, backgroundService.RejectedMessages.Count);
+            Assert.Equal(3, backgroundService.RejectedMessages.Count);
             Assert.Contains(pendingMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
+            Assert.Contains(pendingMessage2.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
             Assert.Contains(droppedMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
             Assert.False(backgroundService.IsShuttingDown, "The shutdown parameter was given as true.");
         }
@@ -196,20 +212,20 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
             var pendingMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
             var droppedMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
             var rejectedMessage = new Message(
                 "TestPublisher",
-                _exchangeName,
-                _routingKey,
+                _normalExchange,
+                _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
 
@@ -290,6 +306,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             return (ConcurrentDictionary<int, Message>)propertyInfo.GetValue(publisher)!;
         }
 
+        private void SetDeliveryTag(Message message, ulong value)
+        {
+            var propertyInfo = typeof(Message).GetProperty("DeliveryTag", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            propertyInfo.SetValue(message, value);
+        }
+
         private void SetIsPending(Message message, bool value)
         {
             var propertyInfo = typeof(Message).GetProperty("IsPending", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -342,21 +364,42 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken = default)
             {
                 await Channel!.ExchangeDeclareAsync(
-                    exchange: _exchangeName,
+                    exchange: _normalExchange,
+                    type: ExchangeType.Direct,
+                    durable: true,
+                    autoDelete: false);
+
+                await Channel.ExchangeDeclareAsync(
+                    exchange: _rejectExchange,
                     type: ExchangeType.Direct,
                     durable: true,
                     autoDelete: false);
 
                 // Declare queues for test
                 await Channel.QueueDeclareAsync(
-                    queue: _queueName,
+                    queue: _normalQueue,
                     durable: true,
                     exclusive: false,
                     autoDelete: false);
                 await Channel.QueueBindAsync(
-                    queue: _queueName,
-                    exchange: _exchangeName,
-                    routingKey: _routingKey);
+                    queue: _normalQueue,
+                    exchange: _normalExchange,
+                    routingKey: _normalRouting);
+
+                await Channel.QueueDeclareAsync(
+                    queue: _rejectQueue,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: new Dictionary<string, object?>()
+                    {
+                        { "x-max-length", 0 },
+                        { "x-overflow", "reject-publish" }
+                    });
+                await Channel.QueueBindAsync(
+                    queue: _rejectQueue,
+                    exchange: _rejectExchange,
+                    routingKey: _rejectRouting);
             }
         }
     }
