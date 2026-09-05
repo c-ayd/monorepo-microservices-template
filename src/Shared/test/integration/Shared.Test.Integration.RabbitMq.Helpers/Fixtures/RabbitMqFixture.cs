@@ -9,6 +9,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.Fixtures
         private RabbitMqContainer _container = null!;
 
         public IConnection Connection { get; private set; } = null!;
+        private IChannel _channel = null!;
 
         public async Task InitializeAsync()
         {
@@ -22,6 +23,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.Fixtures
             await _container.StartAsync();
 
             Connection = await CreateConnectionFactory().CreateConnectionAsync();
+            _channel = await Connection.CreateChannelAsync(new CreateChannelOptions(
+                publisherConfirmationsEnabled: true,
+                publisherConfirmationTrackingEnabled: true));
         }
 
         public ConnectionFactory CreateConnectionFactory()
@@ -33,6 +37,20 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.Fixtures
                 HostName = "localhost",
                 Port = _container.GetMappedPublicPort(5672)
             };
+        }
+
+        public async Task PublishMessageAsync(string exchangeName, string routingKey, byte[] body)
+        {
+            await _channel.BasicPublishAsync(
+                exchange: exchangeName,
+                routingKey: routingKey,
+                mandatory: true,
+                body: body);
+        }
+
+        public async Task ClearQueue(string queueName)
+        {
+            await _channel.QueuePurgeAsync(queueName);
         }
 
         public async Task DisposeAsync()
