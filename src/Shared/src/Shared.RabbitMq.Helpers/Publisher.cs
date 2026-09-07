@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers.Structures;
@@ -12,7 +11,7 @@ namespace Shared.RabbitMq.Helpers
     /// </summary>
     public abstract class Publisher
     {
-        private readonly string _publisherName;
+        public string PublisherName { get; private set; }
 
         public IChannel? Channel { get; private set; }
         private SemaphoreSlim _channelSemaphore = new SemaphoreSlim(1, 1);
@@ -24,7 +23,7 @@ namespace Shared.RabbitMq.Helpers
 
         public Publisher(string publisherName, int maxRetryForMesages)
         {
-            _publisherName = publisherName;
+            PublisherName = publisherName;
 
             Channel = null;
             PendingMessages = new ConcurrentDictionary<ulong, Message>();
@@ -89,7 +88,7 @@ namespace Shared.RabbitMq.Helpers
             byte[] body,
             CancellationToken cancellationToken = default)
         {
-            var message = new Message(_publisherName, exchangeName, routingKey, properties, body);
+            var message = new Message(PublisherName, exchangeName, routingKey, properties, body);
 
             // To standardize the type of the header values for consumers, the header values are converted to
             // JSON strings. By doing this, when rejected messages are saved somewhere and are sent again later,
@@ -192,7 +191,7 @@ namespace Shared.RabbitMq.Helpers
         private async Task HandleReturnedMessages(object obj, BasicReturnEventArgs args)
         {
             var properties = new BasicProperties(args.BasicProperties);
-            var message = new Message(_publisherName, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
+            var message = new Message(PublisherName, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
 
             DroppedMessages.TryAdd(message.GetHashCode(), message);
         }
