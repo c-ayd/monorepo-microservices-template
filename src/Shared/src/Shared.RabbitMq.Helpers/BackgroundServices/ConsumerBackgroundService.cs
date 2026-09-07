@@ -10,7 +10,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(5);
 
         private readonly ConnectionFactory _connectionFactory;
-        private readonly TimeSpan _connectionCheckTime;
+        private readonly TimeSpan _healthCheckTime;
         private readonly string _queueName;
         private readonly ushort _prefetchCount;
         private readonly ILogger _logger;
@@ -21,7 +21,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
         public ConsumerBackgroundService(
             ConnectionFactory connectionFactory,
-            TimeSpan connectionCheckTime,
+            TimeSpan healthCheckTime,
             string queueName,
             ushort prefetchCount,
             ILogger logger)
@@ -30,7 +30,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             _connectionFactory.AutomaticRecoveryEnabled = false;
             _connectionFactory.TopologyRecoveryEnabled = false;
 
-            _connectionCheckTime = connectionCheckTime;
+            _healthCheckTime = healthCheckTime;
             _queueName = queueName;
             _prefetchCount = prefetchCount;
             _logger = logger;
@@ -130,10 +130,10 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                await Task.Delay(_healthCheckTime, stoppingToken);
+
                 try
                 {
-                    await Task.Delay(_connectionCheckTime, stoppingToken);
-
                     if (_connection == null || !_connection.IsOpen)
                     {
                         await InitializeConnectionAsync(stoppingToken);
@@ -145,12 +145,14 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.LogWarning("The consumer is cancelled.");
+                    _logger.LogWarning("The consumer background service is cancelled.");
+                    
+                    throw;
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogCritical(exception, "Someting went wrong while checking connection. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
-                        _connectionCheckTime.TotalSeconds,
+                    _logger.LogCritical(exception, "Someting went wrong while checking the connection and channel. The process will rerun in {CheckTime} seconds. Message: {Message}",
+                        _healthCheckTime.TotalSeconds,
                         exception.Message);
                 }
             }
