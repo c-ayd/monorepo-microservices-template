@@ -7,10 +7,9 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 {
     public abstract class ConsumerBackgroundService : BackgroundService
     {
-        private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(5);
-
         private readonly ConnectionFactory _connectionFactory;
         private readonly TimeSpan _healthCheckTime;
+        private readonly TimeSpan _graceTime;
         private readonly string _queueName;
         private readonly ushort _prefetchCount;
         private readonly ILogger _logger;
@@ -22,6 +21,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         public ConsumerBackgroundService(
             ConnectionFactory connectionFactory,
             TimeSpan healthCheckTime,
+            TimeSpan graceTime,
             string queueName,
             ushort prefetchCount,
             ILogger logger)
@@ -31,6 +31,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             _connectionFactory.TopologyRecoveryEnabled = false;
 
             _healthCheckTime = healthCheckTime;
+            _graceTime = graceTime;
             _queueName = queueName;
             _prefetchCount = prefetchCount;
             _logger = logger;
