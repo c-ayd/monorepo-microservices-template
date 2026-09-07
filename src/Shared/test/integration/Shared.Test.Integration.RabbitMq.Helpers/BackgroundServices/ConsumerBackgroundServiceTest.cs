@@ -52,6 +52,8 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.NotNull(GetConnection(backgroundService));
             Assert.NotNull(backgroundService.Channel);
             Assert.NotNull(GetConsumerTag(backgroundService));
+
+            await backgroundService.StopAsync(default);
         }
 
         [Fact]
@@ -90,6 +92,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.Equal(message, backgroundService.Message);
 
             await _rabbitMqFixture.ClearQueue(_queueName);
+            await backgroundService.StopAsync(default);
         }
         
         [Theory]
@@ -112,12 +115,18 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
             if (isConnectionClosed)
             {
-                SetConnection(backgroundService, null);
+                await SetConnection(backgroundService, null);
             }
             else if (isChannelClosed)
             {
-                SetChannel(backgroundService, null);
+                await SetChannel(backgroundService, null);
             }
+
+            var message = StringGenerator.GeneratePrintableAscii();
+            await _rabbitMqFixture.PublishMessageAsync(
+                _exchangeName,
+                _routingKey,
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
             var cts = new CancellationTokenSource();
@@ -130,6 +139,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.NotEqual(consumerTag, GetConsumerTag(backgroundService));
             Assert.NotNull(GetConnection(backgroundService));
             Assert.NotNull(backgroundService.Channel);
+
+            await _rabbitMqFixture.ClearQueue(_queueName);
+            await backgroundService.StopAsync(default);
         }
 
         [Fact]
@@ -166,14 +178,43 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             return (IConnection)fieldInfo.GetValue(backgroundService)!;
         }
 
-        private void SetConnection(TestBackgroundService backgroundService, IConnection? value)
+        private async Task SetConnection(TestBackgroundService backgroundService, IConnection? value)
         {
             var fieldInfo = typeof(ConsumerBackgroundService).GetField("_connection", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var connection = (IConnection)fieldInfo.GetValue(backgroundService)!;
+            if (connection != null)
+            {
+                if (connection.IsOpen)
+                {
+                    await connection.CloseAsync();
+                }
+
+                await connection.DisposeAsync();
+            }
+
             fieldInfo.SetValue(backgroundService, value);
+
+            await SetChannel(backgroundService, null);
         }
 
-        private void SetChannel(TestBackgroundService backgroundService, IChannel? value)
+        private async Task SetChannel(TestBackgroundService backgroundService, IChannel? value)
         {
+            if (backgroundService.Channel != null)
+            {
+                if (backgroundService.Channel.IsOpen)
+                {
+                    var consumerTag = GetConsumerTag(backgroundService);
+                    if (consumerTag != null)
+                    {
+                        await backgroundService.Channel.BasicCancelAsync(consumerTag);
+                    }
+
+                    await backgroundService.Channel.CloseAsync();
+                }
+
+                await backgroundService.Channel.DisposeAsync();
+            }
+
             var propertyInfo = typeof(ConsumerBackgroundService).GetProperty("Channel", BindingFlags.Public | BindingFlags.Instance)!;
             propertyInfo.SetValue(backgroundService, value);
         }
