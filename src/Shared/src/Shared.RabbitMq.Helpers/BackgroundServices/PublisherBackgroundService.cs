@@ -89,23 +89,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                         await publisher.InitializeAsync(_connection!, stoppingToken);
                     }
 
-                    // Retry publishing messages that are not acknowledged or delivered
-                    foreach (var message in publisher.PendingMessages.ToArray())
-                    {
-                        if (message.Value.IsPending)
-                            continue;
-
-                        if (message.Value.RetryCount >= publisher.MaxRetry)
-                        {
-                            _rejectedMessages.TryAdd(message.Value.GetHashCode(), message.Value);
-                            publisher.PendingMessages.TryRemove(message.Key, out var _);
-                            continue;
-                        }
-
-                        ++message.Value.RetryCount;
-                        await publisher.PublishMessageAsync(message.Value, stoppingToken);
-                    }
-
+                    // Retry publishing messages that are not acknowledged or not delivered
                     foreach (var message in publisher.DroppedMessages.ToArray())
                     {
                         if (message.Value.RetryCount >= publisher.MaxRetry)

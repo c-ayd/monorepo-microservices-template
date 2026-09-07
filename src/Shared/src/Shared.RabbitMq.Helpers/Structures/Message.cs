@@ -33,7 +33,6 @@ namespace Shared.RabbitMq.Helpers.Structures
         public byte[] Body { get; init; }
 
         internal ulong DeliveryTag { get; set; }
-        internal bool IsPending { get; set; }
         internal int RetryCount { get; set; }
 
         public Message(
@@ -49,7 +48,6 @@ namespace Shared.RabbitMq.Helpers.Structures
             Properties = properties;
             Body = body;
             DeliveryTag = 0;
-            IsPending = true;
             RetryCount = 0;
         }
 

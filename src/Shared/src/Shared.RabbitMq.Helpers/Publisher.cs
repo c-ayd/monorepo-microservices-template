@@ -55,8 +55,8 @@ namespace Shared.RabbitMq.Helpers
             // Since the channel was closed and is renewed now, the events for the current pending messages will not fired.
             // The delivery tags will also start from 1 again, meaning the delivery tags in the pending messages become
             // stale data. Therefore, the pending messages are treated as dropped messages. In case there are messages that
-            // are saved in queues but are not removed from the pending messages list in this time window, the consumer should
-            // handle the duplicate messages if happens.
+            // are saved in RabbitMQ queues but are not removed from the pending messages in this time window, the consume
+            // should handle the duplicate messages if it happens.
             if (PendingMessages.Count > 0)
             {
                 foreach (var message in PendingMessages)
@@ -69,7 +69,7 @@ namespace Shared.RabbitMq.Helpers
         }
 
         /// <summary>
-        /// Declares exchanges.
+        /// Declares exchanges. Use the <see cref="Publisher.Channel"/> property to declare the exchanges.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
         protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken = default);
@@ -128,7 +128,6 @@ namespace Shared.RabbitMq.Helpers
                 PendingMessages.TryRemove(message.DeliveryTag, out var _);
 
                 message.DeliveryTag = deliveryTag.Value;
-                message.IsPending = true;
                 PendingMessages.TryAdd(deliveryTag.Value, message);
 
                 await Channel.BasicPublishAsync(
@@ -175,17 +174,17 @@ namespace Shared.RabbitMq.Helpers
             {
                 for (ulong i = args.DeliveryTag; i > 0; --i)
                 {
-                    if (!PendingMessages.TryGetValue(i, out var message))
+                    if (!PendingMessages.TryRemove(i, out var message))
                         break;
 
-                    message.IsPending = false;
+                    DroppedMessages.TryAdd(message.GetHashCode(), message);
                 }
             }
             else
             {
-                if (PendingMessages.TryGetValue(args.DeliveryTag, out var message))
+                if (PendingMessages.TryRemove(args.DeliveryTag, out var message))
                 {
-                    message.IsPending = false;
+                    DroppedMessages.TryAdd(message.GetHashCode(), message);
                 }
             }
         }

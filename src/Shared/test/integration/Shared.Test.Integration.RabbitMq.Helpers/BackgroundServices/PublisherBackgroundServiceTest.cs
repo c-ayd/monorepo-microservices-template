@@ -17,8 +17,8 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
     [Collection(nameof(RabbitMqCollection))]
     public class PublisherBackgroundServiceTest : IClassFixture<LoggerFixture<PublisherBackgroundServiceTest>>
     {
-        private readonly TimeSpan TimeoutSpan = TimeSpan.FromSeconds(5);
-        private readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan _timeoutSpan = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan _retryTime = TimeSpan.FromSeconds(1);
 
         private const int _maxRetry = 3;
 
@@ -49,7 +49,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             var backgroundService = new TestBackgroundService(
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
-                RetryTime,
+                _retryTime,
                 _logger
             );
 
@@ -62,24 +62,16 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenThereAreNotAcknowledgedAndDroppedMessages_ShouldRetryPublishing()
+        public async Task ExecuteAsync_WhenThereIsDroppedMessage_ShouldRetryPublishing()
         {
             // Arrange
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
-                RetryTime,
+                _retryTime,
                 _logger
             );
-
-            var pendingMessage = new Message(
-                "TestPublisher",
-                _normalExchange,
-                _normalRouting,
-                new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
-                JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
-            SetIsPending(pendingMessage, false);
 
             var droppedMessage = new Message(
                 "TestPublisher",
@@ -88,89 +80,88 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
 
-            GetPendingMessages(publisher).TryAdd(0, pendingMessage);
             GetDroppedMessages(publisher).TryAdd(droppedMessage.GetHashCode(), droppedMessage);
 
-            await InitializeBackgroundServiceAndPublisher(backgroundService, publisher);
+            var acknowledgeEventTcs = new TaskCompletionSource<bool>();
+            await InitializeBackgroundServiceAndPublisher(
+                backgroundService,
+                publisher,
+                acknowledgeEvent: async (obj, args) =>
+                {
+                    acknowledgeEventTcs.SetResult(true);
+                });
 
             // Act
-            try
-            {
-                await ExecuteAsync(backgroundService).WaitAsync(TimeoutSpan);
-            }
-            catch { }
+            var cts = new CancellationTokenSource();
+            var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
+
+            var result = await acknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
+            await cts.CancelAsync();
 
             // Assert
-            Assert.Empty(GetPendingMessages(publisher));
+            Assert.True(result, "The acknowledge event did not set the value to true.");
+
             Assert.Empty(GetDroppedMessages(publisher));
 
             var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
             var queue = await channel.QueueDeclarePassiveAsync(_normalQueue);
-            Assert.Equal((uint)2, queue.MessageCount);
+            Assert.Equal((uint)1, queue.MessageCount);
 
             await channel.QueuePurgeAsync(_normalQueue);
         }
 
         [Fact]
-        public async Task ExecuteAsync_WhenThereAreMessagesThatExceedRetryLimit_ShouldRemovedFromDictionaryAndPutIntoRejectedListAndCallSaveRejectedMessages()
+        public async Task ExecuteAsync_WhenThereIsMessagesThatExceedRetryLimit_ShouldRemovedFromDroppedAndPutMessageIntoRejectedAndCallSaveRejectedMessagesMethod()
         {
             // Arrange
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
-                RetryTime,
+                _retryTime,
                 _logger
             );
 
-            var pendingMessage = new Message(
-                "TestPublisher",
-                _normalExchange,
-                _normalRouting,
-                new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
-                JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
-            SetIsPending(pendingMessage, false);
-            SetRetryCount(pendingMessage, _maxRetry);
-
-            var pendingMessage2 = new Message(
+            var droppedMessage = new Message(
                 "TestPublisher",
                 _rejectExchange,
                 _rejectRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
-            SetDeliveryTag(pendingMessage2, 1);
-            SetIsPending(pendingMessage2, false);
-            SetRetryCount(pendingMessage2, 1);
+            SetRetryCount(droppedMessage, 1);
 
-            var droppedMessage = new Message(
-                "TestPublisher",
-                _normalExchange,
-                _normalRouting,
-                new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
-                JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
-            SetRetryCount(droppedMessage, _maxRetry);
-
-            GetPendingMessages(publisher).TryAdd(0, pendingMessage);
-            GetPendingMessages(publisher).TryAdd(1, pendingMessage2);
             GetDroppedMessages(publisher).TryAdd(droppedMessage.GetHashCode(), droppedMessage);
 
-            await InitializeBackgroundServiceAndPublisher(backgroundService, publisher);
+            int counter = 1;
+            var notAcknowledgeEventTcs = new TaskCompletionSource<bool>();
+            await InitializeBackgroundServiceAndPublisher(
+                backgroundService,
+                publisher,
+                notAcknowledgeEvent: async (obj, args) =>
+                {
+                    ++counter;
+                    if (counter >= _maxRetry)
+                    {
+                        notAcknowledgeEventTcs.SetResult(true);
+                    }
+                });
 
             // Act
-            try
-            {
-                await ExecuteAsync(backgroundService).WaitAsync(TimeoutSpan);
-            }
-            catch { }
+            var cts = new CancellationTokenSource();
+            var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
+
+            var result = await notAcknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
+            await Task.Delay(_timeoutSpan);     // Wait for the next the message to be in the rejected messages
+            await cts.CancelAsync();
 
             // Assert
-            Assert.Empty(GetPendingMessages(publisher));
+            Assert.True(result, "The not acknowledge event did not set the value to true.");
+
             Assert.Empty(GetDroppedMessages(publisher));
 
-            Assert.Equal(3, backgroundService.RejectedMessages.Count);
-            Assert.Contains(pendingMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
-            Assert.Contains(pendingMessage2.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
+            Assert.Single(backgroundService.RejectedMessages);
             Assert.Contains(droppedMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
+
             Assert.False(backgroundService.IsShuttingDown, "The shutdown parameter was given as true.");
         }
 
@@ -182,7 +173,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             var backgroundService = new TestBackgroundService(
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
-                RetryTime,
+                _retryTime,
                 _logger
             );
 
@@ -219,13 +210,18 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.Contains(pendingMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
             Assert.Contains(droppedMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
             Assert.Contains(rejectedMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
-            Assert.True(backgroundService.IsShuttingDown, "The shutdown parameter was given as true.");
 
+            Assert.True(backgroundService.IsShuttingDown, "The shutdown parameter was given as true.");
             Assert.False(GetConnection(backgroundService).IsOpen, "The connection is still open.");
             Assert.False(publisher.Channel!.IsOpen, "The channel is still open.");
         }
 
-        private async Task InitializeBackgroundServiceAndPublisher(TestBackgroundService backgroundService, TestPublisher publisher)
+        private async Task InitializeBackgroundServiceAndPublisher(
+            TestBackgroundService backgroundService,
+            TestPublisher publisher,
+            AsyncEventHandler<BasicAckEventArgs>? acknowledgeEvent = null,
+            AsyncEventHandler<BasicNackEventArgs>? notAcknowledgeEvent = null,
+            AsyncEventHandler<BasicReturnEventArgs>? returnEvent = null)
         {
             // Backgroung service
             var connFactoryfieldInfo = typeof(PublisherBackgroundService).GetField("_connectionFactory", BindingFlags.NonPublic | BindingFlags.Instance)!;
@@ -241,15 +237,18 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 publisherConfirmationTrackingEnabled: false));
 
             var acknowledgeMethodInfo = typeof(Publisher).GetMethod("HandleAcknowledgedMessages", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var acknowledgeEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicAckEventArgs>), publisher, acknowledgeMethodInfo);
+            var mainAcknowledgeEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicAckEventArgs>), publisher, acknowledgeMethodInfo);
             var notAcknowledgeMethodInfo = typeof(Publisher).GetMethod("HandleNotAcknowledgedMessages", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var notAcknowledgeEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicNackEventArgs>), publisher, notAcknowledgeMethodInfo);
+            var mainNotAcknowledgeEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicNackEventArgs>), publisher, notAcknowledgeMethodInfo);
             var returnMethodInfo = typeof(Publisher).GetMethod("HandleReturnedMessages", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var returnEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicReturnEventArgs>), publisher, returnMethodInfo);
+            var mainReturnEvent = Delegate.CreateDelegate(typeof(AsyncEventHandler<BasicReturnEventArgs>), publisher, returnMethodInfo);
 
-            channel.BasicAcksAsync += (AsyncEventHandler<BasicAckEventArgs>)acknowledgeEvent;
-            channel.BasicNacksAsync += (AsyncEventHandler<BasicNackEventArgs>)notAcknowledgeEvent;
-            channel.BasicReturnAsync += (AsyncEventHandler<BasicReturnEventArgs>)returnEvent;
+            channel.BasicAcksAsync += (AsyncEventHandler<BasicAckEventArgs>)mainAcknowledgeEvent;
+            channel.BasicNacksAsync += (AsyncEventHandler<BasicNackEventArgs>)mainNotAcknowledgeEvent;
+            channel.BasicReturnAsync += (AsyncEventHandler<BasicReturnEventArgs>)mainReturnEvent;
+            channel.BasicAcksAsync += acknowledgeEvent;
+            channel.BasicNacksAsync += notAcknowledgeEvent;
+            channel.BasicReturnAsync += returnEvent;
 
             var channelPropertyInfo = typeof(Publisher).GetProperty("Channel", BindingFlags.Public | BindingFlags.Instance)!;
             channelPropertyInfo.SetValue(publisher, channel);
@@ -264,10 +263,10 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             return (IConnection)fieldInfo.GetValue(backgroundService)!;
         }
 
-        private Task ExecuteAsync(TestBackgroundService backgroundService)
+        private Task ExecuteAsync(TestBackgroundService backgroundService, CancellationToken cancellationToken)
         {
             var methodInfo = typeof(PublisherBackgroundService).GetMethod("ExecuteAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            return (Task)methodInfo.Invoke(backgroundService, [default])!;
+            return (Task)methodInfo.Invoke(backgroundService, [cancellationToken])!;
         }
 
         private ConcurrentDictionary<ulong, Message> GetPendingMessages(TestPublisher publisher)
@@ -280,18 +279,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         {
             var propertyInfo = typeof(Publisher).GetProperty("DroppedMessages", BindingFlags.NonPublic | BindingFlags.Instance)!;
             return (ConcurrentDictionary<int, Message>)propertyInfo.GetValue(publisher)!;
-        }
-
-        private void SetDeliveryTag(Message message, ulong value)
-        {
-            var propertyInfo = typeof(Message).GetProperty("DeliveryTag", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            propertyInfo.SetValue(message, value);
-        }
-
-        private void SetIsPending(Message message, bool value)
-        {
-            var propertyInfo = typeof(Message).GetProperty("IsPending", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            propertyInfo.SetValue(message, value);
         }
 
         private void SetRetryCount(Message message, int value)
