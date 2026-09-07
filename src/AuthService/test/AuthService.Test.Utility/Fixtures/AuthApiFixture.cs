@@ -87,8 +87,7 @@ namespace AuthService.Test.Utility.Fixtures
         public async Task DisposeAsync()
         {
             Client.Dispose();
-            await Factory.DisposeAsync();
-
+            
             await _authDbContainer.StopAsync();
             await _rabbitMqContainer.StopAsync();
             await _dataProtectionRedisContainer.StopAsync();
@@ -98,6 +97,8 @@ namespace AuthService.Test.Utility.Fixtures
             await _rabbitMqContainer.DisposeAsync();
             await _dataProtectionRedisContainer.DisposeAsync();
             await _tokenBlacklistRedisContainer.DisposeAsync();
+
+            await Factory.DisposeAsync();
         }
 
         private class AuthApiFactory : WebApplicationFactory<Program>

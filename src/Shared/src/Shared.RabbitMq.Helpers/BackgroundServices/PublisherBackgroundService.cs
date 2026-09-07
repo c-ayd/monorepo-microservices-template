@@ -7,11 +7,10 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 {
     public abstract class PublisherBackgroundService : BackgroundService
     {
-        private readonly TimeSpan GraceTime = TimeSpan.FromSeconds(5);
-
         private readonly ConnectionFactory _connectionFactory;
         private readonly List<Publisher> _publishers;
         private readonly TimeSpan _retryPublishTime;
+        private readonly TimeSpan _graceTime;
         private readonly ILogger _logger;
 
         private IConnection? _connection;
@@ -21,6 +20,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             ConnectionFactory connectionFactory,
             List<Publisher> publishers,
             TimeSpan retryPublishTime,
+            TimeSpan graceTime,
             ILogger logger)
         {
             _connectionFactory = connectionFactory;
@@ -29,6 +29,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
             _publishers = publishers;
             _retryPublishTime = retryPublishTime;
+            _graceTime = graceTime;
             _logger = logger;
 
             _rejectedMessages = new Dictionary<int, Message>();
@@ -80,32 +81,32 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 foreach (var publisher in _publishers)
                 {
                     // Check connection and channel statuses
-                    if (_connection == null || !_connection.IsOpen)
+                    try
                     {
-                        await InitializeAsync(stoppingToken);
-                    }
-                    else if (publisher.Channel == null || !publisher.Channel!.IsOpen)
-                    {
-                        await publisher.InitializeAsync(_connection!, stoppingToken);
-                    }
-
-                    // Retry publishing messages that are not acknowledged or delivered
-                    foreach (var message in publisher.PendingMessages.ToArray())
-                    {
-                        if (message.Value.IsPending)
-                            continue;
-
-                        if (message.Value.RetryCount >= publisher.MaxRetry)
+                        if (_connection == null || !_connection.IsOpen)
                         {
-                            _rejectedMessages.TryAdd(message.Value.GetHashCode(), message.Value);
-                            publisher.PendingMessages.TryRemove(message.Key, out var _);
-                            continue;
+                            await InitializeAsync(stoppingToken);
                         }
+                        else if (publisher.Channel == null || !publisher.Channel!.IsOpen)
+                        {
+                            await publisher.InitializeAsync(_connection!, stoppingToken);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.LogWarning("The publisher background service is cancelled.");
 
-                        ++message.Value.RetryCount;
-                        await publisher.PublishMessageAsync(message.Value, stoppingToken);
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogCritical(exception, "Someting went wrong while checking the connection and channels for {PublisherName}. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
+                            publisher.PublisherName,
+                            _retryPublishTime.TotalSeconds,
+                            exception.Message);
                     }
 
+                    // Retry publishing messages that are not acknowledged or not delivered
                     foreach (var message in publisher.DroppedMessages.ToArray())
                     {
                         if (message.Value.RetryCount >= publisher.MaxRetry)
@@ -130,6 +131,8 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                         catch (OperationCanceledException)
                         {
                             _logger.LogWarning("The saving rejected messages operation is cancelled. The process will rerun in the StopAsync method.");
+                            
+                            throw;
                         }
                         catch (Exception exception)
                         {
@@ -156,7 +159,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             // Wait for a small amount of time in case RabbitMQ fires some events
-            await Task.Delay(GraceTime);
+            await Task.Delay(_graceTime);
 
             // Add the last messages that are pending or are dropped to the rejected messages
             foreach (var publisher in _publishers)
@@ -179,7 +182,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages. Message: {Message}",
+                    _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages for the last time. Message: {Message}",
                         exception.Message);
                 }
             }

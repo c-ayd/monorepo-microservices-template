@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers.Structures;
@@ -12,7 +11,7 @@ namespace Shared.RabbitMq.Helpers
     /// </summary>
     public abstract class Publisher
     {
-        private readonly string _publisherName;
+        public string PublisherName { get; private set; }
 
         public IChannel? Channel { get; private set; }
         private SemaphoreSlim _channelSemaphore = new SemaphoreSlim(1, 1);
@@ -24,7 +23,7 @@ namespace Shared.RabbitMq.Helpers
 
         public Publisher(string publisherName, int maxRetryForMesages)
         {
-            _publisherName = publisherName;
+            PublisherName = publisherName;
 
             Channel = null;
             PendingMessages = new ConcurrentDictionary<ulong, Message>();
@@ -55,8 +54,8 @@ namespace Shared.RabbitMq.Helpers
             // Since the channel was closed and is renewed now, the events for the current pending messages will not fired.
             // The delivery tags will also start from 1 again, meaning the delivery tags in the pending messages become
             // stale data. Therefore, the pending messages are treated as dropped messages. In case there are messages that
-            // are saved in queues but are not removed from the pending messages list in this time window, the consumer should
-            // handle the duplicate messages if happens.
+            // are saved in RabbitMQ queues but are not removed from the pending messages in this time window, the consume
+            // should handle the duplicate messages if it happens.
             if (PendingMessages.Count > 0)
             {
                 foreach (var message in PendingMessages)
@@ -69,7 +68,7 @@ namespace Shared.RabbitMq.Helpers
         }
 
         /// <summary>
-        /// Declares exchanges.
+        /// Declares exchanges. Use the <see cref="Publisher.Channel"/> property to declare the exchanges.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
         protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken = default);
@@ -89,7 +88,7 @@ namespace Shared.RabbitMq.Helpers
             byte[] body,
             CancellationToken cancellationToken = default)
         {
-            var message = new Message(_publisherName, exchangeName, routingKey, properties, body);
+            var message = new Message(PublisherName, exchangeName, routingKey, properties, body);
 
             // To standardize the type of the header values for consumers, the header values are converted to
             // JSON strings. By doing this, when rejected messages are saved somewhere and are sent again later,
@@ -128,7 +127,6 @@ namespace Shared.RabbitMq.Helpers
                 PendingMessages.TryRemove(message.DeliveryTag, out var _);
 
                 message.DeliveryTag = deliveryTag.Value;
-                message.IsPending = true;
                 PendingMessages.TryAdd(deliveryTag.Value, message);
 
                 await Channel.BasicPublishAsync(
@@ -175,17 +173,17 @@ namespace Shared.RabbitMq.Helpers
             {
                 for (ulong i = args.DeliveryTag; i > 0; --i)
                 {
-                    if (!PendingMessages.TryGetValue(i, out var message))
+                    if (!PendingMessages.TryRemove(i, out var message))
                         break;
 
-                    message.IsPending = false;
+                    DroppedMessages.TryAdd(message.GetHashCode(), message);
                 }
             }
             else
             {
-                if (PendingMessages.TryGetValue(args.DeliveryTag, out var message))
+                if (PendingMessages.TryRemove(args.DeliveryTag, out var message))
                 {
-                    message.IsPending = false;
+                    DroppedMessages.TryAdd(message.GetHashCode(), message);
                 }
             }
         }
@@ -193,7 +191,7 @@ namespace Shared.RabbitMq.Helpers
         private async Task HandleReturnedMessages(object obj, BasicReturnEventArgs args)
         {
             var properties = new BasicProperties(args.BasicProperties);
-            var message = new Message(_publisherName, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
+            var message = new Message(PublisherName, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
 
             DroppedMessages.TryAdd(message.GetHashCode(), message);
         }
