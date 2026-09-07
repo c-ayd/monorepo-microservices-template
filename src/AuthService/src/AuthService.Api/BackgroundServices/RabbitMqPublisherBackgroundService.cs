@@ -37,6 +37,7 @@ namespace AuthService.Api.BackgroundServices
                 (Publisher)emailService
             },
             retryPublishTime: TimeSpan.FromSeconds(5),
+            graceTime: TimeSpan.FromSeconds(5),
             logger)
         {
             _authRejectedMessagesDbContext = authRejectedMessagesDbContext;

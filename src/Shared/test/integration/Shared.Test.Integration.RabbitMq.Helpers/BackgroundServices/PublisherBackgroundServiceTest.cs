@@ -19,6 +19,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
     {
         private readonly TimeSpan _timeoutSpan = TimeSpan.FromSeconds(5);
         private readonly TimeSpan _retryTime = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(1);
 
         private const int _maxRetry = 3;
 
@@ -50,6 +51,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
                 _retryTime,
+                _graceTime,
                 _logger
             );
 
@@ -70,6 +72,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
                 _retryTime,
+                _graceTime,
                 _logger
             );
 
@@ -119,6 +122,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
                 _retryTime,
+                _graceTime,
                 _logger
             );
 
@@ -174,6 +178,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _rabbitMqFixture.CreateConnectionFactory(),
                 new List<Publisher>() { publisher },
                 _retryTime,
+                _graceTime,
                 _logger
             );
 
@@ -302,8 +307,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 ConnectionFactory connectionFactory,
                 List<Publisher> publishers,
                 TimeSpan publishRetryTime,
+                TimeSpan graceTime,
                 ILogger logger)
-                : base(connectionFactory, publishers, publishRetryTime, logger)
+                : base(connectionFactory, publishers, publishRetryTime, graceTime, logger)
             {
                 RejectedMessages = new List<Message>();
             }

@@ -7,11 +7,10 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 {
     public abstract class PublisherBackgroundService : BackgroundService
     {
-        private readonly TimeSpan GraceTime = TimeSpan.FromSeconds(5);
-
         private readonly ConnectionFactory _connectionFactory;
         private readonly List<Publisher> _publishers;
         private readonly TimeSpan _retryPublishTime;
+        private readonly TimeSpan _graceTime;
         private readonly ILogger _logger;
 
         private IConnection? _connection;
@@ -21,6 +20,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             ConnectionFactory connectionFactory,
             List<Publisher> publishers,
             TimeSpan retryPublishTime,
+            TimeSpan graceTime,
             ILogger logger)
         {
             _connectionFactory = connectionFactory;
@@ -29,6 +29,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
 
             _publishers = publishers;
             _retryPublishTime = retryPublishTime;
+            _graceTime = graceTime;
             _logger = logger;
 
             _rejectedMessages = new Dictionary<int, Message>();
@@ -140,7 +141,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             // Wait for a small amount of time in case RabbitMQ fires some events
-            await Task.Delay(GraceTime);
+            await Task.Delay(_graceTime);
 
             // Add the last messages that are pending or are dropped to the rejected messages
             foreach (var publisher in _publishers)
