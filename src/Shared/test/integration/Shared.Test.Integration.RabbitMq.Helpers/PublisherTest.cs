@@ -38,7 +38,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             { "Key9", null }
         };
 
-        private readonly TimeSpan TimeoutSpan = TimeSpan.FromSeconds(30);
+        private readonly TimeSpan _timeoutSpan = TimeSpan.FromSeconds(5);
 
         private readonly RabbitMqFixture _rabbitMqFixture;
 
@@ -60,10 +60,15 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
 
             var publisher = new TestPublisher();
             var returnEventTcs = new TaskCompletionSource<string>();
-            await InitializePublisherAsync(publisher,
+            var acknowledgeEventTcs = new TaskCompletionSource<bool>();
+            await InitializePublisherAsync(publisher,  
                 returnEvent: async (obj, args) =>
                 {
                     returnEventTcs.SetResult(Encoding.UTF8.GetString(args.Body.ToArray()));
+                },
+                acknowledgeEvent: async (pbj, args) =>
+                {
+                    acknowledgeEventTcs.SetResult(true);
                 });
 
             // Act
@@ -74,10 +79,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 Encoding.UTF8.GetBytes(message));
 
             // Assert
-            var result = await returnEventTcs.Task.WaitAsync(TimeoutSpan);
-            Assert.Equal(message, result);
+            await Task.WhenAll(returnEventTcs.Task, acknowledgeEventTcs.Task);
+            Assert.Equal(message, await returnEventTcs.Task);
 
+            var pendingMessages = GetPendingMessages(publisher);
             var droppedMessages = GetDroppedMessages(publisher);
+            Assert.Empty(pendingMessages);
             Assert.Single(droppedMessages);
 
             var headers = droppedMessages.Values.First().Properties.Headers;
@@ -85,10 +92,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         }
 
         [Fact]
-        public async Task PublishMessageAsync_WhenMessageIsNotAcknowledged_ShouldSetMessagePendingToFalseWithCorrectHeaders()
+        public async Task PublishMessageAsync_WhenMessageIsNotAcknowledged_ShouldRemoveMessageFromPendingAndPutItIntoDroppedMessages()
         {
             // Arrange
-            var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
@@ -108,17 +114,18 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 _rejectExchange,
                 _rejectRouting,
                 properties,
-                Encoding.UTF8.GetBytes(message));
+                Encoding.UTF8.GetBytes(StringGenerator.GeneratePrintableAscii()));
 
             // Assert
-            var result = await notAcknowledgeEventTcs.Task.WaitAsync(TimeoutSpan);
+            var result = await notAcknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
             Assert.True(result, "The not acknowledge event did not set the value to true.");
 
             var pendingMessages = GetPendingMessages(publisher);
-            Assert.Single(pendingMessages);
-            Assert.False(GetIsPending(pendingMessages.Values.First()), "The pending value is true.");
+            var droppedMessages = GetDroppedMessages(publisher);
+            Assert.Empty(pendingMessages);
+            Assert.Single(droppedMessages);
 
-            var headers = pendingMessages.Values.First().Properties.Headers;
+            var headers = droppedMessages.Values.First().Properties.Headers;
             CheckHeaders(headers, false);
         }
 
@@ -126,9 +133,11 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         public async Task PublishMessageAsync_WhenMessageIsAcknowledged_ShouldRemoveMessageFromPendingMessages()
         {
             // Arrange
+            var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
-                CorrelationId = Guid.NewGuid().ToString()
+                CorrelationId = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, object?>(TestHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -144,10 +153,10 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 _normalExchange,
                 _normalRouting,
                 properties,
-                Encoding.UTF8.GetBytes(StringGenerator.GeneratePrintableAscii()));
+                Encoding.UTF8.GetBytes(message));
 
             // Assert
-            var result = await acknowledgeEventTcs.Task.WaitAsync(TimeoutSpan);
+            var result = await acknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
             Assert.True(result, "The acknowledge event did not set the value to true.");
 
             var pendingMessages = GetPendingMessages(publisher);
@@ -156,8 +165,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             Assert.Empty(droppedMessages);
 
             var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
-            var queue = await channel.QueueDeclarePassiveAsync(_normalQueue);
-            Assert.Equal((uint)1, queue.MessageCount);
+            var messageFromRabbitMq = await channel.BasicGetAsync(_normalQueue, autoAck: true);
+
+            Assert.NotNull(messageFromRabbitMq);
+            Assert.Equal(message, Encoding.UTF8.GetString(messageFromRabbitMq.Body.ToArray()));
+            Assert.Equal(properties.CorrelationId, messageFromRabbitMq.BasicProperties.CorrelationId);
+            CheckHeaders(messageFromRabbitMq.BasicProperties.Headers, true);
 
             await channel.QueuePurgeAsync(_normalQueue);
         }
@@ -218,12 +231,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         {
             var propertyInfo = typeof(Publisher).GetProperty("DroppedMessages", BindingFlags.NonPublic | BindingFlags.Instance)!;
             return (ConcurrentDictionary<int, Message>)propertyInfo.GetValue(publisher)!;
-        }
-
-        private bool GetIsPending(Message message)
-        {
-            var propertyInfo = typeof(Message).GetProperty("IsPending", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            return (bool)propertyInfo.GetValue(message)!;
         }
 
         private void CheckHeaders(IDictionary<string, object?>? headers, bool isReturned)
