@@ -107,13 +107,14 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
         }
 
         /// <summary>
-        /// Declares exchanges.
+        /// Declares exchanges. Use the <see cref="ConsumerBackgroundService.Channel"/> property to declare the exchanges.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
         protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Declares queues.
+        /// Declares queues and bind them with the exchanges. Use the <see cref="ConsumerBackgroundService.Channel"/> property
+        /// to declare the queues.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
         protected abstract Task DeclareQueuesAsync(CancellationToken cancellationToken);
