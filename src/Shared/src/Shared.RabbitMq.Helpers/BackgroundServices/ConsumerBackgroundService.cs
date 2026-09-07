@@ -82,7 +82,10 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 await Channel.DisposeAsync();
             }
 
-            Channel = await _connection!.CreateChannelAsync(cancellationToken: cancellationToken);
+            Channel = await _connection!.CreateChannelAsync(new CreateChannelOptions(
+                publisherConfirmationsEnabled: true,
+                publisherConfirmationTrackingEnabled: true),
+                cancellationToken);
 
             await DeclareExchangesAsync(cancellationToken);
             await DeclareQueuesAsync(cancellationToken);
