@@ -95,7 +95,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         public async Task PublishMessageAsync_WhenMessageIsNotAcknowledged_ShouldRemoveMessageFromPendingAndPutItIntoDroppedMessages()
         {
             // Arrange
-            var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
@@ -115,7 +114,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 _rejectExchange,
                 _rejectRouting,
                 properties,
-                Encoding.UTF8.GetBytes(message));
+                Encoding.UTF8.GetBytes(StringGenerator.GeneratePrintableAscii()));
 
             // Assert
             var result = await notAcknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
@@ -134,9 +133,11 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
         public async Task PublishMessageAsync_WhenMessageIsAcknowledged_ShouldRemoveMessageFromPendingMessages()
         {
             // Arrange
+            var message = StringGenerator.GeneratePrintableAscii();
             var properties = new BasicProperties()
             {
-                CorrelationId = Guid.NewGuid().ToString()
+                CorrelationId = Guid.NewGuid().ToString(),
+                Headers = new Dictionary<string, object?>(TestHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -152,7 +153,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 _normalExchange,
                 _normalRouting,
                 properties,
-                Encoding.UTF8.GetBytes(StringGenerator.GeneratePrintableAscii()));
+                Encoding.UTF8.GetBytes(message));
 
             // Assert
             var result = await acknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
@@ -164,8 +165,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             Assert.Empty(droppedMessages);
 
             var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
-            var queue = await channel.QueueDeclarePassiveAsync(_normalQueue);
-            Assert.Equal((uint)1, queue.MessageCount);
+            var messageFromRabbitMq = await channel.BasicGetAsync(_normalQueue, autoAck: true);
+
+            Assert.NotNull(messageFromRabbitMq);
+            Assert.Equal(message, Encoding.UTF8.GetString(messageFromRabbitMq.Body.ToArray()));
+            Assert.Equal(properties.CorrelationId, messageFromRabbitMq.BasicProperties.CorrelationId);
+            CheckHeaders(messageFromRabbitMq.BasicProperties.Headers, true);
 
             await channel.QueuePurgeAsync(_normalQueue);
         }
