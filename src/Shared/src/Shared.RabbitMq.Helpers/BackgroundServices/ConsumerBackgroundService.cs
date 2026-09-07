@@ -77,6 +77,11 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             {
                 if (Channel.IsOpen)
                 {
+                    if (_consumerTag != null)
+                    {
+                        await Channel.BasicCancelAsync(_consumerTag);
+                    }
+
                     await Channel.CloseAsync();
                 }
 
