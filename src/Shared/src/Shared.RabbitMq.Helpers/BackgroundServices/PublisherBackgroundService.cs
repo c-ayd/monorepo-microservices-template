@@ -81,13 +81,29 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 foreach (var publisher in _publishers)
                 {
                     // Check connection and channel statuses
-                    if (_connection == null || !_connection.IsOpen)
+                    try
                     {
-                        await InitializeAsync(stoppingToken);
+                        if (_connection == null || !_connection.IsOpen)
+                        {
+                            await InitializeAsync(stoppingToken);
+                        }
+                        else if (publisher.Channel == null || !publisher.Channel!.IsOpen)
+                        {
+                            await publisher.InitializeAsync(_connection!, stoppingToken);
+                        }
                     }
-                    else if (publisher.Channel == null || !publisher.Channel!.IsOpen)
+                    catch (OperationCanceledException)
                     {
-                        await publisher.InitializeAsync(_connection!, stoppingToken);
+                        _logger.LogWarning("The publisher background service is cancelled.");
+
+                        throw;
+                    }
+                    catch (Exception exception)
+                    {
+                        _logger.LogCritical(exception, "Someting went wrong while checking the connection and channels for {PublisherName}. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
+                            publisher.PublisherName,
+                            _retryPublishTime.TotalSeconds,
+                            exception.Message);
                     }
 
                     // Retry publishing messages that are not acknowledged or not delivered
@@ -115,6 +131,8 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                         catch (OperationCanceledException)
                         {
                             _logger.LogWarning("The saving rejected messages operation is cancelled. The process will rerun in the StopAsync method.");
+                            
+                            throw;
                         }
                         catch (Exception exception)
                         {
@@ -164,7 +182,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages. Message: {Message}",
+                    _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages for the last time. Message: {Message}",
                         exception.Message);
                 }
             }
