@@ -1,19 +1,20 @@
+using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
 
 namespace NotificationService.Worker.BackgroundServices
 {
     public class TemplateBackgroundService : BackgroundService
     {
-        private readonly TimeSpan _cacheDuration = TimeSpan.FromDays(1);
+        public static TimeSpan CacheDuration { get; private set; } = TimeSpan.FromHours(1);
 
         private readonly TemplateService _templateService;
         private readonly ILogger<TemplateBackgroundService> _logger;
 
         public TemplateBackgroundService(
-            TemplateService templateService,
+            ITemplateService templateService,
             ILogger<TemplateBackgroundService> logger)
         {
-            _templateService = templateService;
+            _templateService = (TemplateService)templateService;
             _logger = logger;
         }
 
@@ -21,57 +22,42 @@ namespace NotificationService.Worker.BackgroundServices
         {
             try
             {
-                await _templateService.RecacheAllTemplatesAsync(cancellationToken);
+                await _templateService.RecacheTemplatesAsync(cancellationToken);
 
-                _logger.LogInformation("All templates have been recached.");
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("The template background service initialization has been canceled.");
-                throw;
+                await base.StartAsync(cancellationToken);
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, "Something went wrong while caching the templates. Message: {Message}",
+                _logger.LogError(exception, "Something went wrong. Message: {Message}",
                     exception.Message);
                 
                 throw;
             }
-
-            _logger.LogInformation("The template background service will recache templates every {cacheDuration} hour(s).",
-                _cacheDuration.TotalHours);
-
-            await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                await Task.Delay(CacheDuration, stoppingToken);
+
                 try
                 {
-                    await Task.Delay((int)_cacheDuration.TotalMilliseconds, stoppingToken);
-                    await _templateService.RecacheAllTemplatesAsync(stoppingToken);
-
-                    _logger.LogInformation("All templates have been recached.");
+                    await _templateService.RecacheTemplatesAsync(stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
                     _logger.LogWarning("The template recache operation has been cancelled.");
+
+                    throw;
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogError(exception, "Something went wrong while recaching the templates. Message: {Message}",
+                    _logger.LogError(exception, "Something went wrong while recaching the templates. The process will rerun in {RetryTime} in hours. Message: {Message}",
+                        CacheDuration.TotalHours,
                         exception.Message);
                 }
             }
-        }
-
-        public override Task StopAsync(CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("The template background service has been stopped.");
-
-            return base.StopAsync(cancellationToken);
         }
     }
 }

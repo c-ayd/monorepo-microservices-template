@@ -1,232 +1,286 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using NotificationService.Worker.Abstractions;
-using NotificationService.Worker.Exceptions;
-using NotificationService.Worker.Services;
+using NotificationService.Worker.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Shared.RabbitMq.Helpers.BackgroundServices;
 using Shared.RabbitMq.Notifications.Configurations;
 using Shared.RabbitMq.Notifications.Messages;
 
 namespace NotificationService.Worker.BackgroundServices
 {
-    public class EmailBackgroundService : BackgroundService
+    public class EmailBackgroundService : ConsumerBackgroundService
     {
-        private const int RetryLimit = 3;
+        private readonly TimeSpan _retryDelayTime = TimeSpan.FromMinutes(1);
+        private const int _maxRetry = 5;
 
-        private readonly RabbitMqConnectionService _rabbitMq;
-        private readonly TemplateService _templateService;
+        private readonly ITemplateService _templateService;
         private readonly IEmailService _emailService;
         private readonly ILogger<EmailBackgroundService> _logger;
 
-        private IChannel? _channel;
-
         public EmailBackgroundService(
-            RabbitMqConnectionService rabbitMq,
-            TemplateService templateService,
+            IOptions<RabbitMqOptions> rabbitMqOptions,
+            ITemplateService templateService,
             IEmailService emailService,
             ILogger<EmailBackgroundService> logger)
+            : base(
+            connectionFactory: new ConnectionFactory()
+            {
+                UserName = rabbitMqOptions.Value.Username,
+                Password = rabbitMqOptions.Value.Password,
+                HostName = rabbitMqOptions.Value.Host,
+                Port = rabbitMqOptions.Value.Port
+            },
+            healthCheckTime: TimeSpan.FromSeconds(10),
+            graceTime: TimeSpan.FromSeconds(5),
+            queueName: EmailConfiguration.QueueName,
+            prefetchCount: 1,
+            logger)
         {
-            _rabbitMq = rabbitMq;
             _templateService = templateService;
             _emailService = emailService;
             _logger = logger;
         }
 
-        public override async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await _rabbitMq.ConnectAsync(cancellationToken);
-
-                _channel = await _rabbitMq.Connection!.CreateChannelAsync(cancellationToken: cancellationToken);
-
-                await DeclareExchangesAsync();
-                await DeclareQueuesAsync();
-
-                _logger.LogInformation("The email background service has been started.");
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("The email background service initialization has been canceled.");
-                throw;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Something went wrong. Message: {Message}",
-                    exception.Message);
-                
-                throw;
-            }
-
-            await base.StartAsync(cancellationToken);
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            if (_channel == null)
-            {
-                var exception = new EmailBackgroundServiceConnectionException($"{nameof(_channel)} is null.");
-
-                _logger.LogError(exception, "The email background service is exiting since the connection is not initialized. Message: {Message}",
-                    exception.Message);
-
-                throw exception;
-            }
-
-            var consumer = new AsyncEventingBasicConsumer(_channel);
-            consumer.ReceivedAsync += async (obj, args) =>
-            {
-                try
-                {
-                    // Deserialize message
-                    var message = JsonSerializer.Deserialize<EmailMessage>(args.Body.ToArray(), new JsonSerializerOptions()
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-                    if (message == null)
-                    {
-                        _logger.LogWarning("The message could not be deserialized. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
-                            args.BasicProperties.CorrelationId,
-                            args.BasicProperties.Timestamp);
-
-                        await _channel!.BasicNackAsync(
-                            deliveryTag: args.DeliveryTag,
-                            multiple: false,
-                            requeue: false);
-    
-                        return;
-                    }
-
-                    // Get email template
-                    var template = _templateService.GetEmailTemplateAsync(message.TemplateId, message.Language);
-                    if (template == null)
-                    {
-                        _logger.LogWarning("The email template could not be found. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, Template ID: {TemplateId}",
-                            args.BasicProperties.CorrelationId,
-                            args.BasicProperties.Timestamp,
-                            message.TemplateId);
-
-                        await _channel!.BasicNackAsync(
-                            deliveryTag: args.DeliveryTag,
-                            multiple: false,
-                            requeue: false);
-                        
-                        return;
-                    }
-
-                    // Send email
-                    await _emailService.SendAsync(
-                        message.To,
-                        message.SubjectParameters?.Length > 0 ?
-                            string.Format(template.Subject, message.SubjectParameters) : template.Subject,
-                        message.BodyParameters?.Length > 0 ?
-                            string.Format(template.Body, message.BodyParameters) : template.Body,
-                        template.IsBodyHtml);
-
-                    await _channel!.BasicAckAsync(
-                        deliveryTag: args.DeliveryTag,
-                        multiple: false);
-
-                    _logger.LogInformation("The message has been processed. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}",
-                        args.BasicProperties.CorrelationId,
-                        args.BasicProperties.Timestamp);
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, "Something went wrong while handing a message. Correlation ID: {correlationId}, Timestamp: {timestamp}, Message: {message}",
-                        args.BasicProperties.CorrelationId,
-                        args.BasicProperties.Timestamp,
-                        exception.Message);
-
-                    await _channel!.BasicNackAsync(
-                        deliveryTag: args.DeliveryTag,
-                        multiple: false,
-                        requeue: false);
-                }
-            };
-
-            try
-            {
-                await _channel!.BasicConsumeAsync(
-                    queue: EmailConfiguration.QueueName,
-                    autoAck: false,
-                    consumer: consumer,
-                    cancellationToken: stoppingToken);
-
-                _logger.LogInformation("A consumer has been started to process messages.");
-
-                await Task.Delay(Timeout.Infinite, stoppingToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogWarning("The email background service has been canceled.");
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Something went wrong. Message: {Message}",
-                    exception.Message);
-            }
-        }
-
-        public override async Task StopAsync(CancellationToken cancellationToken)
-        {
-            if (_channel != null)
-            {
-                await _channel.CloseAsync();
-                await _channel.DisposeAsync();
-            }
-
-            _logger.LogInformation("The email background service has been stopped.");
-
-            await base.StopAsync(cancellationToken);
-        }
-
-        private async Task DeclareExchangesAsync()
-        {
-            await _channel!.ExchangeDeclareAsync(
+            await Channel!.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.ExchangeName,
                 type: EmailConfiguration.ExchangeType,
                 durable: true,
-                autoDelete: false);
+                autoDelete: false,
+                cancellationToken: cancellationToken);
 
-            await _channel.ExchangeDeclareAsync(
+            await Channel.ExchangeDeclareAsync(
+                exchange: EmailConfiguration.RetryExchangeName,
+                type: EmailConfiguration.RetryExchangeType,
+                durable: true,
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+
+            await Channel.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.DlxName,
                 type: EmailConfiguration.DlxExchangeType,
                 durable: true,
-                autoDelete: false);
+                autoDelete: false,
+                cancellationToken: cancellationToken);
         }
 
-        private async Task DeclareQueuesAsync()
+        protected override async Task DeclareQueuesAsync(CancellationToken cancellationToken)
         {
-            await _channel!.QueueDeclareAsync(
+            await Channel!.QueueDeclareAsync(
                 queue: EmailConfiguration.DlqName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false);
-            await _channel.QueueBindAsync(
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+            await Channel.QueueBindAsync(
                 queue: EmailConfiguration.DlqName,
                 exchange: EmailConfiguration.DlxName,
-                routingKey: EmailConfiguration.DeadLetterRoutingKey);
+                routingKey: EmailConfiguration.DeadLetterRoutingKey,
+                cancellationToken: cancellationToken);
 
-            var arguments = new Dictionary<string, object?>()
-            {
-                { "x-queue-type", "quorum" },
-                { "delivery-limit", RetryLimit },
-                { "x-dead-letter-exchange", EmailConfiguration.DlxName },
-                { "x-dead-letter-routing-key", EmailConfiguration.DeadLetterRoutingKey }
-            };
+            await Channel.QueueDeclareAsync(
+                queue: EmailConfiguration.RetryQueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: new Dictionary<string, object?>
+                {
+                    { "x-dead-letter-exchange", EmailConfiguration.ExchangeName },
+                    { "x-dead-letter-routing-key", EmailConfiguration.RoutingKey }
+                },
+                cancellationToken: cancellationToken);
+            await Channel.QueueBindAsync(
+                queue: EmailConfiguration.RetryQueueName,
+                exchange: EmailConfiguration.RetryExchangeName,
+                routingKey: EmailConfiguration.RetryRoutingKey,
+                cancellationToken: cancellationToken);
 
-            await _channel.QueueDeclareAsync(
+            await Channel.QueueDeclareAsync(
                 queue: EmailConfiguration.QueueName,
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
-                arguments: arguments);
-            await _channel.QueueBindAsync(
+                arguments: new Dictionary<string, object?>()
+                {
+                    { "x-queue-type", "quorum" },
+                    { "x-dead-letter-exchange", EmailConfiguration.DlxName },
+                    { "x-dead-letter-routing-key", EmailConfiguration.DeadLetterRoutingKey }
+                },
+                cancellationToken: cancellationToken);
+            await Channel.QueueBindAsync(
                 queue: EmailConfiguration.QueueName,
                 exchange: EmailConfiguration.ExchangeName,
-                routingKey: EmailConfiguration.RoutingKey);
+                routingKey: EmailConfiguration.RoutingKey,
+                cancellationToken: cancellationToken);
+        }
+
+        protected override async Task ReceivedAsync(object obj, BasicDeliverEventArgs args)
+        {
+            // Deserialize message
+            EmailMessage? message;
+            try
+            {
+                message = JsonSerializer.Deserialize<EmailMessage>(args.Body.ToArray(), new JsonSerializerOptions()
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (message == null)
+                {
+                    _logger.LogWarning("The message could not be deserialized. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}",
+                        args.BasicProperties.CorrelationId,
+                        args.BasicProperties.Timestamp,
+                        args.BasicProperties.Headers != null && args.BasicProperties.Headers.TryGetValue("UserId", out var userId) ?
+                            userId : null);
+
+                    await Channel!.BasicRejectAsync(
+                        deliveryTag: args.DeliveryTag,
+                        requeue: false);
+
+                    return;
+                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError("Something went wrong while deserializing the message. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}, Message: {Message}",
+                    args.BasicProperties.CorrelationId,
+                    args.BasicProperties.Timestamp,
+                    args.BasicProperties.Headers != null && args.BasicProperties.Headers.TryGetValue("UserId", out var userId) ?
+                        userId : null,
+                    exception.Message);
+
+                await Channel!.BasicRejectAsync(
+                        deliveryTag: args.DeliveryTag,
+                        requeue: false);
+
+                return;
+            }
+            
+            // Get email template
+            var template = _templateService.GetEmailTemplate(message.TemplateId, message.Language);
+            if (template == null)
+            {
+                if (args.BasicProperties.Headers == null || !args.BasicProperties.Headers.TryGetValue("Template-Not-Found", out var _))
+                {
+                    // The email template is not found. Wait for another recache process to retry again.
+                    var properties = new BasicProperties(args.BasicProperties);
+                    if (properties.Headers == null)
+                    {
+                        properties.Headers = new Dictionary<string, object?>();
+                    }
+                    properties.Headers.TryAdd("Template-Not-Found", true);
+                    properties.Expiration = ((int)TemplateBackgroundService.CacheDuration.TotalMilliseconds).ToString();
+
+                    await Channel!.BasicPublishAsync(
+                        exchange: EmailConfiguration.RetryExchangeName,
+                        routingKey: EmailConfiguration.RetryRoutingKey,
+                        mandatory: true,
+                        basicProperties: properties,
+                        body: args.Body);
+
+                    await Channel.BasicAckAsync(
+                        deliveryTag: args.DeliveryTag,
+                        multiple: false);
+                }
+                else
+                {
+                    _logger.LogError("The email template could not be found. Template ID-Language: {TemplateId}-{Language}, Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}",
+                        message.TemplateId,
+                        message.Language,
+                        args.BasicProperties.CorrelationId,
+                        args.BasicProperties.Timestamp,
+                        args.BasicProperties.Headers != null && args.BasicProperties.Headers.TryGetValue("UserId", out var userId) ?
+                            userId : null);
+                    
+                    // The message waited for another recache process and the template is still not found.
+                    // Thefore, the message should go to the DLQ.
+                    await Channel!.BasicRejectAsync(
+                        deliveryTag: args.DeliveryTag,
+                        requeue: false);
+                }
+
+                return;
+            }
+
+            // Send email
+            try
+            {
+                await _emailService.SendAsync(
+                    message.To,
+                    message.SubjectParameters != null && message.SubjectParameters.Length > 0 ?
+                        string.Format(template.Subject, message.SubjectParameters) : template.Subject,
+                    message.BodyParameters != null && message.BodyParameters.Length > 0 ?
+                        string.Format(template.Body, message.BodyParameters) : template.Body,
+                    template.IsBodyHtml);
+
+                await Channel!.BasicAckAsync(
+                    deliveryTag: args.DeliveryTag,
+                    multiple: false);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Something went wrong while sending the email. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}, Message: {Message}",
+                    args.BasicProperties.CorrelationId,
+                    args.BasicProperties.Timestamp,
+                    args.BasicProperties.Headers != null && args.BasicProperties.Headers.TryGetValue("UserId", out var userId) ?
+                        userId : null,
+                    exception.Message);
+
+                // Since the email service has failed, this message should be requeued after a small delay up to a specific max. retry count
+                if (args.BasicProperties.Headers == null || !args.BasicProperties.Headers.TryGetValue("Retry-Count", out var retryCount))
+                {
+                    var properties = new BasicProperties(args.BasicProperties);
+                    if (properties.Headers == null)
+                    {
+                        properties.Headers = new Dictionary<string, object?>();
+                    }
+                    properties.Headers.TryAdd("Retry-Count", 1);
+                    properties.Expiration = ((int)_retryDelayTime.TotalMilliseconds).ToString();
+
+                    await Channel!.BasicPublishAsync(
+                        exchange: EmailConfiguration.RetryExchangeName,
+                        routingKey: EmailConfiguration.RetryRoutingKey,
+                        mandatory: true,
+                        basicProperties: properties,
+                        body: args.Body);
+
+                    await Channel.BasicAckAsync(
+                        deliveryTag: args.DeliveryTag,
+                        multiple: false);
+                }
+                else
+                {
+                    if ((int)retryCount! >= _maxRetry)
+                    {
+                        // The message has been requeued many times. Thefore, the message should go to the DLQ.
+                        await Channel!.BasicRejectAsync(
+                            deliveryTag: args.DeliveryTag,
+                            requeue: false);
+                    }
+                    else
+                    {
+                        retryCount = (int)retryCount + 1;
+
+                        var properties = new BasicProperties(args.BasicProperties);
+                        properties.Headers!["Retry-Count"] = retryCount;
+                        properties.Expiration = ((int)_retryDelayTime.TotalMilliseconds * (int)retryCount).ToString();
+
+                        await Channel!.BasicPublishAsync(
+                            exchange: EmailConfiguration.RetryExchangeName,
+                            routingKey: EmailConfiguration.RetryRoutingKey,
+                            mandatory: true,
+                            basicProperties: properties,
+                            body: args.Body);
+
+                        await Channel.BasicAckAsync(
+                            deliveryTag: args.DeliveryTag,
+                            multiple: false);
+                    }
+                }
+            }
         }
     }
 }

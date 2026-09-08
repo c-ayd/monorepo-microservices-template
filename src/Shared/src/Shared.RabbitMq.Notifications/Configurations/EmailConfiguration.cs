@@ -1,17 +1,20 @@
-using RabbitMQ.Client;
-
 namespace Shared.RabbitMq.Notifications.Configurations
 {
     public static class EmailConfiguration
     {
-        public const string ExchangeName = "notification.events";
+        public const string ExchangeName = "notification.email";
         public const string ExchangeType = RabbitMQ.Client.ExchangeType.Topic;
-        public const string DlxName = "notification.dlx";
-        public const string DlxExchangeType = RabbitMQ.Client.ExchangeType.Direct;
-
+        public const string RoutingKey = "notification.email.send";
         public const string QueueName = "notification.email";
+
+        public const string RetryExchangeName = "notification.email.retry";
+        public const string RetryExchangeType = RabbitMQ.Client.ExchangeType.Direct;
+        public const string RetryRoutingKey = "notification.email.retry";
+        public const string RetryQueueName = "notification.email.retry";
+
+        public const string DlxName = "notification.email.dlx";
+        public const string DlxExchangeType = RabbitMQ.Client.ExchangeType.Direct;
+        public const string DeadLetterRoutingKey = "notification.email.dead";
         public const string DlqName = "notification.email.dlq";
-        public const string RoutingKey = "notification.send.email";
-        public const string DeadLetterRoutingKey = "notification.send.email.dead";
     }
 }

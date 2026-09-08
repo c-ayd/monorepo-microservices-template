@@ -46,10 +46,10 @@ namespace NotificationService.Test.Integration.Worker.Services
             await dbContext.EmailTemplates.AddAsync(emailTemplate);
             await dbContext.SaveChangesAsync();
 
-            await _templateService.RecacheAllTemplatesAsync();
+            await _templateService.RecacheTemplatesAsync();
 
             // Act
-            var template = _templateService.GetEmailTemplateAsync(emailTemplate.TemplateId, emailTemplate.Language);
+            var template = _templateService.GetEmailTemplate(emailTemplate.TemplateId, emailTemplate.Language);
 
             // Assert
             Assert.NotNull(template);
@@ -59,7 +59,7 @@ namespace NotificationService.Test.Integration.Worker.Services
         }
 
         [Fact]
-        public async Task GetEmailTemplateAsync_WhenTemplateWithDefaultLangExistsAndLangIsNotGiven_ShouldReturnTemplate()
+        public async Task GetEmailTemplateAsync_WhenTemplateWithDefaultLangExistsButGivenLangIsNotGiven_ShouldReturnTemplateWithDefaultLang()
         {
             // Arrange
             var emailTemplate = new EmailTemplate(
@@ -74,10 +74,10 @@ namespace NotificationService.Test.Integration.Worker.Services
             await dbContext.EmailTemplates.AddAsync(emailTemplate);
             await dbContext.SaveChangesAsync();
 
-            await _templateService.RecacheAllTemplatesAsync();
+            await _templateService.RecacheTemplatesAsync();
 
             // Act
-            var template = _templateService.GetEmailTemplateAsync(emailTemplate.TemplateId);
+            var template = _templateService.GetEmailTemplate(emailTemplate.TemplateId, "test");
 
             // Assert
             Assert.NotNull(template);
@@ -90,7 +90,7 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task GetEmailTemplateAsync_WhenTemplateDoesNotExist_ShouldReturnNull()
         {
             // Act
-            var template = _templateService.GetEmailTemplateAsync(StringGenerator.GenerateNumeric(), StringGenerator.GenerateNumeric());
+            var template = _templateService.GetEmailTemplate(StringGenerator.GenerateNumeric(), StringGenerator.GenerateNumeric());
 
             // Assert
             Assert.Null(template);
@@ -100,7 +100,7 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task RecacheAllTemplatesAsync_WhenItIsCalled_ShouldRecacheTemplates()
         {
             // Arrange
-            await _templateService.RecacheAllTemplatesAsync();
+            await _templateService.RecacheTemplatesAsync();
             
             var emailTemplate = new EmailTemplate(
                 StringGenerator.GenerateAlpha(12),
@@ -119,7 +119,7 @@ namespace NotificationService.Test.Integration.Worker.Services
                 .GetValue(_templateService)!).Count;
 
             // Act
-            await _templateService.RecacheAllTemplatesAsync();
+            await _templateService.RecacheTemplatesAsync();
 
             var newNumberOfEmailTemplates = ((IDictionary)(typeof(TemplateService)
                 .GetField("_emailTemplates", BindingFlags.NonPublic | BindingFlags.Instance)!)
