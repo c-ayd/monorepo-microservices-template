@@ -47,8 +47,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var account = new Account(email, PasswordGenerator.Generate());
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.IsBanned = true;
 
             using var authDbContext = _authApiFixture.CreateAuthDbContext();
@@ -79,8 +78,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-            var account = new Account(email, passwordHasher.Hash(password));
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.IsLocked = true;
             account.FailedLoginAttempts = 3;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(1);
@@ -117,8 +115,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-            var account = new Account(email, passwordHasher.Hash(password));
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
             using var authDbContext = _authApiFixture.CreateAuthDbContext();
 
@@ -158,8 +155,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var accountLockOptions = _authApiFixture.GetOptions<AccountLockOptions>();
             var failedAttempts = accountLockOptions.NumberOfFailedAttempsBeforeLock - 1 + additionalFailedAttempts;
 
-            var account = new Account(email, passwordHasher.Hash(password));
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.FailedLoginAttempts = failedAttempts;
 
             using var authDbContext = _authApiFixture.CreateAuthDbContext();
@@ -200,8 +196,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-            var account = new Account(email, passwordHasher.Hash(password));
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
             using var authDbContext = _authApiFixture.CreateAuthDbContext();
 
@@ -256,8 +251,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-            var account = new Account(email, passwordHasher.Hash(password));
-            account.PreferredLanguage = SupportedLanguages.DefaultLanguage;
+            var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.IsLocked = true;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(-1);
 

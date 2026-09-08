@@ -47,7 +47,7 @@ namespace AuthService.Persistence.SeedData
                 if (role == null)
                     throw new SeedDataEntryNotFoundException($"A role named {accountRolePair.Role} is not found in the database.");
 
-                var account = new Account(accountRolePair.Email, "123");
+                var account = new Account(accountRolePair.Email, "123", accountRolePair.PreferredLanguage);
 
                 account.IsEmailVerified = true;
                 account.Roles.Add(role);

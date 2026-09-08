@@ -9,6 +9,7 @@ using Shared.Test.Generators;
 using Testcontainers.PostgreSql;
 using AuthService.Application.Abstractions.DbContexts;
 using Shared.Test.Helpers;
+using Shared.Constants;
 
 namespace AuthService.Test.Integration.Persistence.SeedData
 {
@@ -100,7 +101,7 @@ namespace AuthService.Test.Integration.Persistence.SeedData
             await authDbContext.Roles.AddAsync(new Role(seedDataOptions.AuthDb.Roles[0] + "a"));
             await authDbContext.SaveChangesAsync();
 
-            await authDbContext.Accounts.AddAsync(new Account(seedDataOptions.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate()));
+            await authDbContext.Accounts.AddAsync(new Account(seedDataOptions.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage));
             await authDbContext.SaveChangesAsync();
 
             // Act

@@ -32,11 +32,13 @@ namespace AuthService.Domain.Entities
 
         public Account(
             string email,
-            string passwordHashed)
+            string passwordHashed,
+            string preferredLanguage)
             : base(Guid.CreateVersion7())
         {
             Email = email;
             PasswordHashed = passwordHashed;
+            PreferredLanguage = preferredLanguage;
         }
 
         public void SoftDelete()
