@@ -2,7 +2,7 @@ namespace Shared.Test.Generators
 {
     internal static class AsciiHelper
     {
-        private static List<(int min, int max)> printableSpecialCharsRanges = new List<(int min, int max)>()
+        private static List<(int min, int max)> _printableSpecialCharsRanges = new List<(int min, int max)>()
         {
             (33, 48), (58, 65), (91, 97), (123, 127)
         };
@@ -14,7 +14,7 @@ namespace Shared.Test.Generators
 
         internal static char GetRandomPrintableSpecialChar()
         {
-            var range = printableSpecialCharsRanges[Random.Shared.Next(0, printableSpecialCharsRanges.Count)];
+            var range = _printableSpecialCharsRanges[Random.Shared.Next(0, _printableSpecialCharsRanges.Count)];
             return (char)Random.Shared.Next(range.min, range.max);
         }
 

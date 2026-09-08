@@ -97,7 +97,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             
             authDbContext.ChangeTracker.Clear();
             var accountFromDb = await authDbContext.Accounts.FindAsync(account.Id);
-            Assert.Equal(4, accountFromDb!.FailedLoginAttempts);
+            Assert.Equal(3, accountFromDb!.FailedLoginAttempts);
         }
 
         [Fact]

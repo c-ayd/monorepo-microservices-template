@@ -71,7 +71,7 @@ namespace Shared.RabbitMq.Helpers
         /// Declares exchanges. Use the <see cref="Publisher.Channel"/> property to declare the exchanges.
         /// </summary>
         /// <param name="cancellationToken">Token to cancel the declarations</param>
-        protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken = default);
+        protected abstract Task DeclareExchangesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Publishes a message.

@@ -11,7 +11,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
 {
     public class AuthErrorResponseMiddlewareTest : IClassFixture<TestHostFixture>
     {
-        private const string RoleName = "TestRole";
+        private const string _roleName = "TestRole";
 
         private readonly TestHostFixture _hostFixture;
 
@@ -39,7 +39,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
                     endpoints.MapGet("/authorized", () => Results.Ok())
                         .RequireAuthorization();
                     endpoints.MapGet("/forbidden", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(RoleName));
+                        .RequireAuthorization(policy => policy.RequireRole(_roleName));
                 });
             }).GetAwaiter().GetResult();
         }
@@ -85,7 +85,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
             // Arrange
             var userId = Guid.NewGuid().ToString();
             _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, RoleName);
+            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             // Act
             var responseAnonymous = await _hostFixture.Client.GetAsync("/anonymous");

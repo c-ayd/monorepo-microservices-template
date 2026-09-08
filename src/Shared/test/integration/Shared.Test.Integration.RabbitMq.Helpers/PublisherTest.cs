@@ -25,7 +25,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
 
         private const string _noQueueExchange = "test.publisher.exchange.no-queue";
 
-        private readonly Dictionary<string, object?> TestHeaders = new Dictionary<string, object?>
+        private readonly Dictionary<string, object?> _testHeaders = new Dictionary<string, object?>
         {
             { "Key1", 10 },
             { "Key2", "Test value" },
@@ -55,7 +55,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
-                Headers = new Dictionary<string, object?>(TestHeaders)
+                Headers = new Dictionary<string, object?>(_testHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -98,7 +98,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
-                Headers = new Dictionary<string, object?>(TestHeaders)
+                Headers = new Dictionary<string, object?>(_testHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -137,7 +137,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
-                Headers = new Dictionary<string, object?>(TestHeaders)
+                Headers = new Dictionary<string, object?>(_testHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -182,7 +182,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             var properties = new BasicProperties()
             {
                 CorrelationId = Guid.NewGuid().ToString(),
-                Headers = new Dictionary<string, object?>(TestHeaders)
+                Headers = new Dictionary<string, object?>(_testHeaders)
             };
 
             var publisher = new TestPublisher();
@@ -272,17 +272,17 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                 key9Value = JsonSerializer.Deserialize<string>((string)headers["Key9"]!)!;
             }
 
-            Assert.Equal((int)TestHeaders["Key1"]!, key1Value);
-            Assert.Equal((string)TestHeaders["Key2"]!, key2Value);
-            Assert.Equal((bool)TestHeaders["Key3"]!, key3Value);
-            Assert.Equal((double)TestHeaders["Key4"]!, key4Value);
-            Assert.True(((int[])TestHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
-            Assert.True(((byte[])TestHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
-            Assert.Equal(((TestClass)TestHeaders["Key7"]!).IntValue, key7Value.IntValue);
-            Assert.Equal(((TestClass)TestHeaders["Key7"]!).StrValue, key7Value.StrValue);
-            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[1], key8Value[1]);
-            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[2], key8Value[2]);
-            Assert.Equal((string)TestHeaders["Key9"]!, key9Value);
+            Assert.Equal((int)_testHeaders["Key1"]!, key1Value);
+            Assert.Equal((string)_testHeaders["Key2"]!, key2Value);
+            Assert.Equal((bool)_testHeaders["Key3"]!, key3Value);
+            Assert.Equal((double)_testHeaders["Key4"]!, key4Value);
+            Assert.True(((int[])_testHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
+            Assert.True(((byte[])_testHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
+            Assert.Equal(((TestClass)_testHeaders["Key7"]!).IntValue, key7Value.IntValue);
+            Assert.Equal(((TestClass)_testHeaders["Key7"]!).StrValue, key7Value.StrValue);
+            Assert.Equal(((Dictionary<int, string>)_testHeaders["Key8"]!)[1], key8Value[1]);
+            Assert.Equal(((Dictionary<int, string>)_testHeaders["Key8"]!)[2], key8Value[2]);
+            Assert.Equal((string)_testHeaders["Key9"]!, key9Value);
         }
 
         private class TestPublisher : Publisher
