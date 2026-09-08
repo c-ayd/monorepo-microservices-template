@@ -1,11 +1,12 @@
 using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
+using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Dtos;
 
 namespace NotificationService.Worker.Services
 {
-    public class TemplateService
+    public class TemplateService : ITemplateService
     {
         public const string DefaultLanguage = "en";
 
@@ -16,44 +17,50 @@ namespace NotificationService.Worker.Services
             _scopeFactory = scopeFactory;
         }
 
-        public EmailTemplateDto? GetEmailTemplateAsync(string templateId, string? language = DefaultLanguage)
-        {
-            return GetTemplate(_emailTemplates, templateId, language);
-        }
+        public EmailTemplateDto? GetEmailTemplate(string templateId, string? language)
+            => GetTemplate(_emailTemplates, templateId, language);
 
-        private T? GetTemplate<T>(ConcurrentDictionary<(string templateId, string language), T> templates, string templateId, string? language)
+        private T? GetTemplate<T>(
+            ConcurrentDictionary<(string templateId, string language), T> templates,
+            string templateId,
+            string? language)
         {
             if (language == null)
             {
                 language = DefaultLanguage;
             }
 
+            // Try to get the requested template
             templates.TryGetValue((templateId, language), out var template);
             if (template != null)
                 return template;
 
+            // If the requested template is not found, try to get the template in the default language
             if (language != DefaultLanguage)
             {
                 templates.TryGetValue((templateId, DefaultLanguage), out template);
+                if (template != null)
+                    return template;
             }
-
+            
             return template;
         }
 
-        private ConcurrentDictionary<(string templateId, string language), EmailTemplateDto> _emailTemplates = 
+        private ConcurrentDictionary<(string templateId, string language), EmailTemplateDto> _emailTemplates =
             new ConcurrentDictionary<(string templateId, string language), EmailTemplateDto>();
 
-        public async Task RecacheAllTemplatesAsync(CancellationToken cancellationToken = default)
+        public async Task RecacheTemplatesAsync(CancellationToken cancellationToken = default)
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
             var templateDbContext = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            
+
             // Email templates
             var emailTemplates = await templateDbContext.EmailTemplates.ToListAsync(cancellationToken);
+            _emailTemplates.Clear();
             foreach (var emailTemplate in emailTemplates)
             {
-                var template = new EmailTemplateDto(emailTemplate.Subject, emailTemplate.Body, emailTemplate.IsBodyHtml);
-                _emailTemplates.AddOrUpdate((emailTemplate.TemplateId, emailTemplate.Language), template, (key, oldValue) => template);
+                _emailTemplates.TryAdd((emailTemplate.TemplateId, emailTemplate.Language),
+                    new EmailTemplateDto(emailTemplate.Subject, emailTemplate.Body, emailTemplate.IsBodyHtml));
             }
         }
     }

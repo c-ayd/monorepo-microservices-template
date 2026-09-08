@@ -19,7 +19,7 @@ builder.Services.AddDbContext<TemplateDbContext>(_ =>
 builder.Services.AddSingleton<IEmailService, SmtpService>();
 
 builder.Services.AddSingleton<RabbitMqConnectionService>();
-builder.Services.AddSingleton<TemplateService>();
+builder.Services.AddSingleton<ITemplateService, TemplateService>();
 
 builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
