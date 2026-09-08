@@ -58,11 +58,6 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             if (account.IsLocked)
             {
                 if (DateTimeOffset.UtcNow < account.UnlockDate)
-                {
-                    ++account.FailedLoginAttempts;
-
-                    await authDbContext.SaveChangesAsync();
-
                     return JsonResponseBuilder.Error(
                         HttpStatusCode.Locked,
                         [
@@ -73,10 +68,6 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                             UnlockDate = account.UnlockDate.Value.ToUnixTimeMilliseconds()
                         }
                     );
-                }
-
-                account.IsLocked = false;
-                account.FailedLoginAttempts = 0;
             }
 
             // Verify password
@@ -94,6 +85,9 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                         account.UnlockDate = DateTimeOffset.UtcNow.AddMinutes(accountLockOptions.Value.LockTimeInMinutes * multiplier);
 
                         await authDbContext.SaveChangesAsync();
+
+                        logger.LogWarning("The account is locked. User ID: {UserId}",
+                            account.Id);
 
                         return JsonResponseBuilder.Error(
                             HttpStatusCode.Locked,
@@ -139,10 +133,25 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                         ]
                     );
                 case EPasswordVerificationResult.Success:
-                    account.FailedLoginAttempts = 0;
+                    if (account.IsLocked)
+                    {
+                        account.IsLocked = false;
+                    }
+                    if (account.FailedLoginAttempts != 0)
+                    {
+                        account.FailedLoginAttempts = 0;
+                    }
                     break;
                 case EPasswordVerificationResult.SuccessRehashNeeded:
-                    account.FailedLoginAttempts = 0;
+                    if (account.IsLocked)
+                    {
+                        account.IsLocked = false;
+                    }
+                    if (account.FailedLoginAttempts != 0)
+                    {
+                        account.FailedLoginAttempts = 0;
+                    }
+                    
                     account.PasswordHashed = passwordHasher.Hash(request.Password!);
                     break;
                 default:

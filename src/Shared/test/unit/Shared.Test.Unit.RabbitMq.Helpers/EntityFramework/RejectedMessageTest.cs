@@ -12,7 +12,7 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
         private const string _exchangeName = "TestExchange";
         private const string _routingKey = "RoutingKey";
 
-        private readonly Dictionary<string, object?> TestHeaders = new Dictionary<string, object?>
+        private readonly Dictionary<string, object?> _testHeaders = new Dictionary<string, object?>
         {
             { "Key1", 10 },
             { "Key2", "Test value" },
@@ -24,7 +24,7 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
             { "Key8", new Dictionary<int, string>() { { 1, "abc" }, { 2, "def" } } },
             { "Key9", null }
         };
-        private readonly BasicProperties TestProperties = new BasicProperties()
+        private readonly BasicProperties _testProperties = new BasicProperties()
         {
             DeliveryMode = DeliveryModes.Persistent,
             CorrelationId = Guid.NewGuid().ToString(),
@@ -40,11 +40,11 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
         {
             // Arrange
             var body = Encoding.UTF8.GetBytes("Test message!");
-            var properties = new BasicProperties(TestProperties);
+            var properties = new BasicProperties(_testProperties);
 
             if (addHeaders)
             {
-                properties.Headers = new Dictionary<string, object?>(TestHeaders);
+                properties.Headers = new Dictionary<string, object?>(_testHeaders);
                 foreach (var header in properties.Headers!)
                 {
                     properties.Headers[header.Key] = JsonSerializer.Serialize(header.Value);
@@ -70,11 +70,11 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
         {
             // Arrange
             var body = Encoding.UTF8.GetBytes("Test message!");
-            var properties = new BasicProperties(TestProperties);
+            var properties = new BasicProperties(_testProperties);
 
             if (addHeaders)
             {
-                properties.Headers = new Dictionary<string, object?>(TestHeaders);
+                properties.Headers = new Dictionary<string, object?>(_testHeaders);
                 foreach (var header in properties.Headers!)
                 {
                     properties.Headers[header.Key] = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(header.Value));
@@ -95,11 +95,11 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
         
         private void CheckBasicProperties(BasicProperties properties)
         {
-            Assert.Equal(TestProperties.DeliveryMode, properties.DeliveryMode);
-            Assert.Equal(TestProperties.CorrelationId, properties.CorrelationId);
-            Assert.Equal(TestProperties.AppId, properties.AppId);
-            Assert.Equal(TestProperties.MessageId, properties.MessageId);
-            Assert.Equal(TestProperties.Timestamp, properties.Timestamp);
+            Assert.Equal(_testProperties.DeliveryMode, properties.DeliveryMode);
+            Assert.Equal(_testProperties.CorrelationId, properties.CorrelationId);
+            Assert.Equal(_testProperties.AppId, properties.AppId);
+            Assert.Equal(_testProperties.MessageId, properties.MessageId);
+            Assert.Equal(_testProperties.Timestamp, properties.Timestamp);
 
             if (properties.Headers == null)
                 return;
@@ -114,17 +114,17 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
             var key8Value = JsonSerializer.Deserialize<Dictionary<int, string>>((string)properties.Headers!["Key8"]!)!;
             var key9Value = JsonSerializer.Deserialize<string>((string)properties.Headers!["Key9"]!)!;
 
-            Assert.Equal((int)TestHeaders["Key1"]!, key1Value);
-            Assert.Equal((string)TestHeaders["Key2"]!, key2Value);
-            Assert.Equal((bool)TestHeaders["Key3"]!, key3Value);
-            Assert.Equal((double)TestHeaders["Key4"]!, key4Value);
-            Assert.True(((int[])TestHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
-            Assert.True(((byte[])TestHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
-            Assert.Equal(((TestClass)TestHeaders["Key7"]!).IntValue, key7Value.IntValue);
-            Assert.Equal(((TestClass)TestHeaders["Key7"]!).StrValue, key7Value.StrValue);
-            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[1], key8Value[1]);
-            Assert.Equal(((Dictionary<int, string>)TestHeaders["Key8"]!)[2], key8Value[2]);
-            Assert.Equal((string)TestHeaders["Key9"]!, key9Value);
+            Assert.Equal((int)_testHeaders["Key1"]!, key1Value);
+            Assert.Equal((string)_testHeaders["Key2"]!, key2Value);
+            Assert.Equal((bool)_testHeaders["Key3"]!, key3Value);
+            Assert.Equal((double)_testHeaders["Key4"]!, key4Value);
+            Assert.True(((int[])_testHeaders["Key5"]!).SequenceEqual(key5Value), "Key5 header differs.");
+            Assert.True(((byte[])_testHeaders["Key6"]!).SequenceEqual(key6Value), "Key6 header differs.");
+            Assert.Equal(((TestClass)_testHeaders["Key7"]!).IntValue, key7Value.IntValue);
+            Assert.Equal(((TestClass)_testHeaders["Key7"]!).StrValue, key7Value.StrValue);
+            Assert.Equal(((Dictionary<int, string>)_testHeaders["Key8"]!)[1], key8Value[1]);
+            Assert.Equal(((Dictionary<int, string>)_testHeaders["Key8"]!)[2], key8Value[2]);
+            Assert.Equal((string)_testHeaders["Key9"]!, key9Value);
         }
 
         public class TestClass

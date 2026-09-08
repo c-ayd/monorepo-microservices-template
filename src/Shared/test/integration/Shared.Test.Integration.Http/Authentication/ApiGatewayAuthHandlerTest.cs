@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +13,7 @@ namespace Shared.Test.Integration.Http.Authentication
 {
     public class ApiGatewayAuthHandlerTest : IClassFixture<TestHostFixture>
     {
-        private const string RoleName = "TestRole";
+        private const string _roleName = "TestRole";
         
         private readonly TestHostFixture _hostFixture;
 
@@ -46,9 +45,9 @@ namespace Shared.Test.Integration.Http.Authentication
                     endpoints.MapGet("/authorized", () => Results.Ok())
                         .RequireAuthorization();
                     endpoints.MapGet("/access-granted", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(RoleName));
+                        .RequireAuthorization(policy => policy.RequireRole(_roleName));
                     endpoints.MapGet("/forbidden", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(RoleName + "a"));
+                        .RequireAuthorization(policy => policy.RequireRole(_roleName + "a"));
                 });
             }).GetAwaiter().GetResult();
         }
@@ -59,7 +58,7 @@ namespace Shared.Test.Integration.Http.Authentication
             // Arrange
             var userId = Guid.NewGuid().ToString();
             _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, RoleName);
+            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             UserClaim? claim = null;
             string? headerValue = null;
@@ -93,7 +92,7 @@ namespace Shared.Test.Integration.Http.Authentication
             Assert.NotNull(responseUser);
             Assert.True(responseUser.IsAuthenticated, "The user is not authenticated.");
             Assert.Equal(userId, responseUser.Name);
-            Assert.Equal(RoleName, responseUser.Claims.FirstOrDefault(c => c.Type == ApiGatewayAuthKeys.Claims.Roles.ClaimType)!.Value);
+            Assert.Equal(_roleName, responseUser.Claims.FirstOrDefault(c => c.Type == ApiGatewayAuthKeys.Claims.Roles.ClaimType)!.Value);
 
             if (claim != null)
             {

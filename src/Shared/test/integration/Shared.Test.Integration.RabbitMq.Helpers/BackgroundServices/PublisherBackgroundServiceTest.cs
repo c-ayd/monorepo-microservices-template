@@ -330,7 +330,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             {
             }
 
-            protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken = default)
+            protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken)
             {
                 await Channel!.ExchangeDeclareAsync(
                     exchange: _normalExchange,
