@@ -78,21 +78,24 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             };
         }
 
-        public async Task PublishMessageAsync<T>(T message, string exchangeName, string routingKey, int timeoutInSeconds)
+        public async Task PublishMessageAsync(string exchangeName, string routingKey, byte[] body, BasicProperties properties)
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutInSeconds));
             await _channel.BasicPublishAsync(
                 exchange: exchangeName,
                 routingKey: routingKey,
                 mandatory: true,
-                body: JsonSerializer.SerializeToUtf8Bytes(message),
-                cancellationToken: cts.Token
-            );
+                basicProperties: properties,
+                body: body);
         }
 
         public async Task<QueueDeclareOk> GetQueueInfo(string queueName)
         {
             return await _channel.QueueDeclarePassiveAsync(queueName);
+        }
+
+        public async Task<BasicGetResult?> GetMessageAsync(string queueName)
+        {
+            return await _channel.BasicGetAsync(queueName, autoAck: true);
         }
 
         public async Task ClearQueue(string queueName)
