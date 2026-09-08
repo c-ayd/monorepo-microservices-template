@@ -5,12 +5,12 @@ namespace Shared.Redis.Extensions
 {
     public static class StringExtensions
     {
-        private static readonly JsonSerializerOptions JsonWriteOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions _jsonWriteOptions = new JsonSerializerOptions()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        private static readonly JsonSerializerOptions JsonReadOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions _jsonReadOptions = new JsonSerializerOptions()
         {
             PropertyNameCaseInsensitive = true
         };
@@ -24,7 +24,7 @@ namespace Shared.Redis.Extensions
         /// <param name="expirationTime">Lifespan of the entry. The default value is 1 hour</param>
         public static async Task SaveAsStringAsync<T>(this IDatabase db, string key, T value, TimeSpan? expirationTime = null)
         {
-            var json = JsonSerializer.Serialize(value, JsonWriteOptions);
+            var json = JsonSerializer.Serialize(value, _jsonWriteOptions);
 
             await db.StringSetAsync(key, json, expirationTime ?? TimeSpan.FromHours(1));
         }
@@ -42,7 +42,7 @@ namespace Shared.Redis.Extensions
             if (!json.HasValue)
                 return (false, default);
 
-            var value = JsonSerializer.Deserialize<T>(json.ToString(), JsonReadOptions);
+            var value = JsonSerializer.Deserialize<T>(json.ToString(), _jsonReadOptions);
             return (true, value);
         }
     }
