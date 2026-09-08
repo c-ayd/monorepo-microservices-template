@@ -3,13 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Dtos;
+using Shared.Constants;
 
 namespace NotificationService.Worker.Services
 {
     public class TemplateService : ITemplateService
     {
-        public const string DefaultLanguage = "en";
-
         private readonly IServiceScopeFactory _scopeFactory;
 
         public TemplateService(IServiceScopeFactory scopeFactory)
@@ -27,7 +26,7 @@ namespace NotificationService.Worker.Services
         {
             if (language == null)
             {
-                language = DefaultLanguage;
+                language = SupportedLanguages.DefaultLanguage;
             }
 
             // Try to get the requested template
@@ -36,9 +35,9 @@ namespace NotificationService.Worker.Services
                 return template;
 
             // If the requested template is not found, try to get the template in the default language
-            if (language != DefaultLanguage)
+            if (language != SupportedLanguages.DefaultLanguage)
             {
-                templates.TryGetValue((templateId, DefaultLanguage), out template);
+                templates.TryGetValue((templateId, SupportedLanguages.DefaultLanguage), out template);
                 if (template != null)
                     return template;
             }
