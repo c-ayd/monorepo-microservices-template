@@ -171,6 +171,9 @@
       "authservice.domain": {
         "type": "Project"
       },
+      "shared.constants": {
+        "type": "Project"
+      },
       "shared.crypto": {
         "type": "Project"
       },

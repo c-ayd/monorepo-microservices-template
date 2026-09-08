@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AuthService.Application.Validations.Constraints;
+using Shared.Constants;
 using Shared.Http.Authentication;
 
 namespace AuthService.Api.Middlewares
@@ -18,14 +19,14 @@ namespace AuthService.Api.Middlewares
             if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
             {
                 context.Items["PreferredLanguage"] = context.User.FindFirstValue(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType) ??
-                    AccountConstraints.SuppoertedLanguages[0];
+                    SupportedLanguages.DefaultLanguage;
             }
             else
             {
                 context.Items["PreferredLanguage"] = context.Request.GetTypedHeaders().AcceptLanguage
                     .OrderByDescending(h => h.Quality ?? 1.0)
                     .Select(h => h.Value.ToString().Split('-')[0].ToLower())
-                    .FirstOrDefault() ?? AccountConstraints.SuppoertedLanguages[0];
+                    .FirstOrDefault() ?? SupportedLanguages.DefaultLanguage;
             }
 
             await _next(context);

@@ -727,6 +727,7 @@
         "dependencies": {
           "AuthService.Domain": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
+          "Shared.Constants": "[1.0.0, )",
           "Shared.Crypto": "[1.0.0, )",
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
@@ -770,6 +771,9 @@
           "xunit": "[2.9.3, )",
           "xunit.runner.visualstudio": "[3.1.4, )"
         }
+      },
+      "shared.constants": {
+        "type": "Project"
       },
       "shared.crypto": {
         "type": "Project"

@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Notifications\Shared.RabbitMq.Notifications.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.Redis\Shared.Redis.csproj" />
     <ProjectReference Include="..\..\..\Shared\src\Shared.RabbitMq.Helpers\Shared.RabbitMq.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.Constants\Shared.Constants.csproj" />
   </ItemGroup>
 
   <ItemGroup>

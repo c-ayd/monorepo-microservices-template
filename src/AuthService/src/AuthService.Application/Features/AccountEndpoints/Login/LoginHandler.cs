@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Shared.Constants;
 using Shared.Crypto;
 using Shared.Http.Authentication;
 using Shared.Http.Response;
@@ -162,8 +163,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             {
                 new Claim(ApiGatewayAuthKeys.Claims.Id.ClaimType, account.Id.ToString()),
                 new Claim(ApiGatewayAuthKeys.Claims.EmailVerified.ClaimType, account.IsEmailVerified.ToString().ToLower()),
-                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, account.PreferredLanguage?.ToString() ?? 
-                    AccountConstraints.SuppoertedLanguages[0]),
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, account.PreferredLanguage!.ToString()),
                 new Claim(ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             };
 

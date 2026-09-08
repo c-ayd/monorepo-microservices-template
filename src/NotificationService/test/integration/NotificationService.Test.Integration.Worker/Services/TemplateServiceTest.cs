@@ -7,6 +7,7 @@ using NotificationService.Test.Integration.Worker.Fixtures;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Entities;
 using NotificationService.Worker.Services;
+using Shared.Constants;
 using Shared.Test.Generators;
 
 namespace NotificationService.Test.Integration.Worker.Services
@@ -64,7 +65,7 @@ namespace NotificationService.Test.Integration.Worker.Services
             // Arrange
             var emailTemplate = new EmailTemplate(
                 StringGenerator.GenerateAlpha(11),
-                TemplateService.DefaultLanguage,
+                SupportedLanguages.DefaultLanguage,
                 StringGenerator.GenerateAlpha(11),
                 StringGenerator.GenerateAlpha(11),
                 false
