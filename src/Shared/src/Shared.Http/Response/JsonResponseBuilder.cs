@@ -15,7 +15,7 @@ namespace Shared.Http.Response
         public const string MetadataKey = "metadata";
         public const string ErrorsKey = "errors";
 
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
@@ -32,7 +32,7 @@ namespace Shared.Http.Response
 
             if (metadata != null) body.Add(MetadataKey, metadata);
 
-            return Results.Json(body, JsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
+            return Results.Json(body, _jsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Shared.Http.Response
             if (data != null) body.Add(DataKey, data);
             if (metadata != null) body.Add(MetadataKey, metadata);
 
-            return Results.Json(body, JsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
+            return Results.Json(body, _jsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Shared.Http.Response
             if (errors != null) body.Add(ErrorsKey, errors);
             if (metadata != null) body.Add(MetadataKey, metadata);
 
-            return Results.Json(body, JsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
+            return Results.Json(body, _jsonOptions, MediaTypeNames.Application.Json, (int)statusCode);
         }
     }
 }
