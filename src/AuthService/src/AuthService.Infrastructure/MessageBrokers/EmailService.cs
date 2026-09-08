@@ -16,7 +16,7 @@ namespace AuthService.Infrastructure.MessageBrokers
         {
         }
 
-        protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken = default)
+        protected override async Task DeclareExchangesAsync(CancellationToken cancellationToken)
         {
             await Channel!.ExchangeDeclareAsync(
                 exchange: EmailConfiguration.ExchangeName,
