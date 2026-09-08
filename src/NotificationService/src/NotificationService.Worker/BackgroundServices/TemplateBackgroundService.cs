@@ -5,7 +5,7 @@ namespace NotificationService.Worker.BackgroundServices
 {
     public class TemplateBackgroundService : BackgroundService
     {
-        private readonly TimeSpan _cacheDuration = TimeSpan.FromHours(1);
+        public static TimeSpan CacheDuration { get; private set; } = TimeSpan.FromHours(1);
 
         private readonly TemplateService _templateService;
         private readonly ILogger<TemplateBackgroundService> _logger;
@@ -39,7 +39,7 @@ namespace NotificationService.Worker.BackgroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(_cacheDuration, stoppingToken);
+                await Task.Delay(CacheDuration, stoppingToken);
 
                 try
                 {
@@ -54,7 +54,7 @@ namespace NotificationService.Worker.BackgroundServices
                 catch (Exception exception)
                 {
                     _logger.LogError(exception, "Something went wrong while recaching the templates. The process will rerun in {RetryTime} in hours. Message: {Message}",
-                        _cacheDuration.TotalHours,
+                        CacheDuration.TotalHours,
                         exception.Message);
                 }
             }
