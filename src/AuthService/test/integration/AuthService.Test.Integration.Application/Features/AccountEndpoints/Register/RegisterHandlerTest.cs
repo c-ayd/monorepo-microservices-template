@@ -8,6 +8,7 @@ using AuthService.Domain.Enums;
 using AuthService.Test.Integration.Application.Collections;
 using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
+using Shared.Constants;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Register
@@ -29,7 +30,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             using var authDbContext = _authApiFixture.CreateAuthDbContext();
 
             var email = EmailGenerator.Generate();
-            authDbContext.Accounts.Add(new Account(email, StringGenerator.GenerateAlpha()));
+            authDbContext.Accounts.Add(new Account(email, StringGenerator.GenerateAlpha(), SupportedLanguages.DefaultLanguage));
             await authDbContext.SaveChangesAsync();
 
             var request = new RegisterRequest(email, PasswordGenerator.Generate(

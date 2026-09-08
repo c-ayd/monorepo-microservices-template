@@ -17,6 +17,7 @@ namespace AuthService.Application.Options
             {
                 public required string Email { get; set; }
                 public required string Role { get; set; }
+                public required string PreferredLanguage { get; set; }
             }
         }
     }

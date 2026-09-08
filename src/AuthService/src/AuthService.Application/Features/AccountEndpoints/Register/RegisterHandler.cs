@@ -46,8 +46,8 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             // Create a new account and an email verification token and save them in the DB
             var newAccount = new Account(
                 request.Email!,
-                passwordHasher.Hash(request.Password!));
-            newAccount.PreferredLanguage = (string)context.Items["PreferredLanguage"]!;
+                passwordHasher.Hash(request.Password!),
+                (string)context.Items["PreferredLanguage"]!);
 
             var emailVerificationTokenValue = TokenGenerator.GenerateBase64UrlSafe();
             var emailVerificationToken = new Token(

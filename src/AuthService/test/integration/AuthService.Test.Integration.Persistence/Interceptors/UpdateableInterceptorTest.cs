@@ -4,6 +4,7 @@ using AuthService.Domain.SeedWork;
 using AuthService.Persistence.Exceptions;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
+using Shared.Constants;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
@@ -26,7 +27,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
 
             var now = DateTimeOffset.UtcNow;
             var passwordLength = 10;
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(length: passwordLength));
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(length: passwordLength), SupportedLanguages.DefaultLanguage);
             var accountId = account.Id;
 
             await authDbContext.Accounts.AddAsync(account);
@@ -54,7 +55,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             // Arrange
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var tokenLength = 10;
             var token = new Token(account.Id, ETokenPurpose.EmailVerification, StringGenerator.GeneratePrintableAscii(length: tokenLength), DateTimeOffset.UtcNow);
 

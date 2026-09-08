@@ -2,6 +2,7 @@ using AuthService.Domain.Entities;
 using AuthService.Test.Integration.Persistence.Collections;
 using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
+using Shared.Constants;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Persistence.Filters
@@ -22,7 +23,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
             // Arrange
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var accountId = account.Id;
 
             await authDbContext.Accounts.AddAsync(account);
@@ -49,7 +50,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
             // Arrange
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var accountId = account.Id;
 
             // Act
@@ -69,7 +70,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
             // Arrange
             using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
 
-            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate());
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
             var sessionId = session.Id;
 
