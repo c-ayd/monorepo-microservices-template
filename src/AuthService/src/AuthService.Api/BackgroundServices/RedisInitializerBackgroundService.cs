@@ -27,7 +27,7 @@ namespace AuthService.Api.BackgroundServices
             try
             {
                 DataProtection.Connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthDataProtectionRedis);
-                await ((TokenBlacklist)_tokenBlacklist).ConnectAsync();
+                await ((TokenBlacklist)_tokenBlacklist).ConnectAsync(cancellationToken);
             }
             catch (Exception exception)
             {

@@ -30,10 +30,10 @@ namespace AuthService.Persistence.DistributedCaches
             await _database!.KeyDeleteAsync(accountId);
         }
 
-        public async Task ConnectAsync()
+        public async Task ConnectAsync(CancellationToken cancellationToken)
         {
             // This method should be called only once. This semaphore is used as a safeguard.
-            await _connectionSemaphore.WaitAsync();
+            await _connectionSemaphore.WaitAsync(cancellationToken);
 
             if (_connection != null)
             {
