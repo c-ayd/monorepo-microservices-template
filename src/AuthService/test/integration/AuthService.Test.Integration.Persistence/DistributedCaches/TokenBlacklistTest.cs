@@ -26,7 +26,7 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             };
 
             _tokenBlacklist = new TokenBlacklist(Options.Create(connStrings));
-            _tokenBlacklist.ConnectAsync().GetAwaiter().GetResult();
+            _tokenBlacklist.ConnectAsync(default).GetAwaiter().GetResult();
         }
 
         [Fact]
