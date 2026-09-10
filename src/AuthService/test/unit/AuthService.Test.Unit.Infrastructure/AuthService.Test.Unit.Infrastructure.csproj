@@ -20,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AuthService.Test.Utility\AuthService.Test.Utility.csproj" />
+    <ProjectReference Include="..\..\..\src\AuthService.Infrastructure\AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Keys/test_jwt_private.pem" Link="test_jwt_private.pem" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_public.pem" Link="test_jwt_public.pem" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

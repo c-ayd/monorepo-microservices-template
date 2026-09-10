@@ -1,29 +1,30 @@
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using AuthService.Domain.SeedWork;
+using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.Exceptions;
 using AuthService.Test.Integration.Persistence.Collections;
-using AuthService.Test.Utility.Fixtures;
 using Shared.Constants;
 using Shared.Test.Generators;
+using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {
     [Collection(nameof(AuthDbContextCollection))]
     public class UpdateableInterceptorTest
     {
-        private readonly AuthDbContextFixture _authDbContextFixture;
+        private readonly PostgreSqlFixture _postgreSqlFixture;
 
-        public UpdateableInterceptorTest(AuthDbContextFixture authDbContextFixture)
+        public UpdateableInterceptorTest(AuthDbContextCollectionCluster collectionCluster)
         {
-            _authDbContextFixture = authDbContextFixture;
+            _postgreSqlFixture = collectionCluster.PostgreSqlFixture;
         }
 
         [Fact]
         public async Task UpdateableInterceptor_WhenEntityIsUpdateableAndIsUpdated_ShouldSetUpdatedDate()
         {
             // Arrange
-            using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
 
             var now = DateTimeOffset.UtcNow;
             var passwordLength = 10;
@@ -53,7 +54,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task UpdateableInterceptor_WhenEntityIsNotUpdateableAndIsUpdated_ShouldThrowException()
         {
             // Arrange
-            using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var tokenLength = 10;

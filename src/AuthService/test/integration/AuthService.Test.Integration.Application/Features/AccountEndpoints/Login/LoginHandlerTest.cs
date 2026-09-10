@@ -6,10 +6,9 @@ using AuthService.Application.Features.AccountEndpoints.Login;
 using AuthService.Application.Options;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
+using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Application.Collections;
-using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Shared.Constants;
 using Shared.Http.Authentication;
 using Shared.Http.Response;
@@ -20,11 +19,11 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
     [Collection(nameof(AuthApiCollection))]
     public class LoginHandlerTest
     {
-        private readonly AuthApiFixture _authApiFixture;
+        private readonly AuthApiCollectionCluster _collectionCluster;
 
-        public LoginHandlerTest(AuthApiFixture authApiFixture)
+        public LoginHandlerTest(AuthApiCollectionCluster collectionCluster)
         {
-            _authApiFixture = authApiFixture;
+            _collectionCluster = collectionCluster;
         }
 
         [Fact]
@@ -36,7 +35,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 StringGenerator.GenerateAlphanumeric());
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -50,7 +49,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var account = new Account(email, PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.IsBanned = true;
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -58,7 +57,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, PasswordGenerator.Generate());
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -75,15 +74,14 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 length: AccountConstraints.PasswordMinLength
             );
 
-            await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.IsLocked = true;
             account.FailedLoginAttempts = 3;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(1);
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -91,7 +89,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, password);
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Locked, response.StatusCode);
@@ -112,12 +110,11 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 length: AccountConstraints.PasswordMinLength
             );
 
-            await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -125,7 +122,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, password + "a");
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -149,16 +146,15 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 length: AccountConstraints.PasswordMinLength
             );
 
-            await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
-            var accountLockOptions = _authApiFixture.GetOptions<AccountLockOptions>();
+            var accountLockOptions = _collectionCluster.AuthApiWebApp.GetOptions<AccountLockOptions>();
             var failedAttempts = accountLockOptions.NumberOfFailedAttempsBeforeLock - 1 + additionalFailedAttempts;
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.FailedLoginAttempts = failedAttempts;
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -166,7 +162,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, password + "a");
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Locked, response.StatusCode);
@@ -193,12 +189,11 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 length: AccountConstraints.PasswordMinLength
             );
 
-            await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -206,7 +201,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, password);
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -248,14 +243,13 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 length: AccountConstraints.PasswordMinLength
             );
 
-            await using var scope = _authApiFixture.Factory.Services.CreateAsyncScope();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.IsLocked = true;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(-1);
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -263,7 +257,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var request = new LoginRequest(email, password);
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/login", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/login", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

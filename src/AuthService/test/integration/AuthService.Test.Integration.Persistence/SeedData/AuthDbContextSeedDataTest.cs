@@ -3,18 +3,35 @@ using AuthService.Persistence.DbContexts;
 using AuthService.Persistence.SeedData;
 using AuthService.Application.Options;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Test.Generators;
 using Testcontainers.PostgreSql;
 using AuthService.Application.Abstractions.DbContexts;
 using Shared.Test.Helpers;
 using Shared.Constants;
+using System.Text.Json;
 
 namespace AuthService.Test.Integration.Persistence.SeedData
 {
     public class AuthDbContextSeedDataTest : IAsyncLifetime
     {
+        private readonly SeedDataOptions _seedDataOptions = new SeedDataOptions()
+        {
+            AuthDb = new SeedDataOptions.AuthDbData()
+            {
+                Roles = new List<string>() { "Admin" },
+                Accounts = new List<SeedDataOptions.AuthDbData.AccountRolePair>()
+                {
+                    new SeedDataOptions.AuthDbData.AccountRolePair()
+                    {
+                        Email = "test@test.com",
+                        Role = "Admin",
+                        PreferredLanguage = "en"
+                    }
+                }
+            }
+        };
+
         private PostgreSqlContainer _container = null!;
         private IServiceProvider _services = null!;
 
@@ -48,7 +65,6 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         {
             // Arrange
             var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
-            var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             // Act
             await _services.SeedDataAuthDbContextAsync(configuration);
@@ -68,13 +84,13 @@ namespace AuthService.Test.Integration.Persistence.SeedData
                 })
                 .ToListAsync();
 
-            foreach (var role in seedDataOptions.AuthDb.Roles)
+            foreach (var role in _seedDataOptions.AuthDb.Roles)
             {
                 if (!roles.Contains(role))
                     Assert.Fail($"The Roles table does not contain a role called {role}.");
             }
 
-            foreach (var accountRolePair in seedDataOptions.AuthDb.Accounts)
+            foreach (var accountRolePair in _seedDataOptions.AuthDb.Accounts)
             {
                 var account = accounts.FirstOrDefault(a => a.Email == accountRolePair.Email);
                 if (account == null)
@@ -93,15 +109,14 @@ namespace AuthService.Test.Integration.Persistence.SeedData
         {
             // Arrange
             var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
-            var seedDataOptions = configuration.GetSection(SeedDataOptions.Key).Get<SeedDataOptions>()!;
 
             using var authDbContext = CreateAuthDbContext();
             await authDbContext.Database.MigrateAsync();
 
-            await authDbContext.Roles.AddAsync(new Role(seedDataOptions.AuthDb.Roles[0] + "a"));
+            await authDbContext.Roles.AddAsync(new Role(_seedDataOptions.AuthDb.Roles[0] + "a"));
             await authDbContext.SaveChangesAsync();
 
-            await authDbContext.Accounts.AddAsync(new Account(seedDataOptions.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage));
+            await authDbContext.Accounts.AddAsync(new Account(_seedDataOptions.AuthDb.Accounts[0] + "a", PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage));
             await authDbContext.SaveChangesAsync();
 
             // Act
@@ -117,13 +132,13 @@ namespace AuthService.Test.Integration.Persistence.SeedData
                 .Select(a => a.Email)
                 .ToListAsync();
 
-            foreach (var role in seedDataOptions.AuthDb.Roles)
+            foreach (var role in _seedDataOptions.AuthDb.Roles)
             {
                 if (roles.Contains(role))
                     Assert.Fail($"The Roles table contains a role called {role}.");
             }
 
-            foreach (var accountRolePair in seedDataOptions.AuthDb.Accounts)
+            foreach (var accountRolePair in _seedDataOptions.AuthDb.Accounts)
             {
                 var account = accountEmails.FirstOrDefault(e => e == accountRolePair.Email);
                 if (account != null)

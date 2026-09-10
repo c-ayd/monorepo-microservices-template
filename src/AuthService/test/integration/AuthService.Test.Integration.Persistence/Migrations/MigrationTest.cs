@@ -1,5 +1,4 @@
 using AuthService.Persistence.DbContexts;
-using AuthService.Test.Utility;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 

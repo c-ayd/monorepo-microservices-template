@@ -1,8 +1,8 @@
 using System.Reflection;
 using Shared.Redis.Extensions;
 using Shared.Test.Generators;
+using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.Redis.Collections;
-using Shared.Test.Integration.Redis.Fixtures;
 
 namespace Shared.Test.Integration.Redis.Extensions
 {
@@ -11,9 +11,9 @@ namespace Shared.Test.Integration.Redis.Extensions
     {
         private readonly RedisFixture _redisFixture;
 
-        public StringExtensionsTest(RedisFixture redisFixture)
+        public StringExtensionsTest(RedisCollectionCluster collectionCluster)
         {
-            _redisFixture = redisFixture;
+            _redisFixture = collectionCluster.RedisFixture;
         }
 
         public static TheoryData<int, Type, object> Values()
@@ -45,8 +45,8 @@ namespace Shared.Test.Integration.Redis.Extensions
                 .MakeGenericMethod([type]);
 
             // Act
-            await (Task)saveMethodInfo.Invoke(null, [_redisFixture.Database, key, value, TimeSpan.FromMinutes(1)])!;
-            var result = await (dynamic)loadMethodInfo.Invoke(null, [_redisFixture.Database, key])!;
+            await (Task)saveMethodInfo.Invoke(null, [_redisFixture.GetDatabase(), key, value, TimeSpan.FromMinutes(1)])!;
+            var result = await (dynamic)loadMethodInfo.Invoke(null, [_redisFixture.GetDatabase(), key])!;
 
             // Assert
             Assert.True(result.Item1, "The key is not found.");
@@ -71,7 +71,7 @@ namespace Shared.Test.Integration.Redis.Extensions
         {
             // Act
             var key = StringGenerator.GenerateAlphanumeric();
-            var result = await _redisFixture.Database.LoadFromStringAsync<TestClass>(key);
+            var result = await _redisFixture.GetDatabase().LoadFromStringAsync<TestClass>(key);
 
             // Assert
             Assert.False(result.isKeyFound, $"There is a value with the {key} key.");

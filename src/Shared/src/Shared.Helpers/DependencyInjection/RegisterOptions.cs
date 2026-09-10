@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Helpers.Exceptions;
 using Shared.Helpers.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace Shared.Helpers.DependencyInjection
 {
@@ -10,11 +11,7 @@ namespace Shared.Helpers.DependencyInjection
     {
         public static void RegisterOptionsFromAssembly(this IHostApplicationBuilder builder, Assembly assembly)
         {
-            var options = assembly.GetTypes()
-                .Where(t => t.IsAssignableTo(typeof(IOptions)))
-                .ToList();
-            
-            RegisterOptions(builder, options);
+            RegisterOptions(builder.Services, builder.Configuration, GetOptionsFromAssembly(assembly));
         }
 
         public static void RegisterOptionsFromAssemblies(this IHostApplicationBuilder builder, params Assembly[] assemblies)
@@ -22,15 +19,20 @@ namespace Shared.Helpers.DependencyInjection
             var options = new List<Type>();
             foreach (var assembly in assemblies)
             {
-                options.AddRange(assembly.GetTypes()
-                    .Where(t => t.IsAssignableTo(typeof(IOptions)))
-                    .ToList());
+                options.AddRange(GetOptionsFromAssembly(assembly));
             }
 
-            RegisterOptions(builder, options);
+            RegisterOptions(builder.Services, builder.Configuration, options);
         }
 
-        private static void RegisterOptions(IHostApplicationBuilder builder, List<Type> options)
+        private static List<Type> GetOptionsFromAssembly(Assembly assembly)
+        {
+            return assembly.GetTypes()
+                .Where(t => t.IsAssignableTo(typeof(IOptions)))
+                .ToList();
+        }
+        
+        private static void RegisterOptions(IServiceCollection services, IConfiguration configuration, List<Type> options)
         {
             // builder.Services.Configure<MyOptionsClass>(builder.Configuration.GetSection(MyOptionsClass.Key));
 
@@ -44,7 +46,7 @@ namespace Shared.Helpers.DependencyInjection
                 if (key == null)
                     throw new OptionsKeyIsNullException(type.Name);
 
-                configureMethod.Invoke(null, [builder.Services, builder.Configuration.GetSection(key)]);
+                configureMethod.Invoke(null, [services, configuration.GetSection(key)]);
             }
         }
     }

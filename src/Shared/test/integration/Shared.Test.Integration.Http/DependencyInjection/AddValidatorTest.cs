@@ -2,38 +2,41 @@ using System.Reflection;
 using Shared.Http.DependencyInjection;
 using Shared.Http.Response.Structures;
 using Shared.Http.Validation;
-using Shared.Test.Integration.Http.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Test.Helpers.Fixtures;
+using Shared.Test.Integration.Http.Collections;
 
 namespace Shared.Test.Integration.Http.DependencyInjection
 {
-    public class AddValidatorTest : IClassFixture<TestHostFixture>
+    [Collection(nameof(TestHostCollection))]
+    public class AddValidatorTest
     {
         public const string ScopedServiceValue = "TestValue";
 
-        private readonly TestHostFixture _hostFixture;
+        private readonly TestHostFixture _testHostFixture;
 
-        public AddValidatorTest(TestHostFixture hostFixture)
+        public AddValidatorTest(TestHostCollectionCluster collectionCluster)
         {
-            _hostFixture = hostFixture;
+            _testHostFixture = collectionCluster.TestHostFixture;
         }
+
+#pragma warning disable xUnit1013 // Public method should be marked as test
+        public static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<TestScopedService>();
+
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        }
+#pragma warning restore xUnit1013 // Public method should be marked as test
 
         [Fact]
         public async Task AddValidationsFromAssembly_WhenThereIsValidations_ShouldAddThemToDIContainer()
         {
-            // Act
-            await _hostFixture.BuildAsync(services =>
-            {
-                services.AddScoped<TestScopedService>();
-
-                services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            }, null);
-
             // Assert
-            var validator = _hostFixture.TestHost!.Services.GetRequiredService<IValidator<ValidationType1>>();
+            var validator = _testHostFixture.Host.Services.GetRequiredService<IValidator<ValidationType1>>();
             Assert.NotNull(validator);
 
-            var asyncValidator = _hostFixture.TestHost!.Services.GetRequiredService<IAsyncValidator<ValidationType2>>();
+            var asyncValidator = _testHostFixture.Host.Services.GetRequiredService<IAsyncValidator<ValidationType2>>();
             Assert.NotNull(asyncValidator);
 
             var errors = validator.Validate(new ValidationType1());

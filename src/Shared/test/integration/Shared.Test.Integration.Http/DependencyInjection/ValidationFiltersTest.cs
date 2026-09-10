@@ -4,46 +4,50 @@ using System.Reflection;
 using Shared.Http.DependencyInjection;
 using Shared.Http.Response.Structures;
 using Shared.Http.Validation;
-using Shared.Test.Integration.Http.Fixtures;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Shared.Test.Integration.Http.Collections;
+using Shared.Test.Helpers.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing;
 
 namespace Shared.Test.Integration.Http.DependencyInjection
 {
-    public class ValidationFiltersTest : IClassFixture<TestHostFixture>
+    [Collection(nameof(TestHostCollection))]
+    public class ValidationFiltersTest
     {
         public const string ErrorCode = "TestValue";
 
-        private readonly TestHostFixture _hostFixture;
+        private readonly TestHostFixture _testHostFixture;
 
-        public ValidationFiltersTest(TestHostFixture hostFixture)
+        public ValidationFiltersTest(TestHostCollectionCluster collectionCluster)
         {
-            _hostFixture = hostFixture;
-            _hostFixture.BuildAsync(services =>
-            {
-                services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-            }, app =>
-            {
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapPost("/validation", (HttpContext context, ValidationType1 value) => Results.NoContent().ExecuteAsync(context))
-                        .AddValidation<ValidationType1>();
-                    endpoints.MapPost("/async-validation", (HttpContext context, ValidationType2 value) => Results.NoContent().ExecuteAsync(context))
-                        .AddAsyncValidation<ValidationType2>();
-                });
-            }).GetAwaiter().GetResult();
+            _testHostFixture = collectionCluster.TestHostFixture;
         }
+
+#pragma warning disable xUnit1013 // Public method should be marked as test
+        public static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        }
+
+        public static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapPost("/valiation-filter/validation", (HttpContext context, ValidationType1 value) => Results.NoContent().ExecuteAsync(context))
+                .AddValidation<ValidationType1>();
+            endpoints.MapPost("/valiation-filter/async-validation", (HttpContext context, ValidationType2 value) => Results.NoContent().ExecuteAsync(context))
+                .AddAsyncValidation<ValidationType2>();
+        }
+#pragma warning restore xUnit1013 // Public method should be marked as test
 
         [Fact]
         public async Task AddValidation_WhenValidatorIsAddedAndValueIsCorrect_ShouldReturnNoContent()
         {
             // Arrange
-            var client = _hostFixture.Client!;
             var request = new ValidationType1(10);
 
             // Act
-            var response = await client.PostAsJsonAsync("/validation", request);
+            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/validation", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -53,11 +57,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
         public async Task AddValidation_WhenValidatorIsAddedAndValueIsNotCorrect_ShouldReturnBadRequest()
         {
             // Arrange
-            var client = _hostFixture.Client!;
             var request = new ValidationType1(-1);
 
             // Act
-            var response = await client.PostAsJsonAsync("/validation", request);
+            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/validation", request);
             var jsonResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
             // Assert
@@ -71,11 +74,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
         public async Task AddAsyncValidation_WhenValidatorIsAddedAndValueIsCorrect_ShouldReturnNoContent()
         {
             // Arrange
-            var client = _hostFixture.Client!;
             var request = new ValidationType1(10);
 
             // Act
-            var response = await client.PostAsJsonAsync("/async-validation", request);
+            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/async-validation", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -85,11 +87,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
         public async Task AddAsyncValidation_WhenValidatorIsAddedAndValueIsNotCorrect_ShouldReturnBadRequest()
         {
             // Arrange
-            var client = _hostFixture.Client!;
             var request = new ValidationType1(-1);
 
             // Act
-            var response = await client.PostAsJsonAsync("/async-validation", request);
+            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/async-validation", request);
             var jsonResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
             // Assert

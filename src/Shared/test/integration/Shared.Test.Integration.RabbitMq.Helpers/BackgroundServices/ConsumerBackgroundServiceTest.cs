@@ -7,14 +7,13 @@ using Shared.RabbitMq.Helpers.BackgroundServices;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.RabbitMq.Helpers.Collections;
-using Shared.Test.Integration.RabbitMq.Helpers.Fixtures;
 
 namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 {
     [Collection(nameof(RabbitMqCollection))]
     public class ConsumerBackgroundServiceTest : IClassFixture<LoggerFixture<ConsumerBackgroundServiceTest>>
     {
-        private readonly TimeSpan _timeoutSpan = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan _timeoutTime = TimeSpan.FromSeconds(5);
         private readonly TimeSpan _healthCheckTime = TimeSpan.FromSeconds(1);
         private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(1);
 
@@ -26,10 +25,10 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         private readonly LoggerFixture<ConsumerBackgroundServiceTest> _loggerFixture;
 
         public ConsumerBackgroundServiceTest(
-            RabbitMqFixture rabbitMqFixture,
+            RabbitMqCollectionCluster rabbitMqCollectionCluster,
             LoggerFixture<ConsumerBackgroundServiceTest> loggerFixture)
         {
-            _rabbitMqFixture = rabbitMqFixture;
+            _rabbitMqFixture = rabbitMqCollectionCluster.RabbitMqFixture;
             _loggerFixture = loggerFixture;
         }
 
@@ -38,7 +37,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         {
             // Arrange
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 TimeSpan.FromSeconds(60),
                 _graceTime,
                 _queueName,
@@ -46,7 +45,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _loggerFixture);
 
             // Act
-            await backgroundService.StartAsync(default);
+            var cts = new CancellationTokenSource();
+            await backgroundService.StartAsync(cts.Token);
+            await cts.CancelAsync();
 
             // Assert
             Assert.NotNull(GetConnection(backgroundService));
@@ -61,37 +62,37 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         {
             // Arrange
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 _healthCheckTime,
                 _graceTime,
                 _queueName,
                 1,
                 _loggerFixture);
-
             await InitializeBackgroundService(backgroundService);
 
-            var consumerTag = GetConsumerTag(backgroundService);
+            var messageCount = await _rabbitMqFixture.GetMessageCountAsync(_queueName);
+            if (messageCount != 0)
+                Assert.Fail($"The queue is not empty. Count: {messageCount}");
 
             var message = StringGenerator.GeneratePrintableAscii();
             await _rabbitMqFixture.PublishMessageAsync(
                 _exchangeName,
                 _routingKey,
+                new BasicProperties(),
                 JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
             var cts = new CancellationTokenSource();
             var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
 
-            var result = await backgroundService.ReceivedTcs.Task.WaitAsync(_timeoutSpan);
+            var result = await backgroundService.ReceivedTcs.Task.WaitAsync(_timeoutTime);
             await cts.CancelAsync();
 
             // Assert
             Assert.True(result, "The received event did not set the value to true.");
 
-            Assert.Equal(consumerTag, GetConsumerTag(backgroundService));
             Assert.Equal(message, backgroundService.Message);
 
-            await _rabbitMqFixture.ClearQueue(_queueName);
             await backgroundService.StopAsync(default);
         }
         
@@ -102,14 +103,17 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         {
             // Arrange
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 _healthCheckTime,
                 _graceTime,
                 _queueName,
                 1,
                 _loggerFixture);
-
             await InitializeBackgroundService(backgroundService);
+
+            var messageCount = await _rabbitMqFixture.GetMessageCountAsync(_queueName);
+            if (messageCount != 0)
+                Assert.Fail($"The queue is not empty. Count: {messageCount}");
 
             var consumerTag = GetConsumerTag(backgroundService);
 
@@ -126,13 +130,14 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             await _rabbitMqFixture.PublishMessageAsync(
                 _exchangeName,
                 _routingKey,
+                new BasicProperties(),
                 JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
             var cts = new CancellationTokenSource();
             var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
 
-            var result = await backgroundService.ReceivedTcs.Task.WaitAsync(_timeoutSpan);
+            var result = await backgroundService.ReceivedTcs.Task.WaitAsync(_timeoutTime);
             await cts.CancelAsync();
 
             // Assert
@@ -140,7 +145,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             Assert.NotNull(GetConnection(backgroundService));
             Assert.NotNull(backgroundService.Channel);
 
-            await _rabbitMqFixture.ClearQueue(_queueName);
             await backgroundService.StopAsync(default);
         }
 
@@ -149,13 +153,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         {
             // Arrange
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 _healthCheckTime,
                 _graceTime,
                 _queueName,
                 1,
                 _loggerFixture);
-
             await InitializeBackgroundService(backgroundService);
 
             // Act

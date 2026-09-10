@@ -7,8 +7,8 @@ using RabbitMQ.Client.Events;
 using Shared.RabbitMq.Helpers;
 using Shared.RabbitMq.Helpers.Structures;
 using Shared.Test.Generators;
+using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.RabbitMq.Helpers.Collections;
-using Shared.Test.Integration.RabbitMq.Helpers.Fixtures;
 
 namespace Shared.Test.Integration.RabbitMq.Helpers
 {
@@ -42,9 +42,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
 
         private readonly RabbitMqFixture _rabbitMqFixture;
 
-        public PublisherTest(RabbitMqFixture rabbitMqFixture)
+        public PublisherTest(RabbitMqCollectionCluster collectionCluster)
         {
-            _rabbitMqFixture = rabbitMqFixture;
+            _rabbitMqFixture = collectionCluster.RabbitMqFixture;
         }
 
         [Fact]
@@ -148,6 +148,10 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
                     acknowledgeEventTcs.SetResult(true);
                 });
 
+            var messageCount = await _rabbitMqFixture.GetMessageCountAsync(_normalQueue);
+            if (messageCount != 0)
+                Assert.Fail($"The normal queue is not empty. Count: {messageCount}");
+
             // Act
             await publisher.PublishMessageAsync(
                 _normalExchange,
@@ -164,15 +168,12 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
             Assert.Empty(pendingMessages);
             Assert.Empty(droppedMessages);
 
-            var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
-            var messageFromRabbitMq = await channel.BasicGetAsync(_normalQueue, autoAck: true);
+            var messageFromRabbitMq = await _rabbitMqFixture.GetNextMessageAsync(_normalQueue);
 
             Assert.NotNull(messageFromRabbitMq);
             Assert.Equal(message, Encoding.UTF8.GetString(messageFromRabbitMq.Body.ToArray()));
             Assert.Equal(properties.CorrelationId, messageFromRabbitMq.BasicProperties.CorrelationId);
             CheckHeaders(messageFromRabbitMq.BasicProperties.Headers, true);
-
-            await channel.QueuePurgeAsync(_normalQueue);
         }
 
         [Fact]

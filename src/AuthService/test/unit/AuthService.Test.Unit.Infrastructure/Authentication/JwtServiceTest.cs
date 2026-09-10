@@ -2,27 +2,32 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using AuthService.Infrastructure.Authentication;
 using AuthService.Application.Options;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Http.Authentication;
 using Shared.Test.Generators;
-using Shared.Test.Helpers;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
     public class JwtServiceTest
     {
-        private readonly JwtOptions _jwtOptions;
+        private readonly JwtOptions _jwtOptions = new JwtOptions()
+        {
+            KeyId = "v1",
+            PrivateKeyPath = "./test_jwt_private.pem",
+            PublicKeyPath = "./test_jwt_public.pem",
+            Issuer = "https://localhost:7000",
+            Audience = "https://localhost:6000",
+            AccessTokenLifespanInMinutes = 5,
+            RefreshTokenLifespanInDays = 2
+        };
+        
         private readonly JwtKeyService _jwtKeyService;
         private readonly JwtService _jwtService;
 
         public JwtServiceTest()
         {
-            _jwtOptions = ConfigurationHelper.CreateConfigurationFromTestSettings()
-                .GetSection(JwtOptions.Key).Get<JwtOptions>()!;
             var jwtOptionsPattern = Options.Create(_jwtOptions);
-
             _jwtKeyService = new JwtKeyService(jwtOptionsPattern);
             _jwtService = new JwtService(jwtOptionsPattern, _jwtKeyService);
         }

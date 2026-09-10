@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using AuthService.Api.Middlewares;
-using AuthService.Application.Validations.Constraints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Shared.Constants;

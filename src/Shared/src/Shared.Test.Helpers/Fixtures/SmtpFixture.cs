@@ -1,38 +1,35 @@
 using System.Text.Json;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
-using NotificationService.Worker.Options;
+using Shared.Test.Helpers.Structures;
 
-namespace NotificationService.Test.Integration.Worker.Fixtures
+namespace Shared.Test.Helpers.Fixtures
 {
-    public class EmailServiceFixture : IAsyncLifetime
+    public class SmtpFixture
     {
         private IContainer _container = null!;
-
-        public SmtpOptions SmtpOptions { get; private set; } = null!;
 
         public async Task InitializeAsync()
         {
             _container = new ContainerBuilder("mailhog/mailhog:v1.0.1")
-                .WithPortBinding(1025, true)    // SMTP port
-                .WithPortBinding(8025, true)    // API port
+                .WithPortBinding(1025, true)
+                .WithPortBinding(8025, true)
                 .Build();
-
             await _container.StartAsync();
-
-            SmtpOptions = new SmtpOptions()
-            {
-                Username = "",
-                Password = "",
-                SenderEmail = "test@test.com",
-                SenderDisplayName = "Test Display Name",
-                Server = _container.Hostname,
-                Port = _container.GetMappedPublicPort(1025),
-                EnableSsl = false
-            };
         }
 
-        public async Task<List<MailHogDto>> GetEmails()
+        public SmtpFixtureOptions GetSmtpOptions()
+        {
+            return new SmtpFixtureOptions(
+                Email: "test@test.com",
+                DisplayName: "Test Display Name",
+                Server: _container.Hostname,
+                Port: _container.GetMappedPublicPort(1025),
+                EnableSsl: false
+            );
+        }
+
+        public async Task<List<SentEmail>> GetEmailsAsync()
         {
             using var http = new HttpClient()
             {
@@ -46,11 +43,11 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             })!;
 
             await http.DeleteAsync("/api/v1/messages");
-            
-            var emails = new List<MailHogDto>();
+
+            var emails = new List<SentEmail>();
             foreach (var item in response.Items)
             {
-                emails.Add(new MailHogDto()
+                emails.Add(new SentEmail()
                 {
                     From = item.Content?.Headers["From"]?[0],
                     To = item.Content?.Headers["To"][0]
@@ -63,10 +60,28 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
             return emails;
         }
 
+        public async Task ClearEmailsAsync()
+        {
+            using var http = new HttpClient()
+            {
+                BaseAddress = new Uri($"http://{_container.Hostname}:{_container.GetMappedPublicPort(8025)}")
+            };
+
+            await http.DeleteAsync("/api/v1/messages");
+        }
+
         public async Task DisposeAsync()
         {
             await _container.StopAsync();
             await _container.DisposeAsync();
+        }
+
+        public class SentEmail
+        {
+            public string? From { get; set; }
+            public List<string> To { get; set; } = new List<string>();
+            public string? Subject { get; set; }
+            public string? Body { get; set; }
         }
 
         private class MailHogResponse
@@ -79,18 +94,10 @@ namespace NotificationService.Test.Integration.Worker.Fixtures
 
                 public class MailHogContent
                 {
-                    public Dictionary<string, List<string>> Headers { get; set; } = new();
+                    public Dictionary<string, List<string>> Headers { get; set; } = new Dictionary<string, List<string>>();
                     public string? Body { get; set; }
                 }
             }
-        }
-
-        public class MailHogDto
-        {
-            public string? From { get; set; }
-            public List<string> To { get; set; } = new List<string>();
-            public string? Subject { get; set; }
-            public string? Body { get; set; }
         }
     }
 }
