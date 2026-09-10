@@ -8,8 +8,8 @@ namespace NotificationService.Worker.Options
 
         public required string Username { get; set; }
         public required string Password { get; set; }
-        public required string SenderEmail { get; set; }
-        public required string SenderDisplayName { get; set; }
+        public required string Email { get; set; }
+        public required string DisplayName { get; set; }
         public required string Server { get; set; }
         public required int Port { get; set; }
         public required bool EnableSsl { get; set; }

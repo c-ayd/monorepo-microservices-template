@@ -23,7 +23,7 @@ namespace NotificationService.Worker.Services
 
             var message = new MailMessage()
             {
-                From = new MailAddress(_smtpOptions.SenderEmail, _smtpOptions.SenderDisplayName),
+                From = new MailAddress(_smtpOptions.Email, _smtpOptions.DisplayName),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = isBodyHtml,
