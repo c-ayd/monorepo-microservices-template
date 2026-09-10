@@ -5,8 +5,8 @@ using AuthService.Application.Options;
 using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
+using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Application.Collections;
-using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
 using Shared.Test.Generators;
@@ -16,18 +16,18 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
     [Collection(nameof(AuthApiCollection))]
     public class RegisterHandlerTest
     {
-        private readonly AuthApiFixture _authApiFixture;
+        private readonly AuthApiCollectionCluster _collectionCluster;
 
-        public RegisterHandlerTest(AuthApiFixture authApiFixture)
+        public RegisterHandlerTest(AuthApiCollectionCluster collectionCluster)
         {
-            _authApiFixture = authApiFixture;
+            _collectionCluster = collectionCluster;
         }
 
         [Fact]
         public async Task Handle_WhenAccountWithEmailExists_ShouldReturnConflict()
         {
             // Arrange
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             var email = EmailGenerator.Generate();
             authDbContext.Accounts.Add(new Account(email, StringGenerator.GenerateAlpha(), SupportedLanguages.DefaultLanguage));
@@ -40,7 +40,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             ));
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/register", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/register", request);
             
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -50,7 +50,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
         public async Task Handle_WhenAccountDoesNotExist_ShouldCreateAccountAndTokenAndReturnOk()
         {
             // Arrange
-            var tokenLifespan = TimeSpan.FromHours(_authApiFixture.GetOptions<TokenLifespansOptions>().EmailVerificationLifespanInHours).TotalMinutes;
+            var tokenLifespan = TimeSpan.FromHours(_collectionCluster.AuthApiWebApp.GetOptions<TokenLifespansOptions>().EmailVerificationLifespanInHours).TotalMinutes;
 
             var email = EmailGenerator.Generate();
             var request = new RegisterRequest(email, PasswordGenerator.Generate(
@@ -60,12 +60,12 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             ));
 
             // Act
-            var response = await _authApiFixture.Client.PostAsJsonAsync("/accounts/register", request);
+            var response = await _collectionCluster.AuthApiClient.PostAsJsonAsync("/accounts/register", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            using var authDbContext = _authApiFixture.CreateAuthDbContext();
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
 
             var account = authDbContext.Accounts
                 .Where(a => a.Email == email)

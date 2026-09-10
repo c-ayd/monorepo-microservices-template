@@ -1,28 +1,29 @@
 using AuthService.Domain.Entities;
 using AuthService.Domain.SeedWork;
+using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Persistence.Collections;
-using AuthService.Test.Utility.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
 using Shared.Test.Generators;
+using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Integration.Persistence.Interceptors
 {
     [Collection(nameof(AuthDbContextCollection))]
     public class SoftDeleteInterceptorTest
     {
-        private readonly AuthDbContextFixture _authDbContextFixture;
+        private readonly PostgreSqlFixture _postgreSqlFixture;
 
-        public SoftDeleteInterceptorTest(AuthDbContextFixture authDbContextFixture)
+        public SoftDeleteInterceptorTest(AuthDbContextCollectionCluster collectionCluster)
         {
-            _authDbContextFixture = authDbContextFixture;
+            _postgreSqlFixture = collectionCluster.PostgreSqlFixture;
         }
 
         [Fact]
         public async Task SoftDeleteInterceptor_WhenEntityIsSoftDeleteableAndDeleted_ShouldNotDeleteEntityAndUpdateSoftDeleteProperties()
         {
             // Arrange
-            using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
 
             var now = DateTimeOffset.UtcNow;
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
@@ -51,7 +52,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task SoftDeleteInterceptor_WhenEntityIsNotSoftDeleteableAndDeleted_ShouldDeleteEntity()
         {
             // Arrange
-            using var authDbContext = _authDbContextFixture.CreateAuthDbContext();
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);

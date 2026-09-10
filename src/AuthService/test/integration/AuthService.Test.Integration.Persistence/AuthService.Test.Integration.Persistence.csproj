@@ -20,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\AuthService.Test.Utility\AuthService.Test.Utility.csproj" />
+    <ProjectReference Include="..\..\..\src\AuthService.Persistence\AuthService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Helpers\Shared.Test.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.Test.json" Link="appsettings.Test.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
