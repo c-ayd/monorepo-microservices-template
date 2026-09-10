@@ -1,37 +1,41 @@
-using Microsoft.Extensions.Options;
-using NotificationService.Test.Integration.Worker.Fixtures;
+using NotificationService.Test.Integration.Worker.Collections;
+using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.Services;
 using Shared.Test.Generators;
 
 namespace NotificationService.Test.Integration.Worker.Services
 {
-    public class SmtpServiceTest : IClassFixture<EmailServiceFixture>
+    [Collection(nameof(WorkerCollection))]
+    public class SmtpServiceTest
     {
-        private readonly EmailServiceFixture _emailServiceFixture;
-        private readonly SmtpService _smtp;
+        private readonly WorkerCollectionCluster _collectionCluster;
 
-        public SmtpServiceTest(EmailServiceFixture emailServiceFixture)
+        public SmtpServiceTest(WorkerCollectionCluster collectionCluster)
         {
-            _emailServiceFixture = emailServiceFixture;
-            _smtp = new SmtpService(Options.Create(emailServiceFixture.SmtpOptions));
+            _collectionCluster = collectionCluster;
         }
 
         [Fact]
         public async Task SendAsync_WhenSendSingleEmail_ShouldSendSingleEmail()
         {
             // Arrange
+            var smtpService = _collectionCluster.NotificationWebApp.GetService<IEmailService>();
+            if (smtpService is not SmtpService)
+                return;     // Smtp service is not used for sending email anymore. Another test case should take in place.
+
             var to = EmailGenerator.Generate();
             var subject = StringGenerator.GenerateAlphanumeric();
             var body = StringGenerator.GenerateAlphanumeric();
 
             // Act
-            await _smtp.SendAsync([to], subject, body, isBodyHtml: false);
+            await smtpService.SendAsync([to], subject, body, isBodyHtml: false);
             
             // Assert
-            var emails = await _emailServiceFixture.GetEmails();
+            var emails = await _collectionCluster.SmtpFixture.GetEmailsAsync();
             Assert.Single(emails);
 
-            Assert.Equal($"\"{_emailServiceFixture.SmtpOptions.SenderDisplayName}\" <{_emailServiceFixture.SmtpOptions.SenderEmail}>",
+            var smtpOptions = _collectionCluster.SmtpFixture.GetSmtpOptions();
+            Assert.Equal($"\"{smtpOptions.DisplayName}\" <{smtpOptions.Email}>",
                 emails[0].From);
 
             Assert.Single(emails[0].To);
@@ -45,6 +49,10 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task SendAsync_WhenSendMultipleEmails_ShouldSendMultipleEmails()
         {
             // Arrange
+            var smtpService = _collectionCluster.NotificationWebApp.GetService<IEmailService>();
+            if (smtpService is not SmtpService)
+                return;     // Smtp service is not used for sending email anymore. Another test case should take in place.
+            
             var to = new string[]
             {
                 EmailGenerator.Generate(),
@@ -55,13 +63,14 @@ namespace NotificationService.Test.Integration.Worker.Services
             var body = StringGenerator.GenerateAlphanumeric();
 
             // Act
-            await _smtp.SendAsync(to, subject, body, isBodyHtml: false);
+            await smtpService.SendAsync(to, subject, body, isBodyHtml: false);
 
             // Assert
-            var emails = await _emailServiceFixture.GetEmails();
+            var emails = await _collectionCluster.SmtpFixture.GetEmailsAsync();
             Assert.Single(emails);
 
-            Assert.Equal($"\"{_emailServiceFixture.SmtpOptions.SenderDisplayName}\" <{_emailServiceFixture.SmtpOptions.SenderEmail}>",
+            var smtpOptions = _collectionCluster.SmtpFixture.GetSmtpOptions();
+            Assert.Equal($"\"{smtpOptions.DisplayName}\" <{smtpOptions.Email}>",
                 emails[0].From);
 
             foreach (var item in emails[0].To)

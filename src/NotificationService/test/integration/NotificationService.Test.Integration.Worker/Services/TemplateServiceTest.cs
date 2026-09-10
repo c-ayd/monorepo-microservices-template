@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using NotificationService.Test.Integration.Worker.Collections;
-using NotificationService.Test.Integration.Worker.Fixtures;
+using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Entities;
 using NotificationService.Worker.Services;
@@ -15,20 +13,11 @@ namespace NotificationService.Test.Integration.Worker.Services
     [Collection(nameof(WorkerCollection))]
     public class TemplateServiceTest
     {
-        private readonly WorkerFixture _workerFixture;
+        private readonly WorkerCollectionCluster _collectionCluster;
 
-        private readonly TemplateService _templateService;
-
-        public TemplateServiceTest(WorkerFixture workerFixture)
+        public TemplateServiceTest(WorkerCollectionCluster collectionCluster)
         {
-            _workerFixture = workerFixture;
-
-            var scopeFactory = new ServiceCollection()
-                .AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(_workerFixture.GetTemplateDbConnectionString()))
-                .BuildServiceProvider()
-                .GetRequiredService<IServiceScopeFactory>();
-
-            _templateService = new TemplateService(scopeFactory);
+            _collectionCluster = collectionCluster;
         }
 
         [Fact]
@@ -36,21 +25,22 @@ namespace NotificationService.Test.Integration.Worker.Services
         {
             // Arrange
             var emailTemplate = new EmailTemplate(
-                StringGenerator.GenerateAlpha(10),
-                StringGenerator.GenerateAlpha(10),
-                StringGenerator.GenerateAlpha(10),
-                StringGenerator.GenerateAlpha(10),
+                StringGenerator.GenerateAlphanumeric(),
+                StringGenerator.GenerateAlphanumeric(),
+                StringGenerator.GenerateAlphanumeric(),
+                StringGenerator.GenerateAlphanumeric(),
                 false
             );
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
 
-            await _templateService.RecacheTemplatesAsync();
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
 
             // Act
-            var template = _templateService.GetEmailTemplate(emailTemplate.TemplateId, emailTemplate.Language);
+            var template = templateService.GetEmailTemplate(emailTemplate.TemplateId, emailTemplate.Language);
 
             // Assert
             Assert.NotNull(template);
@@ -64,21 +54,21 @@ namespace NotificationService.Test.Integration.Worker.Services
         {
             // Arrange
             var emailTemplate = new EmailTemplate(
-                StringGenerator.GenerateAlpha(11),
+                StringGenerator.GenerateAlphanumeric(),
                 SupportedLanguages.DefaultLanguage,
-                StringGenerator.GenerateAlpha(11),
-                StringGenerator.GenerateAlpha(11),
-                false
-            );
+                StringGenerator.GenerateAlphanumeric(),
+                StringGenerator.GenerateAlphanumeric(),
+                false);
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
 
-            await _templateService.RecacheTemplatesAsync();
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
 
             // Act
-            var template = _templateService.GetEmailTemplate(emailTemplate.TemplateId, "test");
+            var template = templateService.GetEmailTemplate(emailTemplate.TemplateId, "test");
 
             // Assert
             Assert.NotNull(template);
@@ -90,8 +80,11 @@ namespace NotificationService.Test.Integration.Worker.Services
         [Fact]
         public async Task GetEmailTemplateAsync_WhenTemplateDoesNotExist_ShouldReturnNull()
         {
+            // Arrange
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+
             // Act
-            var template = _templateService.GetEmailTemplate(StringGenerator.GenerateNumeric(), StringGenerator.GenerateNumeric());
+            var template = templateService.GetEmailTemplate(StringGenerator.GenerateNumeric(), StringGenerator.GenerateNumeric());
 
             // Assert
             Assert.Null(template);
@@ -101,30 +94,30 @@ namespace NotificationService.Test.Integration.Worker.Services
         public async Task RecacheAllTemplatesAsync_WhenItIsCalled_ShouldRecacheTemplates()
         {
             // Arrange
-            await _templateService.RecacheTemplatesAsync();
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
             
             var emailTemplate = new EmailTemplate(
-                StringGenerator.GenerateAlpha(12),
-                StringGenerator.GenerateAlpha(12),
-                StringGenerator.GenerateAlpha(12),
-                StringGenerator.GenerateAlpha(12),
-                false
-            );
+                StringGenerator.GenerateAlpha(),
+                StringGenerator.GenerateAlpha(),
+                StringGenerator.GenerateAlpha(),
+                StringGenerator.GenerateAlpha(),
+                false);
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
 
             var numberOfEmailTemplates = ((IDictionary)(typeof(TemplateService)
                 .GetField("_emailTemplates", BindingFlags.NonPublic | BindingFlags.Instance)!)
-                .GetValue(_templateService)!).Count;
+                .GetValue(templateService)!).Count;
 
             // Act
-            await _templateService.RecacheTemplatesAsync();
+            await templateService.RecacheTemplatesAsync();
 
             var newNumberOfEmailTemplates = ((IDictionary)(typeof(TemplateService)
                 .GetField("_emailTemplates", BindingFlags.NonPublic | BindingFlags.Instance)!)
-                .GetValue(_templateService)!).Count;
+                .GetValue(templateService)!).Count;
 
             // Assert
             Assert.Equal(numberOfEmailTemplates + 1, newNumberOfEmailTemplates);

@@ -1,11 +1,8 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using NotificationService.Test.Integration.Worker.Collections;
-using NotificationService.Test.Integration.Worker.Fixtures;
+using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.BackgroundServices;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Entities;
@@ -19,79 +16,48 @@ using Shared.Test.Helpers.Fixtures;
 namespace NotificationService.Test.Integration.Worker.BackgroundServices
 {
     [Collection(nameof(WorkerCollection))]
-    public class EmailBackgroundServiceTest : IClassFixture<EmailServiceFixture>, IClassFixture<LoggerFixture<EmailBackgroundService>>, IAsyncLifetime
+    public class EmailBackgroundServiceTest
     {
-        private const int _timeoutInSeconds = 30;
+        private const int _timeoutInSeconds = 5;
 
-        private readonly WorkerFixture _workerFixture;
-        private readonly EmailBackgroundService _emailBackgroundService;
-        private readonly TemplateService _templateServiceFixture;
-        private readonly EmailServiceFixture _emailServiceFixture;
+        private readonly WorkerCollectionCluster _collectionCluster;
 
-        public EmailBackgroundServiceTest(
-            WorkerFixture workerFixture,
-            EmailServiceFixture emailServiceFixture,
-            LoggerFixture<EmailBackgroundService> loggerFixture)
+        public EmailBackgroundServiceTest(WorkerCollectionCluster collectionCluster)
         {
-            _workerFixture = workerFixture;
-
-            var scopeFactory = new ServiceCollection()
-                .AddDbContext<TemplateDbContext>(_ => _.UseNpgsql(_workerFixture.GetTemplateDbConnectionString()))
-                .BuildServiceProvider()
-                .GetRequiredService<IServiceScopeFactory>();
-            _templateServiceFixture = new TemplateService(scopeFactory);
-
-            _emailServiceFixture = emailServiceFixture;
-
-            _emailBackgroundService = new EmailBackgroundService(
-                Options.Create(_workerFixture.GetRabbitMqOptions()),
-                _templateServiceFixture,
-                new SmtpService(Options.Create(emailServiceFixture.SmtpOptions)),
-                loggerFixture
-            );
-        }
-
-        public async Task InitializeAsync()
-        {
-            await _emailBackgroundService.StartAsync(default);
-        }
-
-        public async Task DisposeAsync()
-        {
-            await _emailBackgroundService.StopAsync(default);
+            _collectionCluster = collectionCluster;
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ReceivedAsync_WhenMessageIsNotSerialized_ShouldPutMessageInDLQ(bool isJson)
+        public async Task ReceivedAsync_WhenMessageIsNotSerialized_ShouldPutMessageInDlq(bool isJson)
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            var dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-            if (mainQueue.MessageCount != 0 || dlq.MessageCount != 0)
-                Assert.Fail($"The queues are not empty. Main: {mainQueue.MessageCount}, DLQ: {dlq.MessageCount}.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            if (mainQueueMessageCount != 0 || dlqMessageCount != 0)
+                Assert.Fail($"The queues are not empty. Main: {mainQueueMessageCount}, DLQ: {dlqMessageCount}.");
 
             string message = isJson ? "{}" : "Test message";
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
                 new BasicProperties()
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
                     Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                });
+                },
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
             var elapsedTime = 0;
             while (true)
             {
-                dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-                if (dlq.MessageCount == 1)
+                dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+                if (dlqMessageCount == 1)
                     break;
 
                 if (elapsedTime >= _timeoutInSeconds)
@@ -101,23 +67,28 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 ++elapsedTime;
             }
 
-            var messageFromRabbitMq = await _workerFixture.GetMessageAsync(EmailConfiguration.DlqName);
-
+            var messageFromRabbitMq = await _collectionCluster.RabbitMqFixture.GetNextMessageAsync(EmailConfiguration.DlqName);
             Assert.NotNull(messageFromRabbitMq);
             Assert.Equal(message, JsonSerializer.Deserialize<string>(Encoding.UTF8.GetString(messageFromRabbitMq.Body.ToArray())));
 
-            mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            Assert.Equal((uint)0, mainQueue.MessageCount);
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, retryQueueMessageCount);
+
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
         }
 
         [Fact]
-        public async Task ReceivedAsync_WhenTemplatIsNotFoundForFirstTime_ShouldPutMessageInRetryQueueWithProperExpiration()
+        public async Task ReceivedAsync_WhenTemplateIsNotFoundForFirstTime_ShouldPutMessageInRetryQueueWithProperExpiration()
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            var retryQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.RetryQueueName);
-            if (mainQueue.MessageCount != 0 || retryQueue.MessageCount != 0)
-                Assert.Fail($"The queues are not empty. Main: {mainQueue.MessageCount}, Retry: {retryQueue.MessageCount}.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            if (mainQueueMessageCount != 0 || retryQueueMessageCount != 0)
+                Assert.Fail($"The queues are not empty. Main: {mainQueueMessageCount}, Retry: {retryQueueMessageCount}.");
 
             var message = new EmailMessage(
                 [EmailGenerator.Generate()],
@@ -126,25 +97,25 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 null,
                 null);
             
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
                 new BasicProperties()
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
                     Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                });
+                },
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
             var elapsedTime = 0;
             while (true)
             {
-                retryQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.RetryQueueName);
-                if (retryQueue.MessageCount == 1)
+                retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+                if (retryQueueMessageCount == 1)
                     break;
 
                 if (elapsedTime >= _timeoutInSeconds)
@@ -154,23 +125,28 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 ++elapsedTime;
             }
 
-            var messageFromRabbitMq = await _workerFixture.GetMessageAsync(EmailConfiguration.RetryQueueName);
-
+            var messageFromRabbitMq = await _collectionCluster.RabbitMqFixture.GetNextMessageAsync(EmailConfiguration.RetryQueueName);
             Assert.NotNull(messageFromRabbitMq);
             Assert.Equal(((int)TemplateBackgroundService.CacheDuration.TotalMilliseconds).ToString(), messageFromRabbitMq.BasicProperties.Expiration);
 
-            mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            Assert.Equal((uint)0, mainQueue.MessageCount);
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, dlqMessageCount);
+
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
         }
 
         [Fact]
-        public async Task ReceivedAsync_WhenTemplatIsNotFoundForSecondTime_ShouldPutMessageInDlq()
+        public async Task ReceivedAsync_WhenTemplateIsNotFoundForSecondTime_ShouldPutMessageInDlq()
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            var dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-            if (mainQueue.MessageCount != 0 || dlq.MessageCount != 0)
-                Assert.Fail($"The queues are not empty. Main: {mainQueue.MessageCount}, DLQ: {dlq.MessageCount}.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            if (mainQueueMessageCount != 0 || dlqMessageCount != 0)
+                Assert.Fail($"The queues are not empty. Main: {mainQueueMessageCount}, DLQ: {dlqMessageCount}.");
 
             var message = new EmailMessage(
                 [EmailGenerator.Generate()],
@@ -179,10 +155,9 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 null,
                 null);
 
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
                 new BasicProperties()
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
@@ -191,17 +166,18 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                     {
                         { "Template-Not-Found", true }
                     }
-                });
+                },
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
             var elapsedTime = 0;
             while (true)
             {
-                dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-                if (dlq.MessageCount == 1)
+                dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+                if (dlqMessageCount == 1)
                     break;
 
                 if (elapsedTime >= _timeoutInSeconds)
@@ -211,19 +187,23 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 ++elapsedTime;
             }
 
-            await _workerFixture.ClearQueue(EmailConfiguration.DlqName);
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, retryQueueMessageCount);
 
-            mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            Assert.Equal((uint)0, mainQueue.MessageCount);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
         }
 
         [Fact]
         public async Task ReceivedAsync_WhenEmailIsSent_ShouldAcknowledgeMessage()
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            if (mainQueue.MessageCount != 0)
-                Assert.Fail($"The main queue is not empty.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            if (mainQueueMessageCount != 0)
+                Assert.Fail($"The main queue is not empty. Message Count: {mainQueueMessageCount}.");
 
             var emailTemplate = new EmailTemplate(
                 StringGenerator.GenerateAlpha(),
@@ -232,37 +212,39 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 "Body: {0} {1}",
                 false);
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
-            await _templateServiceFixture.RecacheTemplatesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
+
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
 
             var message = new EmailMessage(
                 [EmailGenerator.Generate()],
                 emailTemplate.TemplateId,
                 emailTemplate.Language,
-                [StringGenerator.GeneratePrintableAscii()],
-                [StringGenerator.GeneratePrintableAscii(), StringGenerator.GeneratePrintableAscii()]);
+                [StringGenerator.GenerateAlphanumeric()],
+                [StringGenerator.GenerateAlphanumeric(), StringGenerator.GenerateAlphanumeric()]);
 
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
                 new BasicProperties()
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
                     Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                });
+                },
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
-            EmailServiceFixture.MailHogDto? email = null;
+            SmtpFixture.SentEmail? email = null;
             var elapsedTime = 0;
             while (true)
             {
-                var emails = await _emailServiceFixture.GetEmails();
+                var emails = await _collectionCluster.SmtpFixture.GetEmailsAsync();
                 if (emails.Count == 1)
                 {
                     email = emails[0];
@@ -276,12 +258,21 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 ++elapsedTime;
             }
 
-            mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            Assert.Equal((uint)0, mainQueue.MessageCount);
-
             Assert.Equal(message.To[0], email.To[0]);
             Assert.Equal("Subject: " + message.SubjectParameters![0], email.Subject);
             Assert.Equal("Body: " + message.BodyParameters![0] + " " + message.BodyParameters[1], email.Body!.TrimEnd());
+
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, retryQueueMessageCount);
+            Assert.Equal((uint)0, dlqMessageCount);
+
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
+            await _collectionCluster.SmtpFixture.ClearEmailsAsync();
         }
 
         [Theory]
@@ -290,10 +281,10 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
         public async Task ReceivedAsync_WhenEmailIsNotSent_ShouldPutMessageInRetryQueueWithProperExpiration(int retryCount)
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            var retryQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.RetryQueueName);
-            if (mainQueue.MessageCount != 0 || retryQueue.MessageCount != 0)
-                Assert.Fail($"The queues are not empty. Main: {mainQueue.MessageCount}, Retry: {retryQueue.MessageCount}.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            if (mainQueueMessageCount != 0 || retryQueueMessageCount != 0)
+                Assert.Fail($"The queues are not empty. Main: {mainQueueMessageCount}, Retry: {retryQueueMessageCount}.");
 
             var emailTemplate = new EmailTemplate(
                 StringGenerator.GenerateAlpha(),
@@ -302,17 +293,19 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 StringGenerator.GenerateAlpha() + "{10}",
                 false);
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
-            await _templateServiceFixture.RecacheTemplatesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
+
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
 
             var message = new EmailMessage(
                 [EmailGenerator.Generate()],
                 emailTemplate.TemplateId,
                 emailTemplate.Language,
-                [StringGenerator.GeneratePrintableAscii()],
-                [StringGenerator.GeneratePrintableAscii()]);
+                [StringGenerator.GenerateAlphanumeric()],
+                [StringGenerator.GenerateAlphanumeric()]);
 
             var properties = new BasicProperties()
             {
@@ -328,21 +321,21 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 };
             }
 
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
-                properties);
+                properties,
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
             var elapsedTime = 0;
             while (true)
             {
-                retryQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.RetryQueueName);
-                if (retryQueue.MessageCount == 1)
+                retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+                if (retryQueueMessageCount == 1)
                     break;
 
                 if (elapsedTime >= _timeoutInSeconds)
@@ -352,27 +345,33 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 ++elapsedTime;
             }
 
-            var messageFromRabbitMq = await _workerFixture.GetMessageAsync(EmailConfiguration.RetryQueueName);
-
+            var emailBackgroundService = _collectionCluster.NotificationWebApp.GetBackgroundService<EmailBackgroundService>();
             var retryDelayTimeFieldInfo = typeof(EmailBackgroundService).GetField("_retryDelayTime", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var retryDelayTime = (TimeSpan)retryDelayTimeFieldInfo.GetValue(_emailBackgroundService)!;
+            var retryDelayTime = (TimeSpan)retryDelayTimeFieldInfo.GetValue(emailBackgroundService)!;
 
+            var messageFromRabbitMq = await _collectionCluster.RabbitMqFixture.GetNextMessageAsync(EmailConfiguration.RetryQueueName);
             Assert.NotNull(messageFromRabbitMq);
             Assert.Equal(retryCount + 1, (int)messageFromRabbitMq.BasicProperties.Headers!["Retry-Count"]!);
             Assert.Equal(((int)retryDelayTime.TotalMilliseconds * (retryCount + 1)).ToString(), messageFromRabbitMq.BasicProperties.Expiration);
 
-            mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            Assert.Equal((uint)0, mainQueue.MessageCount);
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, dlqMessageCount);
+
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
         }
 
         [Fact]
         public async Task ReceivedAsync_WhenEmailIsNotSentAndMessageExceedsRetryLimit_ShouldPutMessageInDlq()
         {
             // Arrange
-            var mainQueue = await _workerFixture.GetQueueInfo(EmailConfiguration.QueueName);
-            var dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-            if (mainQueue.MessageCount != 0 || dlq.MessageCount != 0)
-                Assert.Fail($"The queues are not empty. Main: {mainQueue.MessageCount}, DLQ: {dlq.MessageCount}.");
+            var mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+            if (mainQueueMessageCount != 0 || dlqMessageCount != 0)
+                Assert.Fail($"The queues are not empty. Main: {mainQueueMessageCount}, DLQ: {dlqMessageCount}.");
 
             var emailTemplate = new EmailTemplate(
                 StringGenerator.GenerateAlpha(),
@@ -381,25 +380,26 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 StringGenerator.GenerateAlpha() + "{10}",
                 false);
 
-            using var dbContext = _workerFixture.CreateTemplateDbContext();
-            await dbContext.EmailTemplates.AddAsync(emailTemplate);
-            await dbContext.SaveChangesAsync();
-            await _templateServiceFixture.RecacheTemplatesAsync();
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
+            await templateDbContext.SaveChangesAsync();
+
+            var templateService = (TemplateService)_collectionCluster.NotificationWebApp.GetService<ITemplateService>();
+            await templateService.RecacheTemplatesAsync();
 
             var message = new EmailMessage(
                 [EmailGenerator.Generate()],
                 emailTemplate.TemplateId,
                 emailTemplate.Language,
-                [StringGenerator.GeneratePrintableAscii()],
-                [StringGenerator.GeneratePrintableAscii()]);
+                [StringGenerator.GenerateAlphanumeric()],
+                [StringGenerator.GenerateAlphanumeric()]);
 
             var maxRetryFieldInfo = typeof(EmailBackgroundService).GetField("_maxRetry", BindingFlags.NonPublic | BindingFlags.Static)!;
             var maxRetry = (int)maxRetryFieldInfo.GetValue(null)!;
 
-            await _workerFixture.PublishMessageAsync(
+            await _collectionCluster.RabbitMqFixture.PublishMessageAsync(
                 EmailConfiguration.ExchangeName,
                 EmailConfiguration.RoutingKey,
-                JsonSerializer.SerializeToUtf8Bytes(message),
                 new BasicProperties()
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
@@ -408,17 +408,18 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                     {
                         { "Retry-Count", maxRetry }
                     }
-                });
+                },
+                JsonSerializer.SerializeToUtf8Bytes(message));
 
             // Act
-            // _emailBackgroundService should be receiving the message already
+            // EmailBackgroundService should automatically handle the message.
 
             // Assert
             var elapsedTime = 0;
             while (true)
             {
-                dlq = await _workerFixture.GetQueueInfo(EmailConfiguration.DlqName);
-                if (dlq.MessageCount == 1)
+                dlqMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.DlqName);
+                if (dlqMessageCount == 1)
                     break;
 
                 if (elapsedTime >= _timeoutInSeconds)
@@ -427,6 +428,15 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 await Task.Delay(1000);
                 ++elapsedTime;
             }
+
+            mainQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.QueueName);
+            var retryQueueMessageCount = await _collectionCluster.RabbitMqFixture.GetMessageCountAsync(EmailConfiguration.RetryQueueName);
+            Assert.Equal((uint)0, mainQueueMessageCount);
+            Assert.Equal((uint)0, retryQueueMessageCount);
+
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.QueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.RetryQueueName);
+            await _collectionCluster.RabbitMqFixture.ClearMessagesAsync(EmailConfiguration.DlqName);
         }
     }
 }
