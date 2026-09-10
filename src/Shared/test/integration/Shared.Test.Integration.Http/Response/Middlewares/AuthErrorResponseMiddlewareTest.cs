@@ -1,56 +1,49 @@
 using System.Net;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Routing;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
-using Shared.Test.Integration.Http.Fixtures;
+using Shared.Test.Helpers.Fixtures;
+using Shared.Test.Integration.Http.Collections;
 
 namespace Shared.Test.Integration.Http.Response.Middlewares
 {
-    public class AuthErrorResponseMiddlewareTest : IClassFixture<TestHostFixture>
+    [Collection(nameof(TestHostCollection))]
+    public class AuthErrorResponseMiddlewareTest
     {
         private const string _roleName = "TestRole";
 
-        private readonly TestHostFixture _hostFixture;
+        private readonly TestHostFixture _testHostFixture;
 
-        public AuthErrorResponseMiddlewareTest(TestHostFixture hostFixture)
+        public AuthErrorResponseMiddlewareTest(TestHostCollectionCluster collectionCluster)
         {
-            _hostFixture = hostFixture;
-
-            _hostFixture.BuildAsync(configureServices =>
-            {
-                configureServices.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
-                configureServices.AddAuthorization();
-            },
-            configureApp =>
-            {
-                configureApp.UseRouting();
-
-                configureApp.UseMiddleware<AuthErrorResponseMiddleware>();
-                configureApp.UseAuthentication();
-                configureApp.UseAuthorization();
-
-                configureApp.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapGet("/anonymous", () => Results.Ok());
-                    endpoints.MapGet("/authorized", () => Results.Ok())
-                        .RequireAuthorization();
-                    endpoints.MapGet("/forbidden", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(_roleName));
-                });
-            }).GetAwaiter().GetResult();
+            _testHostFixture = collectionCluster.TestHostFixture;
         }
+
+#pragma warning disable xUnit1013 // Public method should be marked as test
+        public static void ConfigureApp(IApplicationBuilder app)
+        {
+            app.UseMiddleware<AuthErrorResponseMiddleware>();
+        }
+
+        public static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapGet("/auth-error/anonymous", () => Results.Ok());
+            endpoints.MapGet("/auth-error/authorized", () => Results.Ok())
+                .RequireAuthorization();
+            endpoints.MapGet("/auth-error/forbidden", () => Results.Ok())
+                .RequireAuthorization(policy => policy.RequireRole(_roleName));
+        }
+#pragma warning restore xUnit1013 // Public method should be marked as test
 
         [Fact]
         public async Task Invoke_WhenResponseIs401_ShouldReturn401ErrorItem()
         {
             // Act
-            var responseAnonymous = await _hostFixture.Client!.GetAsync("/anonymous");
-            var responseAuthorized = await _hostFixture.Client.GetAsync("/authorized");
-            var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
+            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
@@ -63,16 +56,16 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
 
             // Act
-            var responseAnonymous = await _hostFixture.Client.GetAsync("/anonymous");
-            var responseAuthorized = await _hostFixture.Client.GetAsync("/authorized");
-            var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
+            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
 
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);
@@ -84,17 +77,17 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
+            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             // Act
-            var responseAnonymous = await _hostFixture.Client.GetAsync("/anonymous");
-            var responseAuthorized = await _hostFixture.Client.GetAsync("/authorized");
-            var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
+            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
             
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);

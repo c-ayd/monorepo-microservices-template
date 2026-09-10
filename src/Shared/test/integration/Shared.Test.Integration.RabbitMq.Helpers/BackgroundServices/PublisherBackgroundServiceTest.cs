@@ -10,14 +10,13 @@ using Shared.RabbitMq.Helpers.Structures;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.RabbitMq.Helpers.Collections;
-using Shared.Test.Integration.RabbitMq.Helpers.Fixtures;
 
 namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 {
     [Collection(nameof(RabbitMqCollection))]
     public class PublisherBackgroundServiceTest : IClassFixture<LoggerFixture<PublisherBackgroundServiceTest>>
     {
-        private readonly TimeSpan _timeoutSpan = TimeSpan.FromSeconds(5);
+        private readonly TimeSpan _timeoutTime = TimeSpan.FromSeconds(5);
         private readonly TimeSpan _retryTime = TimeSpan.FromSeconds(1);
         private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(1);
 
@@ -35,10 +34,10 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         private readonly LoggerFixture<PublisherBackgroundServiceTest> _logger;
 
         public PublisherBackgroundServiceTest(
-            RabbitMqFixture rabbitMqFixture,
+            RabbitMqCollectionCluster rabbitMqCollectionCluster,
             LoggerFixture<PublisherBackgroundServiceTest> logger)
         {
-            _rabbitMqFixture = rabbitMqFixture;
+            _rabbitMqFixture = rabbitMqCollectionCluster.RabbitMqFixture;
             _logger = logger;
         }
 
@@ -48,7 +47,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             // Arrange
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 new List<Publisher>() { publisher },
                 _retryTime,
                 _graceTime,
@@ -56,20 +55,28 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             );
 
             // Act
-            await backgroundService.StartAsync(default);
+            var cts = new CancellationTokenSource();
+            await backgroundService.StartAsync(cts.Token);
+            await cts.CancelAsync();
 
             // Assert
             Assert.NotNull(GetConnection(backgroundService));
             Assert.NotNull(publisher.Channel);
+
+            await backgroundService.StopAsync(default);
         }
 
         [Fact]
         public async Task ExecuteAsync_WhenThereIsDroppedMessage_ShouldRetryPublishing()
         {
             // Arrange
+            var messageCount = await _rabbitMqFixture.GetMessageCountAsync(_normalQueue);
+            if (messageCount != 0)
+                Assert.Fail($"The normal queue is not empty. Count: {messageCount}");
+
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 new List<Publisher>() { publisher },
                 _retryTime,
                 _graceTime,
@@ -82,7 +89,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
                 _normalRouting,
                 new BasicProperties() { CorrelationId = Guid.NewGuid().ToString() },
                 JsonSerializer.SerializeToUtf8Bytes(StringGenerator.GeneratePrintableAscii()));
-
+            
             GetDroppedMessages(publisher).TryAdd(droppedMessage.GetHashCode(), droppedMessage);
 
             var acknowledgeEventTcs = new TaskCompletionSource<bool>();
@@ -98,19 +105,16 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             var cts = new CancellationTokenSource();
             var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
 
-            var result = await acknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
+            var result = await acknowledgeEventTcs.Task.WaitAsync(_timeoutTime);
             await cts.CancelAsync();
 
             // Assert
             Assert.True(result, "The acknowledge event did not set the value to true.");
 
             Assert.Empty(GetDroppedMessages(publisher));
+            Assert.Equal((uint)1, await _rabbitMqFixture.GetMessageCountAsync(_normalQueue));
 
-            var channel = await _rabbitMqFixture.Connection.CreateChannelAsync();
-            var queue = await channel.QueueDeclarePassiveAsync(_normalQueue);
-            Assert.Equal((uint)1, queue.MessageCount);
-
-            await channel.QueuePurgeAsync(_normalQueue);
+            await _rabbitMqFixture.ClearMessagesAsync(_normalQueue);
         }
 
         [Fact]
@@ -119,7 +123,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             // Arrange
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 new List<Publisher>() { publisher },
                 _retryTime,
                 _graceTime,
@@ -154,8 +158,8 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             var cts = new CancellationTokenSource();
             var executeTask = Task.Run(() => ExecuteAsync(backgroundService, cts.Token));
 
-            var result = await notAcknowledgeEventTcs.Task.WaitAsync(_timeoutSpan);
-            await Task.Delay(_timeoutSpan);     // Wait for the next the message to be in the rejected messages
+            var result = await notAcknowledgeEventTcs.Task.WaitAsync(_timeoutTime);
+            await Task.Delay(_timeoutTime);     // Wait for the next the message to be in the rejected messages
             await cts.CancelAsync();
 
             // Assert
@@ -165,7 +169,6 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
             Assert.Single(backgroundService.RejectedMessages);
             Assert.Contains(droppedMessage.GetHashCode(), backgroundService.RejectedMessages.Select(m => m.GetHashCode()));
-
             Assert.False(backgroundService.IsShuttingDown, "The shutdown parameter was given as true.");
         }
 
@@ -175,7 +178,7 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
             // Arrange
             var publisher = new TestPublisher();
             var backgroundService = new TestBackgroundService(
-                _rabbitMqFixture.CreateConnectionFactory(),
+                _rabbitMqFixture.ConnectionFactory,
                 new List<Publisher>() { publisher },
                 _retryTime,
                 _graceTime,

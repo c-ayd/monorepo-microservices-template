@@ -10,22 +10,22 @@ namespace Shared.Test.Helpers
         /// <summary>
         /// Creates configuration from 'appsettings.Test.json' file.
         /// </summary>
-        /// <returns>Returns created configuration file.</returns>
-        public static IConfiguration CreateConfigurationFromTestSettings()
+        /// <returns>Returns the created configuration.</returns>
+        public static IConfiguration CreateConfigurationFromTestSettings(bool optional = true)
         {
-            return CreateConfigurationFromFile("appsettings.Test.json");
+            return CreateConfigurationFromFile("appsettings.Test.json", optional);
         }
 
         /// <summary>
         /// Creates configuration from a given JSON file.
         /// </summary>
         /// <param name="fileName">Name of the JSON file</param>
-        /// <returns>Returns created configuration file.</returns>
-        public static IConfiguration CreateConfigurationFromFile(string fileName)
+        /// <returns>Returns the created configuration.</returns>
+        public static IConfiguration CreateConfigurationFromFile(string fileName, bool optional = false)
         {
             return new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(fileName)
+                .AddJsonFile(fileName, optional)
                 .Build();
         }
     }

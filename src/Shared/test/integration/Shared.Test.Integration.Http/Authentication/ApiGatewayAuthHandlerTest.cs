@@ -3,62 +3,66 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Http.Authentication;
 using Shared.Http.Authentication.Structures;
-using Shared.Test.Integration.Http.Fixtures;
 using Shared.Test.Generators;
+using Shared.Test.Helpers.Fixtures;
+using Shared.Test.Integration.Http.Collections;
 
 namespace Shared.Test.Integration.Http.Authentication
 {
-    public class ApiGatewayAuthHandlerTest : IClassFixture<TestHostFixture>
+    [Collection(nameof(TestHostCollection))]
+    public class ApiGatewayAuthHandlerTest
     {
         private const string _roleName = "TestRole";
         
-        private readonly TestHostFixture _hostFixture;
+        private readonly TestHostFixture _testHostFixture;
 
-        public ApiGatewayAuthHandlerTest(TestHostFixture hostFixture)
+        public ApiGatewayAuthHandlerTest(TestHostCollectionCluster collectionCluster)
         {
-            _hostFixture = hostFixture;
-
-            _hostFixture.BuildAsync(configureServices =>
-            {
-                configureServices.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
-                    .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
-                configureServices.AddAuthorization();
-            },
-            configureApp =>
-            {
-                configureApp.UseRouting();
-
-                configureApp.UseAuthentication();
-                configureApp.UseAuthorization();
-
-                configureApp.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapGet("/", (HttpContext context) => Results.Ok(new UserDto
-                    {
-                        IsAuthenticated = context.User.Identity?.IsAuthenticated,
-                        Name = context.User.Identity?.Name,
-                        Claims = context.User.Claims.Select(c => new UserDto.ClaimDto() { Type = c.Type, Value = c.Value })
-                    }));
-                    endpoints.MapGet("/authorized", () => Results.Ok())
-                        .RequireAuthorization();
-                    endpoints.MapGet("/access-granted", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(_roleName));
-                    endpoints.MapGet("/forbidden", () => Results.Ok())
-                        .RequireAuthorization(policy => policy.RequireRole(_roleName + "a"));
-                });
-            }).GetAwaiter().GetResult();
+            _testHostFixture = collectionCluster.TestHostFixture;
         }
+
+#pragma warning disable xUnit1013 // Public method should be marked as test
+        public static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
+                .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
+            services.AddAuthorization();
+        }
+
+        public static void ConfigureApp(IApplicationBuilder app)
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
+
+        public static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapGet("/api-gateway", (HttpContext context) => Results.Ok(new UserDto
+            {
+                IsAuthenticated = context.User.Identity?.IsAuthenticated,
+                Name = context.User.Identity?.Name,
+                Claims = context.User.Claims.Select(c => new UserDto.ClaimDto() { Type = c.Type, Value = c.Value })
+            }));
+            endpoints.MapGet("/api-gateway/authorized", () => Results.Ok())
+                .RequireAuthorization();
+            endpoints.MapGet("/api-gateway/access-granted", () => Results.Ok())
+                .RequireAuthorization(policy => policy.RequireRole(_roleName));
+            endpoints.MapGet("/api-gateway/forbidden", () => Results.Ok())
+                .RequireAuthorization(policy => policy.RequireRole(_roleName + "a"));
+        }
+#pragma warning restore xUnit1013 // Public method should be marked as test
 
         [Fact]
         public async Task Invoke_WhenHeadersHaveUserContent_ShouldFillClaimPrincipalAndAuthorize()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            _hostFixture.Client!.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _hostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
+            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             UserClaim? claim = null;
             string? headerValue = null;
@@ -71,22 +75,22 @@ namespace Shared.Test.Integration.Http.Authentication
                 claim = userClaim;
                 headerValue = StringGenerator.GenerateAlpha();
 
-                _hostFixture.Client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
+                _testHostFixture.Client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
                 break;
             }
 
             // Act
-            var responseUser = await _hostFixture.Client.GetFromJsonAsync<UserDto>("/");
-            var responseAuthorized = await _hostFixture.Client.GetAsync("/authorized");
-            var responseAccessGranted = await _hostFixture.Client.GetAsync("/access-granted");
-            var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
+            var responseUser = await _testHostFixture.Client.GetFromJsonAsync<UserDto>("/api-gateway");
+            var responseAuthorized = await _testHostFixture.Client.GetAsync("/api-gateway/authorized");
+            var responseAccessGranted = await _testHostFixture.Client.GetAsync("/api-gateway/access-granted");
+            var responseForbidden = await _testHostFixture.Client.GetAsync("/api-gateway/forbidden");
 
             // Assert
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _hostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
             if (claim != null)
             {
-                _hostFixture.Client.DefaultRequestHeaders.Remove(claim.HeaderKey);
+                _testHostFixture.Client.DefaultRequestHeaders.Remove(claim.HeaderKey);
             }
 
             Assert.NotNull(responseUser);
@@ -108,10 +112,10 @@ namespace Shared.Test.Integration.Http.Authentication
         public async Task Invoke_WhenHeadersHaveNoUserContent_ShouldLeftClaimPrincipalEmptyAndNotAuthorize()
         {
             // Act
-            var responseUser = await _hostFixture.Client!.GetFromJsonAsync<UserDto>("/");
-            var responseAuthorized = await _hostFixture.Client!.GetAsync("/authorized");
-            var responseAccessGranted = await _hostFixture.Client.GetAsync("/access-granted");
-            var responseForbidden = await _hostFixture.Client.GetAsync("/forbidden");
+            var responseUser = await _testHostFixture.Client.GetFromJsonAsync<UserDto>("/api-gateway");
+            var responseAuthorized = await _testHostFixture.Client.GetAsync("/api-gateway/authorized");
+            var responseAccessGranted = await _testHostFixture.Client.GetAsync("/api-gateway/access-granted");
+            var responseForbidden = await _testHostFixture.Client.GetAsync("/api-gateway/forbidden");
 
             // Assert
             Assert.NotNull(responseUser);
