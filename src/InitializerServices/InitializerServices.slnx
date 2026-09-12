@@ -1,2 +1,5 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AuthDb.Initializer/AuthDb.Initializer.csproj" />
+  </Folder>
 </Solution>
