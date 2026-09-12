@@ -14,13 +14,12 @@ namespace AuthService.Api.BackgroundServices
 {
     public class RabbitMqPublisherBackgroundService : PublisherBackgroundService
     {
-        private readonly AuthRejectedMessagesDbContext _authRejectedMessagesDbContext;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IAesGcmEncryptionVersions _aesGcmEncryptionVersions;
-        private readonly ILogger<RabbitMqPublisherBackgroundService> _logger;
 
         public RabbitMqPublisherBackgroundService(
             IOptions<RabbitMqOptions> rabbitMqOptions,
-            AuthRejectedMessagesDbContext authRejectedMessagesDbContext,
+            IServiceScopeFactory scopeFactory,
             IAesGcmEncryptionVersions aesGcmEncryptionVersions,
             IEmailService emailService,
             ILogger<RabbitMqPublisherBackgroundService> logger)
@@ -40,9 +39,8 @@ namespace AuthService.Api.BackgroundServices
             graceTime: TimeSpan.FromSeconds(5),
             logger)
         {
-            _authRejectedMessagesDbContext = authRejectedMessagesDbContext;
+            _scopeFactory = scopeFactory;
             _aesGcmEncryptionVersions = aesGcmEncryptionVersions;
-            _logger = logger;
         }
 
         protected override async Task SaveRejectedMessagesAsync(
@@ -61,15 +59,18 @@ namespace AuthService.Api.BackgroundServices
                     AesGcmEncryption.Encrypt(rejectedMessage.Body, _aesGcmEncryptionVersions.CurrentVersion, _aesGcmEncryptionVersions.GetEncryptionKey)));
             }
 
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var authRejectedMessagesDbContext = scope.ServiceProvider.GetRequiredService<AuthRejectedMessagesDbContext>();
+            
             if (isShuttingDown)
             {
-                await _authRejectedMessagesDbContext.AddRangeAsync(messages);
-                await _authRejectedMessagesDbContext.SaveChangesAsync();
+                await authRejectedMessagesDbContext.AddRangeAsync(messages);
+                await authRejectedMessagesDbContext.SaveChangesAsync();
             }
             else
             {
-                await _authRejectedMessagesDbContext.AddRangeAsync(messages, cancellationToken);
-                await _authRejectedMessagesDbContext.SaveChangesAsync(cancellationToken);
+                await authRejectedMessagesDbContext.AddRangeAsync(messages, cancellationToken);
+                await authRejectedMessagesDbContext.SaveChangesAsync(cancellationToken);
             }
         }
     }
