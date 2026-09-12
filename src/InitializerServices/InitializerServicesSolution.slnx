@@ -2,4 +2,8 @@
   <Folder Name="/src/">
     <Project Path="src/AuthDb.Initializer/AuthDb.Initializer.csproj" />
   </Folder>
+  <Folder Name="/test/" />
+  <Folder Name="/test/integration/">
+    <Project Path="test/integration/AuthDb.Test.Integration.Initializer/AuthDb.Test.Integration.Initializer.csproj" />
+  </Folder>
 </Solution>
