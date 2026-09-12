@@ -2,7 +2,6 @@ using System.Reflection;
 using AuthService.Api.BackgroundServices;
 using AuthService.Infrastructure;
 using AuthService.Persistence;
-using AuthService.Persistence.SeedData;
 using Shared.Logging.DependencyInjection;
 using Shared.Helpers.DependencyInjection;
 using AuthService.Api.WellKnown;
@@ -63,8 +62,5 @@ app.UseMiddleware<AccountPreferenceMiddleware>();
 
 app.MapWellKnownEndpoints();
 app.MapAccountEndpoints();
-
-// Seed data
-await app.Services.SeedDataAuthDbContextAsync(app.Configuration);
 
 app.Run();
