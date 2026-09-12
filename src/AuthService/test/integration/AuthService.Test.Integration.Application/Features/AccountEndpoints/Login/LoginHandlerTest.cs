@@ -49,7 +49,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var account = new Account(email, PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.IsBanned = true;
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -81,7 +81,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             account.FailedLoginAttempts = 3;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(1);
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -114,7 +114,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -154,7 +154,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
             account.FailedLoginAttempts = failedAttempts;
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -193,7 +193,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
@@ -249,7 +249,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             account.IsLocked = true;
             account.UnlockDate = DateTimeOffset.UtcNow.AddDays(-1);
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();

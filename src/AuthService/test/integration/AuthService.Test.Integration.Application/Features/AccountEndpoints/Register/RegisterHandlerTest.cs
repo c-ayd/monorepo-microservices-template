@@ -27,7 +27,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
         public async Task Handle_WhenAccountWithEmailExists_ShouldReturnConflict()
         {
             // Arrange
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var email = EmailGenerator.Generate();
             authDbContext.Accounts.Add(new Account(email, StringGenerator.GenerateAlpha(), SupportedLanguages.DefaultLanguage));
@@ -65,7 +65,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>(AuthApiCollectionCluster.AuthDbName);
+            using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = authDbContext.Accounts
                 .Where(a => a.Email == email)

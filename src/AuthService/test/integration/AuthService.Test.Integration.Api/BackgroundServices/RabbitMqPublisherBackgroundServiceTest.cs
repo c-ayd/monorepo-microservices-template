@@ -57,7 +57,7 @@ namespace AuthService.Test.Integration.Api.BackgroundServices
             await (Task)saveRejectedMessagesMethodInfo.Invoke(backgroundService, [rejectedMessages, isShuttingDown, default])!;
 
             // Assert
-            using var authRejectedMessagesDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthRejectedMessagesDbContext>(AuthApiCollectionCluster.AuthRejectedMessagesDbName);
+            using var authRejectedMessagesDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthRejectedMessagesDbContext>();
             var encrpytionVerions = _collectionCluster.AuthApiWebApp.GetService<IAesGcmEncryptionVersions>();
 
             var messagesFromDb = await authRejectedMessagesDbContext.RejectedMessages.ToListAsync();

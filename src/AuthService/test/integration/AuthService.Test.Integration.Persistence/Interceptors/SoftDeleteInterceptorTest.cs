@@ -23,7 +23,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task SoftDeleteInterceptor_WhenEntityIsSoftDeleteableAndDeleted_ShouldNotDeleteEntityAndUpdateSoftDeleteProperties()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var now = DateTimeOffset.UtcNow;
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
@@ -52,7 +52,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task SoftDeleteInterceptor_WhenEntityIsNotSoftDeleteableAndDeleted_ShouldDeleteEntity()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);

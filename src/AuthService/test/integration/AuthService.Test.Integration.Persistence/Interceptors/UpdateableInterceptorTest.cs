@@ -24,7 +24,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task UpdateableInterceptor_WhenEntityIsUpdateableAndIsUpdated_ShouldSetUpdatedDate()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var now = DateTimeOffset.UtcNow;
             var passwordLength = 10;
@@ -54,7 +54,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
         public async Task UpdateableInterceptor_WhenEntityIsNotUpdateableAndIsUpdated_ShouldThrowException()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var tokenLength = 10;
