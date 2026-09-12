@@ -13,7 +13,7 @@ namespace Shared.Test.Helpers.Fixtures
         private PostgreSqlContainer _container = null!;
         private BidirectionalDictionary<string, Type> _dbContexts = new BidirectionalDictionary<string, Type>();
 
-        public async Task InitializeAsync(Dictionary<string, Type>? dbContexts = null)
+        public async Task InitializeAsync(Dictionary<string, Type>? dbContexts = null, bool runMigrations = true)
         {
             _container = new PostgreSqlBuilder("postgres:18.4")
                 .WithWaitStrategy(Wait.ForUnixContainer().UntilCommandIsCompleted("pg_isready"))
@@ -23,10 +23,14 @@ namespace Shared.Test.Helpers.Fixtures
             if (dbContexts != null)
             {
                 _dbContexts.Add(dbContexts);
-                foreach (var (dbName, dbContextType) in _dbContexts)
+
+                if (runMigrations)
                 {
-                    using var dbContext = CreateDbContext(dbName);
-                    await dbContext.Database.MigrateAsync();
+                    foreach (var (dbName, dbContextType) in _dbContexts)
+                    {
+                        using var dbContext = CreateDbContext(dbName);
+                        await dbContext.Database.MigrateAsync();
+                    }
                 }
             }
         }
