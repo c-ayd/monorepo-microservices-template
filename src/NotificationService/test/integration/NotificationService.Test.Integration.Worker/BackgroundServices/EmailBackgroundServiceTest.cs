@@ -212,7 +212,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 "Body: {0} {1}",
                 false);
 
-            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>();
             await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
             await templateDbContext.SaveChangesAsync();
 
@@ -293,7 +293,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 StringGenerator.GenerateAlpha() + "{10}",
                 false);
 
-            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>();
             await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
             await templateDbContext.SaveChangesAsync();
 
@@ -380,7 +380,7 @@ namespace NotificationService.Test.Integration.Worker.BackgroundServices
                 StringGenerator.GenerateAlpha() + "{10}",
                 false);
 
-            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>(WorkerCollectionCluster.TemplateDbName);
+            using var templateDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<TemplateDbContext>();
             await templateDbContext.EmailTemplates.AddAsync(emailTemplate);
             await templateDbContext.SaveChangesAsync();
 

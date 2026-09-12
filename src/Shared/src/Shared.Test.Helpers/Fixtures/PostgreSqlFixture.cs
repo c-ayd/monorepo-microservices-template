@@ -11,7 +11,7 @@ namespace Shared.Test.Helpers.Fixtures
     public class PostgreSqlFixture
     {
         private PostgreSqlContainer _container = null!;
-        private Dictionary<string, Type>? _dbContexts;
+        private BidirectionalDictionary<string, Type> _dbContexts = new BidirectionalDictionary<string, Type>();
 
         public async Task InitializeAsync(Dictionary<string, Type>? dbContexts = null)
         {
@@ -20,10 +20,10 @@ namespace Shared.Test.Helpers.Fixtures
                 .Build();
             await _container.StartAsync();
 
-            _dbContexts = dbContexts;
-            if (_dbContexts != null)
+            if (dbContexts != null)
             {
-                foreach (var (dbName, _) in _dbContexts)
+                _dbContexts.Add(dbContexts);
+                foreach (var (dbName, dbContextType) in _dbContexts)
                 {
                     using var dbContext = CreateDbContext(dbName);
                     await dbContext.Database.MigrateAsync();
@@ -39,10 +39,22 @@ namespace Shared.Test.Helpers.Fixtures
             }.ConnectionString;
         }
 
-        public T CreateDbContext<T>(string dbName)
+        public DbContext CreateDbContext(string dbName)
+        {
+            _dbContexts.TryGetValue(dbName, out var dbContexType);
+            return CreateDbContext<DbContext>(dbName, dbContexType!); // No null check. If it is used wrong in test, it should throw an exception.
+        }
+
+        public T CreateDbContext<T>()
             where T : DbContext
         {
-            var dbContextType = _dbContexts![dbName];       // No null check. If it is used wrong in test, it should throw an exception.
+            _dbContexts.TryGetKey(typeof(T), out var dbName);
+            return CreateDbContext<T>(dbName!, typeof(T)); // No null check. If it is used wrong in test, it should throw an exception.
+        }
+
+        private T CreateDbContext<T>(string dbName, Type dbContextType)
+            where T : DbContext
+        {
             var connString = GetConnectionString(dbName);
 
             var ctor = dbContextType.GetConstructor([
@@ -56,15 +68,42 @@ namespace Shared.Test.Helpers.Fixtures
             return (T)ctor.Invoke([options]);
         }
 
-        public DbContext CreateDbContext(string dbName)
-        {
-            return CreateDbContext<DbContext>(dbName);
-        }
-
         public async Task DisposeAsync()
         {
             await _container.StopAsync();
             await _container.DisposeAsync();
+        }
+
+        private class BidirectionalDictionary<TKey, TValue>
+            where TKey : notnull
+            where TValue : notnull
+        {
+            private Dictionary<TKey, TValue> _forward = new Dictionary<TKey, TValue>();
+            private Dictionary<TValue, TKey> _backward = new Dictionary<TValue, TKey>();
+
+            public void Add(Dictionary<TKey, TValue> dictionary)
+            {
+                foreach (var item in dictionary)
+                {
+                    _forward.Add(item.Key, item.Value);
+                    _backward.Add(item.Value, item.Key);
+                }
+            }
+
+            public bool TryGetValue(TKey key, out TValue? value)
+            {
+                return _forward.TryGetValue(key, out value);
+            }
+
+            public bool TryGetKey(TValue value, out TKey? key)
+            {
+                return _backward.TryGetValue(value, out key);
+            }
+
+            public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+            {
+                return _forward.GetEnumerator();
+            }
         }
     }
 }

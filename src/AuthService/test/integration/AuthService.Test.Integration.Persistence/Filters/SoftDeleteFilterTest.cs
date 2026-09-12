@@ -22,7 +22,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
         public async Task SoftDeleteFilter_WhenEntityIsSoftDeleteableAndIsDeleted_ShouldNotAppearInResult()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var accountId = account.Id;
@@ -49,7 +49,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
         public async Task SoftDeleteFilter_WhenEntityIsSoftDeleteableAndIsNotDeleted_ShouldAppearInResult()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var accountId = account.Id;
@@ -69,7 +69,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
         public async Task SoftDeleteFilter_WhenEntityIsNotSoftDeleteableAndIsNotDeleted_ShouldAppearInResult()
         {
             // Arrange
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>(AuthDbContextCollectionCluster.AuthDbName);
+            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             var session = new Session(account.Id, StringGenerator.GeneratePrintableAscii(), DateTimeOffset.UtcNow);
