@@ -15,7 +15,7 @@ namespace Shared.Http.Authentication
             public static readonly UserClaim PreferredLanguage = new UserClaim(JwtClaimTypes.PreferredLanguage, "X-User-Preferred-Language", IsMultiple: false);
             public static readonly UserClaim IssuedAt = new UserClaim(JwtClaimTypes.IssuedAt, "X-User-Issued-At", IsMultiple: false);
 
-            public static readonly List<UserClaim> AllUserClaims = typeof(ApiGatewayAuthKeys.Claims)
+            public static readonly IReadOnlyList<UserClaim> AllUserClaims = typeof(ApiGatewayAuthKeys.Claims)
                 .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
                 .Where(f => f.FieldType == typeof(UserClaim))
                 .Select(f => (UserClaim)f.GetValue(null)!)
