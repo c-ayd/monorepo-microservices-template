@@ -8,8 +8,8 @@ namespace Shared.Test.Unit.RabbitMq.Helpers.EntityFramework
     public class RejectedMessageTest
     {
         private const string _publisherName = "TestPublisher";
-        private const string _exchangeName = "TestExchange";
-        private const string _routingKey = "RoutingKey";
+        private const string _exchangeName = "shared.rabbitmq.helpers.rejectedmessage.exchange";
+        private const string _routingKey = "shared.rabbitmq.helpers.rejectedmessage.routing";
 
         private readonly Dictionary<string, object?> _testHeaders = new Dictionary<string, object?>
         {

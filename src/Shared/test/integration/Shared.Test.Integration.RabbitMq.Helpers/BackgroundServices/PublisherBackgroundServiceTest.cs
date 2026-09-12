@@ -22,13 +22,13 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
 
         private const int _maxRetry = 3;
 
-        private const string _normalExchange = "test.publisher.background.exchange";
-        private const string _normalRouting = "test.publisher.background.routing.normal";
-        public const string _normalQueue = "test.publisher.background.queue";
+        private const string _normalExchange = "shared.rabbitmq.helpers.publisherbackgroundservice.exchange";
+        private const string _normalRouting = "shared.rabbitmq.helpers.publisherbackgroundservice.routing.normal";
+        public const string _normalQueue = "shared.rabbitmq.helpers.publisherbackgroundservice.queue";
 
-        private const string _rejectExchange = "test.publisher.background.exchange.reject";
-        private const string _rejectRouting = "test.publisher.background.routing.reject";
-        public const string _rejectQueue = "test.publisher.background.queue.reject";
+        private const string _rejectExchange = "shared.rabbitmq.helpers.publisherbackgroundservice.exchange.reject";
+        private const string _rejectRouting = "shared.rabbitmq.helpers.publisherbackgroundservice.routing.reject";
+        public const string _rejectQueue = "shared.rabbitmq.helpers.publisherbackgroundservice.queue.reject";
 
         private readonly RabbitMqFixture _rabbitMqFixture;
         private readonly LoggerFixture<PublisherBackgroundServiceTest> _logger;
