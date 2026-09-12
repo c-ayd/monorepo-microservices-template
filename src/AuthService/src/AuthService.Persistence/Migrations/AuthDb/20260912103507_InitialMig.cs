@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AuthService.Persistence.Migrations
+namespace AuthService.Persistence.Migrations.AuthDb
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialMig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
