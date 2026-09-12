@@ -15,15 +15,15 @@ namespace Shared.Test.Integration.RabbitMq.Helpers
     [Collection(nameof(RabbitMqCollection))]
     public class PublisherTest
     {
-        private const string _normalExchange = "test.publisher.exchange";
-        private const string _normalRouting = "test.publisher.routing.normal";
-        public const string _normalQueue = "test.publisher.queue";
+        private const string _normalExchange = "shared.rabbitmq.helpers.publisher.exchange";
+        private const string _normalRouting = "shared.rabbitmq.helpers.publisher.routing.normal";
+        public const string _normalQueue = "shared.rabbitmq.helpers.publisher.queue";
 
-        private const string _rejectExchange = "test.publisher.exchange.reject";
-        private const string _rejectRouting = "test.publisher.routing.reject";
-        public const string _rejectQueue = "test.publisher.queue.reject";
+        private const string _rejectExchange = "shared.rabbitmq.helpers.publisher.exchange.reject";
+        private const string _rejectRouting = "shared.rabbitmq.helpers.publisher.routing.reject";
+        public const string _rejectQueue = "shared.rabbitmq.helpers.publisher.queue.reject";
 
-        private const string _noQueueExchange = "test.publisher.exchange.no-queue";
+        private const string _noQueueExchange = "shared.rabbitmq.helpers.publisher.exchange.no-queue";
 
         private readonly Dictionary<string, object?> _testHeaders = new Dictionary<string, object?>
         {

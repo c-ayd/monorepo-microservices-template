@@ -17,9 +17,9 @@ namespace Shared.Test.Integration.RabbitMq.Helpers.BackgroundServices
         private readonly TimeSpan _healthCheckTime = TimeSpan.FromSeconds(1);
         private readonly TimeSpan _graceTime = TimeSpan.FromSeconds(1);
 
-        private const string _exchangeName = "test.consumer.background.exchange";
-        private const string _routingKey = "test.consumer.background.routing";
-        private const string _queueName = "test.consumer.background.queue";
+        private const string _exchangeName = "shared.rabbitmq.helpers.consumerbackgroundservice.exchange";
+        private const string _routingKey = "shared.rabbitmq.helpers.consumerbackgroundservice.routing";
+        private const string _queueName = "shared.rabbitmq.helpers.consumerbackgroundservice.queue";
 
         private readonly RabbitMqFixture _rabbitMqFixture;
         private readonly LoggerFixture<ConsumerBackgroundServiceTest> _loggerFixture;
