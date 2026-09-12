@@ -26,6 +26,12 @@
       "command": "dotnet build src/Shared/SharedSolution.slnx",
       "problemMatcher": []
     },
+    {
+      "label": "Build Initializer Services",
+      "type": "shell",
+      "command": "dotnet build src/InitializerServices/InitializerServicesSolution.slnx",
+      "problemMatcher": []
+    },
 
     // Run commands
     {
@@ -94,6 +100,55 @@
       "label": "Run Notification Service (Production)",
       "type": "shell",
       "command": "dotnet run --project src/NotificationService/src/NotificationService.Worker/NotificationService.Worker.csproj -c Release",
+      "options": {
+        "env": {
+          "DOTNET_ENVIRONMENT": "Production"
+        }
+      },
+      "isBackground": false,
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Run AuthDb Initializer (Development)",
+      "type": "shell",
+      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Debug",
+      "options": {
+        "env": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run AuthDb Initializer (Development) --force",
+      "type": "shell",
+      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Debug --force",
+      "options": {
+        "env": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run AuthDb Initializer (Production)",
+      "type": "shell",
+      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Release",
+      "options": {
+        "env": {
+          "DOTNET_ENVIRONMENT": "Production"
+        }
+      },
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run AuthDb Initializer (Production) --force",
+      "type": "shell",
+      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Release --force",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Production"
