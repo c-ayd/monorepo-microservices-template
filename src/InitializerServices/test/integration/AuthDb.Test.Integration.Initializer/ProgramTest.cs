@@ -1,5 +1,4 @@
 using System.Reflection;
-using AuthDb.Initializer;
 using AuthDb.Initializer.Options;
 using AuthDb.Test.Integration.Initializer.Collections;
 using AuthService.Domain.Entities;
@@ -214,7 +213,7 @@ namespace AuthDb.Test.Integration.Initializer
 
         private Task ProgramInitializeAsync(bool force, AuthDbSeedDataOptions seedDataOptions, AuthDbContext authDbContext)
         {
-            var initializeMethodInfo = typeof(Program).GetMethod("InitializeAsync", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)!;
+            var initializeMethodInfo = typeof(AuthDb.Initializer.Program).GetMethod("InitializeAsync", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)!;
             return (Task)initializeMethodInfo.Invoke(null, [force, seedDataOptions, authDbContext])!;
         }
     }
