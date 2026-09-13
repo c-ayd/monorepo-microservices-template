@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/AuthDb.Initializer/AuthDb.Initializer.csproj" />
+    <Project Path="src/TemplateDb.Initializer/TemplateDb.Initializer.csproj" />
   </Folder>
   <Folder Name="/test/" />
   <Folder Name="/test/integration/">
