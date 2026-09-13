@@ -21,7 +21,7 @@ namespace AuthDb.Initializer
                 .Build();
             var seedDataOptions = configuration.GetSection("SeedData").Get<AuthDbSeedDataOptions>()!;
 
-            using var authDbContext = new AuthDbContext(new DbContextOptionsBuilder<AuthDbContext>()
+            await using var authDbContext = new AuthDbContext(new DbContextOptionsBuilder<AuthDbContext>()
                 .UseNpgsql(configuration.GetConnectionString("AuthDb"))
                 .Options);
 

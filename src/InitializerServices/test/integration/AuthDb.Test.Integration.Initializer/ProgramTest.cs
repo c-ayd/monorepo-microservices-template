@@ -50,7 +50,7 @@ namespace AuthDb.Test.Integration.Initializer
                 }
             };
 
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             // Act
             await ProgramInitializeAsync(force, seedDataOptions, authDbContext);
@@ -91,7 +91,7 @@ namespace AuthDb.Test.Integration.Initializer
             // Arrange
             await _postgreSqlFixture.ClearDatabaseAsync<AuthDbContext>();
 
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(StringGenerator.GenerateAlphanumeric()));
             await authDbContext.Accounts.AddAsync(new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), "abc"));
             await authDbContext.SaveChangesAsync();
@@ -142,7 +142,7 @@ namespace AuthDb.Test.Integration.Initializer
                 }
             };
 
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(seedRoleName));
             await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, StringGenerator.GenerateAlphanumeric(), "abc"));
             await authDbContext.SaveChangesAsync();
@@ -187,7 +187,7 @@ namespace AuthDb.Test.Integration.Initializer
                 }
             };
 
-            using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(seedRoleName));
             await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, StringGenerator.GenerateAlphanumeric(), "abc"));
             await authDbContext.SaveChangesAsync();
