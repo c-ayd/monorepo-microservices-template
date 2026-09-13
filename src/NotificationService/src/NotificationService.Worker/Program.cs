@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.Worker.Abstractions;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Options;
-using NotificationService.Worker.SeedData;
 using NotificationService.Worker.Services;
 using NotificationService.Worker.BackgroundServices;
 using Shared.Helpers.DependencyInjection;
@@ -28,8 +27,5 @@ builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.IsProduction());
 
 var host = builder.Build();
-
-// Seed data
-await host.SeedDataTemplateDbAsync();
 
 host.Run();
