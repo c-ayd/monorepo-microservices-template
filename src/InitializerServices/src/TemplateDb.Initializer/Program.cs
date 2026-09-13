@@ -19,7 +19,7 @@ namespace TemplateDb.Initializer
                 .Build();
             var templateDbSeedDataOptions = configuration.GetSection("Templates").Get<TemplateDbSeedDataOptions>()!;
 
-            using var templateDbContext = new TemplateDbContext(new DbContextOptionsBuilder<TemplateDbContext>()
+            await using var templateDbContext = new TemplateDbContext(new DbContextOptionsBuilder<TemplateDbContext>()
                 .UseNpgsql(configuration.GetConnectionString("TemplateDb"))
                 .Options);
 

@@ -30,7 +30,7 @@ namespace TemplateDb.Test.Integration.Initializer
             var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
             var seedDataOptions = configuration.GetSection("Templates").Get<TemplateDbSeedDataOptions>()!;
 
-            using var templateDbContext = _postgreSqlFixture.CreateDbContext<TemplateDbContext>();
+            await using var templateDbContext = _postgreSqlFixture.CreateDbContext<TemplateDbContext>();
 
             // Act
             await ProgramInitializeAsync(seedDataOptions, templateDbContext);
@@ -69,7 +69,7 @@ namespace TemplateDb.Test.Integration.Initializer
             var firstTemplateId = seedDataOptions.Email[0].TemplateId;
             var firstTemplateLanguage = seedDataOptions.Email[0].Language;
 
-            using var templateDbContext = _postgreSqlFixture.CreateDbContext<TemplateDbContext>();
+            await using var templateDbContext = _postgreSqlFixture.CreateDbContext<TemplateDbContext>();
             await templateDbContext.EmailTemplates.AddAsync(new EmailTemplate(
                 firstTemplateId,
                 firstTemplateLanguage,

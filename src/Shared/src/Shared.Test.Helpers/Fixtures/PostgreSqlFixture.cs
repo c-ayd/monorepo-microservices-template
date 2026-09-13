@@ -28,7 +28,7 @@ namespace Shared.Test.Helpers.Fixtures
                 {
                     foreach (var (dbName, dbContextType) in _dbContexts)
                     {
-                        using var dbContext = CreateDbContext(dbName);
+                        await using var dbContext = CreateDbContext(dbName);
                         await dbContext.Database.MigrateAsync();
                     }
                 }
@@ -75,7 +75,7 @@ namespace Shared.Test.Helpers.Fixtures
         public async Task DropDatabaseAsync<T>()
             where T : DbContext
         {
-            using var dbContext = CreateDbContext<T>();
+            await using var dbContext = CreateDbContext<T>();
 
             if (await dbContext.Database.CanConnectAsync())
             {
@@ -86,7 +86,7 @@ namespace Shared.Test.Helpers.Fixtures
         public async Task ClearDatabaseAsync<T>()
             where T : DbContext
         {
-            using var dbContext = CreateDbContext<T>();
+            await using var dbContext = CreateDbContext<T>();
 
             if (await dbContext.Database.CanConnectAsync())
             {
