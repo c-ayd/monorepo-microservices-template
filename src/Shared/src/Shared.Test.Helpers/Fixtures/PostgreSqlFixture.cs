@@ -72,6 +72,30 @@ namespace Shared.Test.Helpers.Fixtures
             return (T)ctor.Invoke([options]);
         }
 
+        public async Task DropDatabaseAsync<T>()
+            where T : DbContext
+        {
+            using var dbContext = CreateDbContext<T>();
+
+            if (await dbContext.Database.CanConnectAsync())
+            {
+                await dbContext.Database.EnsureDeletedAsync();
+            }
+        }
+
+        public async Task ClearDatabaseAsync<T>()
+            where T : DbContext
+        {
+            using var dbContext = CreateDbContext<T>();
+
+            if (await dbContext.Database.CanConnectAsync())
+            {
+                await dbContext.Database.EnsureDeletedAsync();
+            }
+
+            await dbContext.Database.MigrateAsync();
+        }
+
         public async Task DisposeAsync()
         {
             await _container.StopAsync();
