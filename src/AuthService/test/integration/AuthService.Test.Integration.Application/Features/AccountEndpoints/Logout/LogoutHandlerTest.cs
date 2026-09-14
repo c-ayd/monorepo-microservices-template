@@ -47,10 +47,9 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, account.Id.ToString());
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, SupportedLanguages.DefaultLanguage);
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(
+                account.Id.ToString(),
+                SupportedLanguages.DefaultLanguage);
 
             // Act
             var response = await client.DeleteAsync("/accounts/logout");
@@ -78,13 +77,15 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, account.Id.ToString());
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, SupportedLanguages.DefaultLanguage);
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(
+                account.Id.ToString(),
+                SupportedLanguages.DefaultLanguage,
+                new Dictionary<string, string>()
+                {
+                    { CookieKeys.SessionId, Guid.NewGuid().ToString() },
+                    { CookieKeys.RefreshToken, StringGenerator.GenerateAlphanumeric() }
+                });
             
-            client.DefaultRequestHeaders.Add("Cookie", $"{CookieKeys.SessionId}={Guid.NewGuid().ToString()}; {CookieKeys.RefreshToken}={StringGenerator.GenerateAlphanumeric()}");
-
             // Act
             var response = await client.DeleteAsync("/accounts/logout");
 
@@ -117,13 +118,15 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, account.Id.ToString());
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, SupportedLanguages.DefaultLanguage);
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
-
-            client.DefaultRequestHeaders.Add("Cookie", $"{CookieKeys.SessionId}={dataProtectionService.Protect(dataProtectionService.CookieProtector, matchSessionId ? account.Sessions.ElementAt(0).Id.ToString() : Guid.NewGuid().ToString())}; {CookieKeys.RefreshToken}={dataProtectionService.Protect(dataProtectionService.CookieProtector, matchRefreshToken ? refreshToken : StringGenerator.GenerateAlphanumeric())}");
-
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(
+                account.Id.ToString(),
+                SupportedLanguages.DefaultLanguage,
+                new Dictionary<string, string>()
+                {
+                    { CookieKeys.SessionId, dataProtectionService.Protect(dataProtectionService.CookieProtector, matchSessionId ? account.Sessions.ElementAt(0).Id.ToString() : Guid.NewGuid().ToString()) },
+                    { CookieKeys.RefreshToken, dataProtectionService.Protect(dataProtectionService.CookieProtector, matchRefreshToken ? refreshToken : StringGenerator.GenerateAlphanumeric()) }
+                });
+            
             // Act
             var response = await client.DeleteAsync("/accounts/logout");
 
@@ -153,12 +156,14 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, account.Id.ToString());
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, SupportedLanguages.DefaultLanguage);
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
-
-            client.DefaultRequestHeaders.Add("Cookie", $"{CookieKeys.SessionId}={dataProtectionService.Protect(dataProtectionService.CookieProtector, account.Sessions.ElementAt(0).Id.ToString())}; {CookieKeys.RefreshToken}={dataProtectionService.Protect(dataProtectionService.CookieProtector, refreshToken)}");
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(
+                account.Id.ToString(),
+                SupportedLanguages.DefaultLanguage,
+                new Dictionary<string, string>()
+                {
+                    { CookieKeys.SessionId, dataProtectionService.Protect(dataProtectionService.CookieProtector, account.Sessions.ElementAt(0).Id.ToString()) },
+                    { CookieKeys.RefreshToken, dataProtectionService.Protect(dataProtectionService.CookieProtector, refreshToken) }
+                });
 
             // Act
             var response = await client.DeleteAsync("/accounts/logout");
