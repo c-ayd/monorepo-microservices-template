@@ -1,3 +1,4 @@
+using AuthService.Application.Features.AccountEndpoints.GetSessions;
 using AuthService.Application.Features.AccountEndpoints.Login;
 using AuthService.Application.Features.AccountEndpoints.Logout;
 using AuthService.Application.Features.AccountEndpoints.Register;
@@ -20,6 +21,9 @@ namespace AuthService.Application.Features.AccountEndpoints
 
             group.MapDelete("/logout", LogoutHandler.Handle)
                 .RequireAuthorization();    // Since the endpoint deletes open session, it requires authorization.
+
+            group.MapGet("/sessions", GetSessionsHandler.Handle)
+                .RequireAuthorization();
         }
     }
 }
