@@ -15,6 +15,8 @@ namespace Shared.Test.Helpers.Fixtures
     public class WebApplicationFixture<TEntryPoint> : WebApplicationFactory<TEntryPoint>
         where TEntryPoint : class
     {
+        protected List<HttpClient> HttpClients { get; private set; } = new List<HttpClient>();
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Test");
@@ -23,6 +25,14 @@ namespace Shared.Test.Helpers.Fixtures
             {
                 config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromTestSettings());
             });
+        }
+
+        public HttpClient CreateHttpClient()
+        {
+            var client = CreateClient();
+            HttpClients.Add(client);
+            
+            return client;
         }
 
         public TService GetService<TService>()
@@ -42,6 +52,16 @@ namespace Shared.Test.Helpers.Fixtures
             where TOptions: class
         {
             return Services.GetRequiredService<IOptions<TOptions>>().Value;
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            foreach (var client in HttpClients)
+            {
+                client.Dispose();
+            }
+            
+            return base.DisposeAsync();
         }
     }
 }

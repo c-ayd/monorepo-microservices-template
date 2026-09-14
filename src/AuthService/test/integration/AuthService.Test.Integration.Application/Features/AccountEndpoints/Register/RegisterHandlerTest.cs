@@ -39,7 +39,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
                 length: AccountConstraints.PasswordMinLength
             ));
 
-            using var client = _collectionCluster.AuthApiWebApp.CreateClient();
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/accounts/register", request);
@@ -61,7 +61,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
                 length: AccountConstraints.PasswordMinLength
             ));
 
-            using var client = _collectionCluster.AuthApiWebApp.CreateClient();
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/accounts/register", request);
