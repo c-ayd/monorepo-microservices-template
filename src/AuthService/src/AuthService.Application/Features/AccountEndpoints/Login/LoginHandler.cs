@@ -174,9 +174,10 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                 new Claim(ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
             };
 
-            foreach (var role in account.Roles)
+            var roles = account.Roles.Select(r => r.Name).ToList();
+            foreach (var role in roles)
             {
-                claims.Add(new Claim(ApiGatewayAuthKeys.Claims.Roles.ClaimType, role.Name));
+                claims.Add(new Claim(ApiGatewayAuthKeys.Claims.Roles.ClaimType, role));
             }
 
             var jwt = jwtService.GenerateTokens(claims);
@@ -216,7 +217,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
                 data: new
                 {
                     jwt.AccessToken,
-                    account.Roles,
+                    roles,
                 },
                 metadata: new
                 {
