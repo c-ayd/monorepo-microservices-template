@@ -14,7 +14,6 @@ namespace Shared.Test.Helpers.Fixtures
     public class TestHostFixture
     {
         public IHost Host { get; private set; } = null!;
-        public HttpClient Client { get; private set; } = null!;
 
         public async Task InitializeAsync(
             Action<IConfigurationBuilder>? addConfiguration,
@@ -47,17 +46,10 @@ namespace Shared.Test.Helpers.Fixtures
                 })
                 .Build();
             await Host.StartAsync();
-
-            Client = Host.GetTestClient();
         }
 
         public async Task DisposeAsync()
         {
-            if (Client != null)
-            {
-                Client.Dispose();
-            }
-
             if (Host != null)
             {
                 await Host.StopAsync();

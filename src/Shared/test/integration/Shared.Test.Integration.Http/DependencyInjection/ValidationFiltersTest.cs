@@ -10,6 +10,7 @@ using Shared.Test.Integration.Http.Collections;
 using Shared.Test.Helpers.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 
 namespace Shared.Test.Integration.Http.DependencyInjection
 {
@@ -46,8 +47,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(10);
 
+            using var client = _testHostFixture.Host.GetTestClient();
+
             // Act
-            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/validation", request);
+            var response = await client.PostAsJsonAsync("/valiation-filter/validation", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -59,8 +62,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(-1);
 
+            using var client = _testHostFixture.Host.GetTestClient();
+
             // Act
-            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/validation", request);
+            var response = await client.PostAsJsonAsync("/valiation-filter/validation", request);
             var jsonResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
             // Assert
@@ -76,8 +81,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(10);
 
+            using var client = _testHostFixture.Host.GetTestClient();
+
             // Act
-            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/async-validation", request);
+            var response = await client.PostAsJsonAsync("/valiation-filter/async-validation", request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -89,8 +96,10 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(-1);
 
+            using var client = _testHostFixture.Host.GetTestClient();
+
             // Act
-            var response = await _testHostFixture.Client.PostAsJsonAsync("/valiation-filter/async-validation", request);
+            var response = await client.PostAsJsonAsync("/valiation-filter/async-validation", request);
             var jsonResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
 
             // Assert
