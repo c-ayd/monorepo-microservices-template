@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using AuthService.Api.Middlewares;
 using Microsoft.AspNetCore.Http;
@@ -16,14 +17,16 @@ namespace AuthService.Test.Unit.Api.Middlewares
             _middleware = new AccountPreferenceMiddleware(async (context) => {});
         }
 
-        [Fact]
-        public async Task Invoke_WhenAuthenticatedAndUserPreferencesExist_ShouldAddPreferencesToItems()
+        [Theory]
+        [InlineData(SupportedLanguages.German, SupportedLanguages.German)]
+        [InlineData("Test", SupportedLanguages.DefaultLanguage)]
+        public async Task Invoke_WhenAuthenticatedAndUserPreferencesExist_ShouldAddPreferencesToItems(string language, string expected)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
             {
-                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, "de")
+                new Claim(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType, language)
             }, "TestAuth"));
 
             // Act
@@ -31,7 +34,7 @@ namespace AuthService.Test.Unit.Api.Middlewares
 
             // Assert
             Assert.NotNull(httpContext.Items["PreferredLanguage"]);
-            Assert.Equal("de", (string)httpContext.Items["PreferredLanguage"]!);
+            Assert.Equal(expected, (string)httpContext.Items["PreferredLanguage"]!);
         }
 
         [Fact]
@@ -46,11 +49,11 @@ namespace AuthService.Test.Unit.Api.Middlewares
 
             // Assert
             Assert.NotNull(httpContext.Items["PreferredLanguage"]);
-            Assert.Equal("de", (string)httpContext.Items["PreferredLanguage"]!);
+            Assert.Equal(SupportedLanguages.German, (string)httpContext.Items["PreferredLanguage"]!);
         }
 
         [Fact]
-        public async Task Invoke_WhenNotAuthenticatedAndUserPreferencesDoNotExist_ShouldAddNothingToItems()
+        public async Task Invoke_WhenNotAuthenticatedAndUserPreferencesDoNotExist_ShouldAddNothingOrDefaultsToItems()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();

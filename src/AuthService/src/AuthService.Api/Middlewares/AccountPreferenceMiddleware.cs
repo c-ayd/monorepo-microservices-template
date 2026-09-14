@@ -16,20 +16,31 @@ namespace AuthService.Api.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
+            SetPreferredLanguage(context);
+
+            await _next(context);
+        }
+
+        private void SetPreferredLanguage(HttpContext context)
+        {
+            string? preferredLanguage = null;
             if (context.User.Identity != null && context.User.Identity.IsAuthenticated)
             {
-                context.Items["PreferredLanguage"] = context.User.FindFirstValue(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType) ??
-                    SupportedLanguages.DefaultLanguage;
+                preferredLanguage = context.User.FindFirstValue(ApiGatewayAuthKeys.Claims.PreferredLanguage.ClaimType);
             }
             else
             {
-                context.Items["PreferredLanguage"] = context.Request.GetTypedHeaders().AcceptLanguage
+                preferredLanguage = context.Request.GetTypedHeaders().AcceptLanguage
                     .OrderByDescending(h => h.Quality ?? 1.0)
                     .Select(h => h.Value.ToString().Split('-')[0].ToLower())
-                    .FirstOrDefault() ?? SupportedLanguages.DefaultLanguage;
+                    .FirstOrDefault();
             }
 
-            await _next(context);
+            if (preferredLanguage == null || !SupportedLanguages.AllLanguages.Contains(preferredLanguage))
+            {
+                preferredLanguage = SupportedLanguages.DefaultLanguage;
+            }
+            context.Items["PreferredLanguage"] = preferredLanguage;
         }
     }
 }
