@@ -23,6 +23,18 @@ namespace AuthService.Api.Middlewares
             {
                 await _next(context);
             }
+            catch (BadHttpRequestException)
+            {
+                if (!context.Response.HasStarted)
+                {
+                    await JsonResponseBuilder.Error(
+                        HttpStatusCode.BadRequest,
+                        [
+                            new ErrorItem("route_or_query_params_wrong", "The given route or query parameters are wrong.")
+                        ]
+                    ).ExecuteAsync(context);
+                }
+            }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Something went wrong. Message: {Message}",
