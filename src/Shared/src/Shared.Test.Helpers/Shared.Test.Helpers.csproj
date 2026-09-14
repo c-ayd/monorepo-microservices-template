@@ -19,4 +19,9 @@
     <PackageReference Include="Testcontainers.Redis" Version="4.14.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Shared.Http\Shared.Http.csproj" />
+    <ProjectReference Include="..\Shared.Constants\Shared.Constants.csproj" />
+  </ItemGroup>
+
 </Project>

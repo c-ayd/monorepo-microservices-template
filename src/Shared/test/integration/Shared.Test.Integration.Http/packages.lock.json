@@ -667,6 +667,9 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "shared.constants": {
+        "type": "Project"
+      },
       "shared.http": {
         "type": "Project",
         "dependencies": {
@@ -683,6 +686,8 @@
           "Microsoft.AspNetCore.TestHost": "[10.0.10, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "RabbitMQ.Client": "[7.2.1, )",
+          "Shared.Constants": "[1.0.0, )",
+          "Shared.Http": "[1.0.0, )",
           "StackExchange.Redis": "[3.1.31, )",
           "Testcontainers": "[4.14.0, )",
           "Testcontainers.PostgreSql": "[4.14.0, )",

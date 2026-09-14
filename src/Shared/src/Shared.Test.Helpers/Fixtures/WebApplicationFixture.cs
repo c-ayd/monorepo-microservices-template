@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Shared.Constants;
+using Shared.Http.Authentication;
 using StackExchange.Redis.Configuration;
 
 namespace Shared.Test.Helpers.Fixtures
@@ -32,6 +34,30 @@ namespace Shared.Test.Helpers.Fixtures
             var client = CreateClient();
             HttpClients.Add(client);
             
+            return client;
+        }
+
+        public HttpClient CreateHttpClientWithCredentials(
+            string accountId,
+            string preferredLanguage = SupportedLanguages.DefaultLanguage,
+            Dictionary<string, string>? cookieValues = null)
+        {
+            var client = CreateHttpClient();
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, accountId);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, preferredLanguage);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+
+            if (cookieValues != null)
+            {
+                string cookieString = "";
+                foreach (var (key, value) in cookieValues)
+                {
+                    cookieString += $"{key}={value}; ";
+                }
+
+                client.DefaultRequestHeaders.Add("Cookie", cookieString.Substring(0, cookieString.Length - 2));
+            }
+
             return client;
         }
 
