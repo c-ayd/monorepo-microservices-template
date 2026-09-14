@@ -39,7 +39,7 @@ namespace AuthService.Test.Integration.Persistence.Filters
             var accountFromDb = await authDbContext.Accounts.FindAsync(accountId);
             var deletedAccount = await authDbContext.Accounts
                 .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(a => a.Id.Equals(accountId));
+                .FirstOrDefaultAsync(a => a.Id == accountId);
 
             Assert.NotNull(deletedAccount);
             Assert.Null(accountFromDb);
