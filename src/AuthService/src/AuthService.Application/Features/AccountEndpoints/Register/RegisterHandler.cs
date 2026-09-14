@@ -7,7 +7,6 @@ using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shared.Crypto;
 using Shared.Http.Response;
@@ -26,8 +25,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
             IHashVersions hashVersions,
             IOptions<TokenLifespansOptions> tokenLifespansOptions,
             IEmailService emailService,
-            HttpContext context,
-            ILogger<RegisterHandler> logger)
+            HttpContext context)
         {
             // Check if the account with the same email exists
             var account = await authDbContext.Accounts
