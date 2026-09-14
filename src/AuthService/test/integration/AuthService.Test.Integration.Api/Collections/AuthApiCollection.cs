@@ -22,7 +22,6 @@ namespace AuthService.Test.Integration.Api.Collections
         public RedisFixture TokenBlacklistRedisFixture { get; private set; }
 
         public AuthApiWebAppFactory AuthApiWebApp { get; private set; } = null!;
-        public HttpClient AuthApiClient { get; private set; } = null!;
 
         public AuthApiCollectionCluster()
         {
@@ -61,8 +60,6 @@ namespace AuthService.Test.Integration.Api.Collections
                     Host = rabbitMqOptions.Host,
                     Port = rabbitMqOptions.Port
                 });
-            
-            AuthApiClient = AuthApiWebApp.CreateClient();
         }
 
         public async Task DisposeAsync()
@@ -74,7 +71,6 @@ namespace AuthService.Test.Integration.Api.Collections
                 TokenBlacklistRedisFixture.DisposeAsync()
             );
 
-            AuthApiClient.Dispose();
             await AuthApiWebApp.DisposeAsync();
         }
 
