@@ -237,7 +237,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
 
             authDbContext.ChangeTracker.Clear();
             var accountFromDb = await authDbContext.Accounts
-                .Where(a => a.Id.Equals(account.Id))
+                .Where(a => a.Id == account.Id)
                 .Include(a => a.Sessions)
                 .FirstOrDefaultAsync();
 

@@ -40,7 +40,7 @@ namespace AuthService.Test.Integration.Persistence.Interceptors
             authDbContext.ChangeTracker.Clear();
             var softDeletedAccount = await authDbContext.Accounts
                 .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(a => a.Id.Equals(accountId));
+                .FirstOrDefaultAsync(a => a.Id == accountId);
 
             Assert.NotNull(softDeletedAccount);
             Assert.True(softDeletedAccount.IsDeleted, $"The {nameof(ISoftDelete.IsDeleted)} property is not true.");

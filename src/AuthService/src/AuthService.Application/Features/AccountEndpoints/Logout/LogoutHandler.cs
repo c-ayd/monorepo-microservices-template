@@ -38,7 +38,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Logout
             }
             
             var session = await authDbContext.Sessions
-                .Where(s => s.Id.Equals(Guid.Parse(sessionId)))
+                .Where(s => s.Id == Guid.Parse(sessionId))
                 .Select(s => new
                 {
                     s.RefreshTokenHashed,
@@ -51,7 +51,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Logout
             try
             {
                 if (session == null ||
-                    !session.AccountId.Equals(Guid.Parse(context.User.Identity!.Name!)) ||
+                    session.AccountId != Guid.Parse(context.User.Identity!.Name!) ||
                     !ValueHasher.Verify(session.RefreshTokenHashed, refreshToken, hashVersions.GetHashOptions, out var _))
                     return JsonResponseBuilder.Success(HttpStatusCode.OK);
             }
@@ -64,7 +64,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Logout
             }
 
             await authDbContext.Sessions
-                .Where(s => s.Id.Equals(Guid.Parse(sessionId)))
+                .Where(s => s.Id == Guid.Parse(sessionId))
                 .ExecuteDeleteAsync();
 
             return JsonResponseBuilder.Success(HttpStatusCode.OK);

@@ -61,7 +61,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             authDbContext.ChangeTracker.Clear();
 
             var sessionsFromDb = await authDbContext.Sessions
-                .Where(s => s.AccountId.Equals(account.Id))
+                .Where(s => s.AccountId == account.Id)
                 .ToListAsync();
             Assert.Single(sessionsFromDb);
         }
@@ -94,7 +94,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             authDbContext.ChangeTracker.Clear();
 
             var sessionsFromDb = await authDbContext.Sessions
-                .Where(s => s.AccountId.Equals(account.Id))
+                .Where(s => s.AccountId == account.Id)
                 .ToListAsync();
             Assert.Single(sessionsFromDb);
         }
@@ -133,7 +133,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             authDbContext.ChangeTracker.Clear();
 
             var sessionsFromDb = await authDbContext.Sessions
-                .Where(s => s.AccountId.Equals(account.Id))
+                .Where(s => s.AccountId == account.Id)
                 .ToListAsync();
             Assert.Single(sessionsFromDb);
         }
@@ -169,7 +169,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             authDbContext.ChangeTracker.Clear();
 
             var sessionsFromDb = await authDbContext.Sessions
-                .Where(s => s.AccountId.Equals(account.Id))
+                .Where(s => s.AccountId == account.Id)
                 .ToListAsync();
             Assert.Empty(sessionsFromDb);
         }
