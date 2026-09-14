@@ -1,4 +1,5 @@
 using AuthService.Application.Features.AccountEndpoints.Login;
+using AuthService.Application.Features.AccountEndpoints.Logout;
 using AuthService.Application.Features.AccountEndpoints.Register;
 using Microsoft.AspNetCore.Builder;
 using Shared.Http.DependencyInjection;
@@ -16,6 +17,9 @@ namespace AuthService.Application.Features.AccountEndpoints
             
             group.MapPost("/login", LoginHandler.Handle)
                 .AddValidation<LoginRequest>();
+
+            group.MapDelete("/logout", LogoutHandler.Handle)
+                .RequireAuthorization();    // Since the endpoint deletes open session, it requires authorization.
         }
     }
 }
