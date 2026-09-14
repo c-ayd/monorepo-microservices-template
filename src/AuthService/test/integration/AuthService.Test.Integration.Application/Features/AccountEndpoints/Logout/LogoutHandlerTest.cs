@@ -36,7 +36,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         }
 
         [Fact]
-        public async Task Handle_WhenAuthenticatedAndThereIsNoCookies_ShouldNotDeleteSessionAndReturnOk()
+        public async Task Handle_WhenAuthenticatedAndThereIsNoCookies_ShouldNotDeleteSessionAndReturnNoContent()
         {
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
@@ -56,7 +56,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var response = await client.DeleteAsync("/accounts/logout");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             authDbContext.ChangeTracker.Clear();
 
@@ -67,7 +67,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         }
 
         [Fact]
-        public async Task Handle_WhenAuthenticatedAndCookieValuesAreAltered_ShouldNotDeleteSessionAndReturnOk()
+        public async Task Handle_WhenAuthenticatedAndCookieValuesAreAltered_ShouldNotDeleteSessionAndReturnNoContent()
         {
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
@@ -89,7 +89,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var response = await client.DeleteAsync("/accounts/logout");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             authDbContext.ChangeTracker.Clear();
 
@@ -103,7 +103,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(false, false)]
-        public async Task Handle_WhenAuthenticatedAndCookieValuesDoNotMatch_ShouldNotDeleteSessionAndReturnOk(bool matchSessionId, bool matchRefreshToken)
+        public async Task Handle_WhenAuthenticatedAndCookieValuesDoNotMatch_ShouldNotDeleteSessionAndReturnNoContent(bool matchSessionId, bool matchRefreshToken)
         {
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
@@ -128,7 +128,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var response = await client.DeleteAsync("/accounts/logout");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             authDbContext.ChangeTracker.Clear();
 
@@ -139,7 +139,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         }
 
         [Fact]
-        public async Task Handle_WhenAuthenticatedAndCookieValuesMatch_ShouldDeleteSessionAndReturnOk()
+        public async Task Handle_WhenAuthenticatedAndCookieValuesMatch_ShouldDeleteSessionAndReturnNoContent()
         {
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
@@ -164,7 +164,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var response = await client.DeleteAsync("/accounts/logout");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             authDbContext.ChangeTracker.Clear();
 

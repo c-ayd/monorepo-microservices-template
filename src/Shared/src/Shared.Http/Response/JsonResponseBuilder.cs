@@ -28,6 +28,9 @@ namespace Shared.Http.Response
         /// <returns>Returns a success response.</returns>
         public static IResult Success(HttpStatusCode statusCode, object? metadata = null)
         {
+            if (statusCode == HttpStatusCode.NoContent)
+                return Results.NoContent();
+
             var body = new Dictionary<string, object?>();
 
             if (metadata != null) body.Add(MetadataKey, metadata);
