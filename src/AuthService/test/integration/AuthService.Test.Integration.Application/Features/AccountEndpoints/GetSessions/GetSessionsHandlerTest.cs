@@ -54,10 +54,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Get
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
             
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, account.Id.ToString());
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey, SupportedLanguages.DefaultLanguage);
-            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
 
             // Act
             var response = await client.GetAsync(_endpoint);
