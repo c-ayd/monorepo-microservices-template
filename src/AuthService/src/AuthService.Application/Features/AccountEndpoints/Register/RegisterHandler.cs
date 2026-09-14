@@ -68,7 +68,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Register
                 BodyParameters: [emailVerificationTokenValue])
             );
 
-            return JsonResponseBuilder.Success(HttpStatusCode.OK);
+            return JsonResponseBuilder.Success(HttpStatusCode.NoContent);
         }
     }
 }
