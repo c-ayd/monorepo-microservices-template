@@ -47,9 +47,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(
-                account.Id.ToString(),
-                SupportedLanguages.DefaultLanguage);
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
 
             // Act
             var response = await client.DeleteAsync("/accounts/logout");
