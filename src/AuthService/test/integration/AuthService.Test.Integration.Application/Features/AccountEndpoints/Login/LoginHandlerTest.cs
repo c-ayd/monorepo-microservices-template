@@ -188,8 +188,10 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             Assert.InRange((accountFromDb.UnlockDate!.Value - now).TotalMinutes, lockTimeInMinutes - 1, lockTimeInMinutes + 1);
         }
 
-        [Fact]
-        public async Task Handle_WhenCredentialsAreCorrect_ShouldCreateSessionAndSetCookiesAndReturnOk()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Handle_WhenCredentialsAreCorrect_ShouldCreateSessionAndSetCookiesAndReturnOk(bool hasRoles)
         {
             // Arrange
             var email = EmailGenerator.Generate();
@@ -202,6 +204,14 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
             var account = new Account(email, passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
+            account.IsEmailVerified = true;
+
+            string? roleName = null;
+            if (hasRoles)
+            {
+                roleName = StringGenerator.GenerateAlphanumeric();
+                account.Roles.Add(new Role(roleName));
+            }
 
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
@@ -214,21 +224,25 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
 
             // Act
             var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var dto = await response.Content.ReadFromJsonAsync<Dto>();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            using var doc = JsonDocument.Parse(stream);
-            var root = doc.RootElement;
-            Assert.True(root.TryGetProperty(JsonResponseBuilder.DataKey, out var dataElement), $"The {JsonResponseBuilder.DataKey} key does not exist in the response");
-            Assert.True(dataElement.TryGetProperty("accessToken", out var accessTokenElement), "The accessToken key does not exists in the response");
-            Assert.NotNull(accessTokenElement.GetString());
-            Assert.True(dataElement.TryGetProperty("roles", out _), "The roles key does not exists in the response");
-
-            Assert.True(root.TryGetProperty(JsonResponseBuilder.MetadataKey, out var metadataElement), $"The {JsonResponseBuilder.MetadataKey} key does not exist in the response");
-            Assert.True(metadataElement.TryGetProperty("isEmailVerified", out _), "The isEmailVerified key does not exists in the response");
-            Assert.True(metadataElement.TryGetProperty("preferredLanguage", out _), "The preferredLanguage key does not exists in the response");
+            Assert.NotNull(dto);
+            Assert.NotNull(dto.Data.AccessToken);
+            
+            if (hasRoles)
+            {
+                Assert.Equal(roleName, dto.Data.Roles[0]);
+            }
+            else
+            {
+                Assert.Empty(dto.Data.Roles);
+            }
+            
+            Assert.True(dto.Metadata.IsEmailVerified);
+            Assert.Equal(SupportedLanguages.DefaultLanguage, dto.Metadata.PreferredLanguage);
 
             response.Headers.TryGetValues("Set-Cookie", out var cookieValues);
             Assert.NotNull(cookieValues);
@@ -280,6 +294,24 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var accountFromDb = await authDbContext.Accounts.FindAsync(account.Id);
             Assert.Equal(0, accountFromDb!.FailedLoginAttempts);
             Assert.False(accountFromDb.IsLocked, "The account is locked.");
+        }
+
+        private class Dto
+        {
+            public LoginDto Data { get; set; } = null!;
+            public MetadataDto Metadata { get; set; } = null!;
+
+            public class LoginDto
+            {
+                public string AccessToken { get; set; } = null!;
+                public List<string> Roles { get; set; } = new List<string>();
+            }
+
+            public class MetadataDto
+            {
+                public bool IsEmailVerified { get; set; }
+                public string PreferredLanguage { get; set; } = null!;
+            }
         }
     }
 }
