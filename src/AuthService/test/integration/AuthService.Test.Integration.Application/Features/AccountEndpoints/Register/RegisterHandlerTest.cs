@@ -49,7 +49,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
         }
 
         [Fact]
-        public async Task Handle_WhenAccountDoesNotExist_ShouldCreateAccountAndTokenAndReturnOk()
+        public async Task Handle_WhenAccountDoesNotExist_ShouldCreateAccountAndTokenAndReturnNoContent()
         {
             // Arrange
             var tokenLifespan = TimeSpan.FromHours(_collectionCluster.AuthApiWebApp.GetOptions<TokenLifespansOptions>().EmailVerificationLifespanInHours).TotalMinutes;
@@ -67,7 +67,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             var response = await client.PostAsJsonAsync("/accounts/register", request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
