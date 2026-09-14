@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Http.Authentication;
 using Shared.Http.Authentication.Structures;
@@ -60,9 +61,11 @@ namespace Shared.Test.Integration.Http.Authentication
         public async Task Invoke_WhenHeadersHaveUserContent_ShouldFillClaimPrincipalAndAuthorize()
         {
             // Arrange
+            using var client = _testHostFixture.Host.GetTestClient();
+
             var userId = Guid.NewGuid().ToString();
-            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             UserClaim? claim = null;
             string? headerValue = null;
@@ -75,24 +78,17 @@ namespace Shared.Test.Integration.Http.Authentication
                 claim = userClaim;
                 headerValue = StringGenerator.GenerateAlpha();
 
-                _testHostFixture.Client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
+                client.DefaultRequestHeaders.Add(userClaim.HeaderKey, headerValue);
                 break;
             }
 
             // Act
-            var responseUser = await _testHostFixture.Client.GetFromJsonAsync<UserDto>("/api-gateway");
-            var responseAuthorized = await _testHostFixture.Client.GetAsync("/api-gateway/authorized");
-            var responseAccessGranted = await _testHostFixture.Client.GetAsync("/api-gateway/access-granted");
-            var responseForbidden = await _testHostFixture.Client.GetAsync("/api-gateway/forbidden");
+            var responseUser = await client.GetFromJsonAsync<UserDto>("/api-gateway");
+            var responseAuthorized = await client.GetAsync("/api-gateway/authorized");
+            var responseAccessGranted = await client.GetAsync("/api-gateway/access-granted");
+            var responseForbidden = await client.GetAsync("/api-gateway/forbidden");
 
             // Assert
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
-            if (claim != null)
-            {
-                _testHostFixture.Client.DefaultRequestHeaders.Remove(claim.HeaderKey);
-            }
-
             Assert.NotNull(responseUser);
             Assert.True(responseUser.IsAuthenticated, "The user is not authenticated.");
             Assert.Equal(userId, responseUser.Name);
@@ -111,11 +107,14 @@ namespace Shared.Test.Integration.Http.Authentication
         [Fact]
         public async Task Invoke_WhenHeadersHaveNoUserContent_ShouldLeftClaimPrincipalEmptyAndNotAuthorize()
         {
+            // Arrange
+            using var client = _testHostFixture.Host.GetTestClient();
+
             // Act
-            var responseUser = await _testHostFixture.Client.GetFromJsonAsync<UserDto>("/api-gateway");
-            var responseAuthorized = await _testHostFixture.Client.GetAsync("/api-gateway/authorized");
-            var responseAccessGranted = await _testHostFixture.Client.GetAsync("/api-gateway/access-granted");
-            var responseForbidden = await _testHostFixture.Client.GetAsync("/api-gateway/forbidden");
+            var responseUser = await client.GetFromJsonAsync<UserDto>("/api-gateway");
+            var responseAuthorized = await client.GetAsync("/api-gateway/authorized");
+            var responseAccessGranted = await client.GetAsync("/api-gateway/access-granted");
+            var responseForbidden = await client.GetAsync("/api-gateway/forbidden");
 
             // Assert
             Assert.NotNull(responseUser);

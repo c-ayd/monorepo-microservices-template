@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.TestHost;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
 using Shared.Test.Helpers.Fixtures;
@@ -40,10 +41,13 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         [Fact]
         public async Task Invoke_WhenResponseIs401_ShouldReturn401ErrorItem()
         {
+            // Arrange
+            using var client = _testHostFixture.Host.GetTestClient();
+            
             // Act
-            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
-            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
-            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
+            var responseAnonymous = await client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await client.GetAsync("/auth-error/forbidden");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
@@ -55,17 +59,19 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         public async Task Invoke_WhenResponseIs403_ShouldReturn403ErrorItem()
         {
             // Arrange
+            using var client = _testHostFixture.Host.GetTestClient();
+
             var userId = Guid.NewGuid().ToString();
-            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
 
             // Act
-            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
-            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
-            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
+            var responseAnonymous = await client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await client.GetAsync("/auth-error/forbidden");
 
             // Assert
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
 
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);
@@ -76,18 +82,20 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         public async Task Invoke_WhenResponseIsNotRelatedToAuth_ShouldDoNothing()
         {
             // Arrange
+            using var client = _testHostFixture.Host.GetTestClient();
+
             var userId = Guid.NewGuid().ToString();
-            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
-            _testHostFixture.Client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
+            client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Roles.HeaderKey, _roleName);
 
             // Act
-            var responseAnonymous = await _testHostFixture.Client.GetAsync("/auth-error/anonymous");
-            var responseAuthorized = await _testHostFixture.Client.GetAsync("/auth-error/authorized");
-            var responseForbidden = await _testHostFixture.Client.GetAsync("/auth-error/forbidden");
+            var responseAnonymous = await client.GetAsync("/auth-error/anonymous");
+            var responseAuthorized = await client.GetAsync("/auth-error/authorized");
+            var responseForbidden = await client.GetAsync("/auth-error/forbidden");
 
             // Assert
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
-            _testHostFixture.Client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
+            client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Id.HeaderKey);
+            client.DefaultRequestHeaders.Remove(ApiGatewayAuthKeys.Claims.Roles.HeaderKey);
             
             Assert.Equal(HttpStatusCode.OK, responseAnonymous.StatusCode);
             Assert.Equal(HttpStatusCode.OK, responseAuthorized.StatusCode);
