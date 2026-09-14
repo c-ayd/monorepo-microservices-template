@@ -16,7 +16,30 @@ namespace ApiGateway.Test.Unit.Web.Middlewares
         }
 
         [Fact]
-        public async Task Invoke_WhenExceptionIsThrown_ShouldReturnInternalServerError()
+        public async Task Invoke_WhenBadRequestExceptionIsThrown_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var middleware = new GlobalExceptionMiddleware(
+                async (context) => throw new BadHttpRequestException("Test exception"),
+                _loggerFixture);
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddOptions<JsonOptions>();
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider()
+            };
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Invoke_WhenGlobalExceptionIsThrown_ShouldReturnInternalServerError()
         {
             // Arrange
             var middleware = new GlobalExceptionMiddleware(
