@@ -1,10 +1,13 @@
 using System.Net;
 using AuthService.Application.Abstractions.Crypto;
 using AuthService.Application.Abstractions.DbContexts;
+using AuthService.Application.Abstractions.DistributedCaches;
 using AuthService.Application.Dtos.Crypto;
+using AuthService.Application.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Shared.Http.Response;
 using Shared.Http.Response.Structures;
 
@@ -17,6 +20,8 @@ namespace AuthService.Application.Features.AccountEndpoints.CloseSessions
             HttpContext context,
             IAuthDbContext authDbContext,
             IPasswordHasher passwordHasher,
+            ITokenBlacklist tokenBlacklist,
+            IOptions<JwtOptions> jwtOptions,
             ILogger<CloseSessionsHandler> logger)
         {
             // First check the password
@@ -57,6 +62,9 @@ namespace AuthService.Application.Features.AccountEndpoints.CloseSessions
                     );
                 case EPasswordVerificationResult.Success:
                 case EPasswordVerificationResult.SuccessRehashNeeded:
+                    // Add all access tokens that are generated in the past to the blacklist
+                    await tokenBlacklist.AddAsync(context.User.Identity!.Name!, TimeSpan.FromMinutes(jwtOptions.Value.AccessTokenLifespanInMinutes));
+
                     // Delete the sessions
                     await authDbContext.Sessions
                         .Where(s => s.AccountId == accountId)
