@@ -1,0 +1,41 @@
+using AuthService.Application.Features.AccountEndpoints.CloseSession;
+using Shared.Test.Generators;
+
+namespace AuthService.Test.Unit.Application.Features.AccountEndpoints.CloseSessions
+{
+    public class CloseSessionsValidatorTest
+    {
+        private readonly CloseSessionValidator _validator;
+
+        public CloseSessionsValidatorTest()
+        {
+            _validator = new CloseSessionValidator();
+        }
+
+        [Fact]
+        public void Validate_WhenPasswordIsNull_ShouldReturnError()
+        {
+            // Arrange
+            var request = new CloseSessionRequest(null);
+
+            // Act
+            var errors = _validator.Validate(request);
+
+            // Assert
+            Assert.Single(errors);
+        }
+
+        [Fact]
+        public void Validate_WhenPasswordIsValid_ShouldReturnNoError()
+        {
+            // Arrange
+            var request = new CloseSessionRequest(PasswordGenerator.GenerateValid());
+
+            // Act
+            var errors = _validator.Validate(request);
+
+            // Assert
+            Assert.Empty(errors);
+        }
+    }
+}
