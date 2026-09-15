@@ -25,7 +25,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Get
         }
 
         [Fact]
-        public async Task Handle_WhenNotAuthenticated_ShouldReturnNotAuthorized()
+        public async Task Handle_WhenNotAuthenticated_ShouldReturnUnauthorized()
         {
             // Arrange
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
