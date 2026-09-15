@@ -93,7 +93,7 @@ namespace AuthDb.Test.Integration.Initializer
 
             await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(StringGenerator.GenerateAlphanumeric()));
-            await authDbContext.Accounts.AddAsync(new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), "abc"));
+            await authDbContext.Accounts.AddAsync(new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), "abc"));
             await authDbContext.SaveChangesAsync();
 
             var seedRoleName = StringGenerator.GenerateAlphanumeric();
@@ -144,7 +144,7 @@ namespace AuthDb.Test.Integration.Initializer
 
             await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(seedRoleName));
-            await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, StringGenerator.GenerateAlphanumeric(), "abc"));
+            await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, PasswordGenerator.Generate(), "abc"));
             await authDbContext.SaveChangesAsync();
 
             // Act
@@ -189,7 +189,7 @@ namespace AuthDb.Test.Integration.Initializer
 
             await using var authDbContext = _postgreSqlFixture.CreateDbContext<AuthDbContext>();
             await authDbContext.Roles.AddAsync(new Role(seedRoleName));
-            await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, StringGenerator.GenerateAlphanumeric(), "abc"));
+            await authDbContext.Accounts.AddAsync(new Account(seedAccountEmail, PasswordGenerator.Generate(), "abc"));
             await authDbContext.SaveChangesAsync();
 
             // Act

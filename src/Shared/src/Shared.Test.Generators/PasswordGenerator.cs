@@ -87,5 +87,16 @@ namespace Shared.Test.Generators
 
             return builder.Shuffle().ToString();
         }
+
+        public static string GenerateValid()
+        {
+            return Generate(
+                includeUppercase: true,
+                includeLowercase: true,
+                includeDigit: true,
+                includeSpecialChars: true,
+                specialChars: "+-.",
+                length: 20);
+        }
     }
 }
