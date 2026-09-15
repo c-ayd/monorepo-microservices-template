@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ApiGateway.Web.Services;
 using Microsoft.Net.Http.Headers;
 using Shared.Http.Authentication;
 using Yarp.ReverseProxy.Transforms;
@@ -8,6 +9,13 @@ namespace ApiGateway.Web.Transforms.Request
 {
     public class JwtBearerTransform : ITransformProvider
     {
+        private readonly TokenBlacklist _tokenBlacklist;
+
+        public JwtBearerTransform(TokenBlacklist tokenBlacklist)
+        {
+            _tokenBlacklist = tokenBlacklist;
+        }
+
         public void Apply(TransformBuilderContext context)
         {
             context.AddRequestTransform(ApplyTransform);
@@ -15,20 +23,29 @@ namespace ApiGateway.Web.Transforms.Request
 
         private async ValueTask ApplyTransform(RequestTransformContext transformContext)
         {
-            AddHeaders(transformContext);
+            await AddHeadersAsync(transformContext);
             RemoveHeaders(transformContext);
         }
 
-        private void AddHeaders(RequestTransformContext transformContext)
+        private async Task AddHeadersAsync(RequestTransformContext transformContext)
         {
             // Check if the user is authenticated
             var user = transformContext.HttpContext.User;
             if (user.Identity == null || !user.Identity.IsAuthenticated)
                 return;
 
-            var userId = user.FindFirstValue(ApiGatewayAuthKeys.Claims.Id.ClaimType);
-            if (string.IsNullOrEmpty(userId))
+            var accountId = user.FindFirstValue(ApiGatewayAuthKeys.Claims.Id.ClaimType);
+            if (string.IsNullOrEmpty(accountId))
                 return;
+
+            // Check if the accesss token is in the blacklist
+            var blacklistTime = await _tokenBlacklist.GetBlacklistTimeAsync(accountId);
+            if (blacklistTime != null)
+            {
+                var issuedAtTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(user.FindFirstValue(ApiGatewayAuthKeys.Claims.IssuedAt.ClaimType)!));
+                if (issuedAtTime < blacklistTime)
+                    return;
+            }
 
             // Add the user claims to the headers
             foreach (var userClaim in ApiGatewayAuthKeys.Claims.AllUserClaims)
