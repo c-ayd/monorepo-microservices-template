@@ -15,6 +15,8 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
     [Collection(nameof(AuthApiCollection))]
     public class RegisterHandlerTest
     {
+        private const string _endpoint = "/accounts/register";
+
         private readonly AuthApiCollectionCluster _collectionCluster;
 
         public RegisterHandlerTest(AuthApiCollectionCluster collectionCluster)
@@ -37,7 +39,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/register", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
             
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -55,7 +57,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/register", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
