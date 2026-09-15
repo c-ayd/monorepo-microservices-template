@@ -38,7 +38,6 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Clo
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
 
             // Act
-            var a = string.Format(_endpoint, Guid.NewGuid().ToString());
             var response = await client.PostAsJsonAsync(string.Format(_endpoint, Guid.NewGuid().ToString()), request);
 
             // Assert
