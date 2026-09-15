@@ -47,7 +47,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(10);
 
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/valiation-filter/validation", request);
@@ -62,7 +62,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(-1);
 
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/valiation-filter/validation", request);
@@ -81,7 +81,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(10);
 
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/valiation-filter/async-validation", request);
@@ -96,7 +96,7 @@ namespace Shared.Test.Integration.Http.DependencyInjection
             // Arrange
             var request = new ValidationType1(-1);
 
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             // Act
             var response = await client.PostAsJsonAsync("/valiation-filter/async-validation", request);
