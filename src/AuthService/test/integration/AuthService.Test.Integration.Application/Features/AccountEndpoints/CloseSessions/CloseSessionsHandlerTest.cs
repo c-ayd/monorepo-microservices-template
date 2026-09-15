@@ -7,6 +7,7 @@ using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Application.Collections;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
+using Shared.Redis.Extensions;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.CloseSessions
@@ -46,7 +47,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Clo
         }
 
         [Fact]
-        public async Task Handle_WhenPasswordIsCorrectAndThereIsNoSession_ShouldDoNothingAndReturnNoContent()
+        public async Task Handle_WhenPasswordIsCorrectAndThereIsNoSession_ShouldDoNothingAndAddTokensToBlacklistAndReturnNoContent()
         {
             // Arrange
             var password = PasswordGenerator.GenerateValid();
@@ -67,10 +68,17 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Clo
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            var unixTimeInSeconds = await _collectionCluster.TokenBlacklistRedisFixture
+                .GetDatabase()
+                .LoadFromStringAsync<long>(account.Id.ToString());
+            Assert.True(unixTimeInSeconds.isKeyFound, "The account ID as the key is not found in Redis");
+
+            var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeInSeconds.value);     // Should not throw
         }
 
         [Fact]
-        public async Task Handle_WhenPasswordIsCorrectAndSessionExists_ShouldDeleteSessionAndReturnNoContent()
+        public async Task Handle_WhenPasswordIsCorrectAndThereAreSessions_ShouldDeleteSessionsAndAddTokensToBlacklistAndReturnNoContent()
         {
             // Arrange
             var password = PasswordGenerator.GenerateValid();
@@ -102,6 +110,13 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Clo
                 .Where(s => s.AccountId == account.Id)
                 .ToListAsync();
             Assert.Empty(sessionFromDb);
+
+            var unixTimeInSeconds = await _collectionCluster.TokenBlacklistRedisFixture
+                .GetDatabase()
+                .LoadFromStringAsync<long>(account.Id.ToString());
+            Assert.True(unixTimeInSeconds.isKeyFound, "The account ID as the key is not found in Redis");
+
+            var time = DateTimeOffset.FromUnixTimeSeconds(unixTimeInSeconds.value);     // Should not throw
         }
     }
 }
