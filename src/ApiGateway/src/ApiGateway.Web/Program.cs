@@ -1,8 +1,11 @@
+using System.Reflection;
 using ApiGateway.Web.Middlewares;
 using ApiGateway.Web.Options;
+using ApiGateway.Web.Services;
 using ApiGateway.Web.Transforms.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Helpers.DependencyInjection;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
 using Shared.Logging.DependencyInjection;
@@ -13,6 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms<JwtBearerTransform>();
+
+builder.Services.AddSingleton<TokenBlacklist>();
+
+builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
 builder.Logging.AddStructuredConsoleLogging(
     "API Gateway",
