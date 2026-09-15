@@ -1,5 +1,4 @@
 using AuthService.Application.Features.AccountEndpoints.Register;
-using AuthService.Application.Validations.Constraints;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Unit.Application.Features.AccountEndpoints.Register
@@ -30,13 +29,7 @@ namespace AuthService.Test.Unit.Application.Features.AccountEndpoints.Register
         public void Validate_WhenEmailAndPasswordAreCorrect_ShouldReturnNoError()
         {
             // Arrange
-            var request = new RegisterRequest(
-                EmailGenerator.Generate(),
-                PasswordGenerator.Generate(
-                    includeSpecialChars: true,
-                    specialChars: AccountConstraints.PasswordSpecialCharacters,
-                    length: AccountConstraints.PasswordMinLength
-                ));
+            var request = new RegisterRequest(EmailGenerator.Generate(), PasswordGenerator.GenerateValid());
 
             // Act
             var errors = _validator.Validate(request);

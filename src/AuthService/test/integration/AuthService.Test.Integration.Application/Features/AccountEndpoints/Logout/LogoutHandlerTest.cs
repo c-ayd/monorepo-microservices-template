@@ -41,7 +41,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
-            var account = new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), SupportedLanguages.DefaultLanguage);
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.Sessions.Add(new Session(account.Id, StringGenerator.GenerateAlphanumeric(), DateTimeOffset.UtcNow));
             
             await authDbContext.Accounts.AddAsync(account);
@@ -69,7 +69,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
-            var account = new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), SupportedLanguages.DefaultLanguage);
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.Sessions.Add(new Session(account.Id, StringGenerator.GenerateAlphanumeric(), DateTimeOffset.UtcNow));
 
             await authDbContext.Accounts.AddAsync(account);
@@ -110,7 +110,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var dataProtectionService = _collectionCluster.AuthApiWebApp.GetService<IDataProtectionService>();
 
             var refreshToken = StringGenerator.GenerateAlphanumeric();
-            var account = new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), SupportedLanguages.DefaultLanguage);
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.Sessions.Add(new Session(account.Id, StringGenerator.GenerateAlphanumeric(), DateTimeOffset.UtcNow));
 
             await authDbContext.Accounts.AddAsync(account);
@@ -148,7 +148,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var dataProtectionService = _collectionCluster.AuthApiWebApp.GetService<IDataProtectionService>();
 
             var refreshToken = StringGenerator.GenerateAlphanumeric();
-            var account = new Account(EmailGenerator.Generate(), StringGenerator.GenerateAlphanumeric(), SupportedLanguages.DefaultLanguage);
+            var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
             account.Sessions.Add(new Session(account.Id, ValueHasher.Hash(refreshToken, hashVersions.CurrentVersion, hashVersions.GetHashOptions), DateTimeOffset.UtcNow));
 
             await authDbContext.Accounts.AddAsync(account);

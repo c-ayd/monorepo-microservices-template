@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using AuthService.Application.Features.AccountEndpoints.Register;
 using AuthService.Application.Options;
-using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using AuthService.Persistence.DbContexts;
@@ -30,14 +29,10 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
 
             var email = EmailGenerator.Generate();
-            authDbContext.Accounts.Add(new Account(email, StringGenerator.GenerateAlpha(), SupportedLanguages.DefaultLanguage));
+            authDbContext.Accounts.Add(new Account(email, PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage));
             await authDbContext.SaveChangesAsync();
 
-            var request = new RegisterRequest(email, PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            ));
+            var request = new RegisterRequest(email, PasswordGenerator.GenerateValid());
 
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
@@ -55,11 +50,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Reg
             var tokenLifespan = TimeSpan.FromHours(_collectionCluster.AuthApiWebApp.GetOptions<TokenLifespansOptions>().EmailVerificationLifespanInHours).TotalMinutes;
 
             var email = EmailGenerator.Generate();
-            var request = new RegisterRequest(email, PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            ));
+            var request = new RegisterRequest(email, PasswordGenerator.GenerateValid());
 
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 

@@ -4,7 +4,6 @@ using System.Text.Json;
 using AuthService.Application.Abstractions.Crypto;
 using AuthService.Application.Features.AccountEndpoints.Login;
 using AuthService.Application.Options;
-using AuthService.Application.Validations.Constraints;
 using AuthService.Domain.Entities;
 using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Application.Collections;
@@ -56,7 +55,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             await authDbContext.Accounts.AddAsync(account);
             await authDbContext.SaveChangesAsync();
 
-            var request = new LoginRequest(email, PasswordGenerator.Generate());
+            var request = new LoginRequest(email, PasswordGenerator.GenerateValid());
 
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
@@ -72,11 +71,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var password = PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            );
+            var password = PasswordGenerator.GenerateValid();
 
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
@@ -110,11 +105,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var password = PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            );
+            var password = PasswordGenerator.GenerateValid();
 
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
@@ -148,11 +139,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var password = PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            );
+            var password = PasswordGenerator.GenerateValid();
 
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
@@ -195,11 +182,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var password = PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            );
+            var password = PasswordGenerator.GenerateValid();
 
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
@@ -263,11 +246,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
         {
             // Arrange
             var email = EmailGenerator.Generate();
-            var password = PasswordGenerator.Generate(
-                includeSpecialChars: true,
-                specialChars: AccountConstraints.PasswordSpecialCharacters,
-                length: AccountConstraints.PasswordMinLength
-            );
+            var password = PasswordGenerator.GenerateValid();
 
             var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
 
