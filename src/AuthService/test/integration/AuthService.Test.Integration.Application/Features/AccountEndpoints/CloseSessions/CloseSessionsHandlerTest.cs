@@ -1,0 +1,107 @@
+using System.Net;
+using System.Net.Http.Json;
+using AuthService.Application.Abstractions.Crypto;
+using AuthService.Application.Features.AccountEndpoints.CloseSessions;
+using AuthService.Domain.Entities;
+using AuthService.Persistence.DbContexts;
+using AuthService.Test.Integration.Application.Collections;
+using Microsoft.EntityFrameworkCore;
+using Shared.Constants;
+using Shared.Test.Generators;
+
+namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.CloseSessions
+{
+    [Collection(nameof(AuthApiCollection))]
+    public class CloseSessionsHandlerTest
+    {
+        private const string _endpoint = "/accounts/sessions/close";
+
+        private readonly AuthApiCollectionCluster _collectionCluster;
+
+        public CloseSessionsHandlerTest(AuthApiCollectionCluster collectionCluster)
+        {
+            _collectionCluster = collectionCluster;
+        }
+
+        [Fact]
+        public async Task Handle_WhenPasswordIsWrong_ShouldReturnForbidden()
+        {
+            // Arrange
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
+            var account = new Account(EmailGenerator.Generate(), passwordHasher.Hash(PasswordGenerator.Generate()), SupportedLanguages.DefaultLanguage);
+
+            await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await authDbContext.Accounts.AddAsync(account);
+            await authDbContext.SaveChangesAsync();
+
+            var request = new CloseSessionsRequest(PasswordGenerator.GenerateValid());
+
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
+
+            // Act
+            var response = await client.PostAsJsonAsync(_endpoint, request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Handle_WhenPasswordIsCorrectAndThereIsNoSession_ShouldDoNothingAndReturnNoContent()
+        {
+            // Arrange
+            var password = PasswordGenerator.GenerateValid();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
+
+            var account = new Account(EmailGenerator.Generate(), passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
+
+            await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await authDbContext.Accounts.AddAsync(account);
+            await authDbContext.SaveChangesAsync();
+
+            var request = new CloseSessionsRequest(password);
+
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
+
+            // Act
+            var response = await client.PostAsJsonAsync(_endpoint, request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Handle_WhenPasswordIsCorrectAndSessionExists_ShouldDeleteSessionAndReturnNoContent()
+        {
+            // Arrange
+            var password = PasswordGenerator.GenerateValid();
+            var passwordHasher = _collectionCluster.AuthApiWebApp.GetService<IPasswordHasher>();
+
+            var account = new Account(EmailGenerator.Generate(), passwordHasher.Hash(password), SupportedLanguages.DefaultLanguage);
+            for (int i = 0; i < 3; ++i)
+            {
+                account.Sessions.Add(new Session(account.Id, StringGenerator.GenerateAlphanumeric(), DateTimeOffset.UtcNow));
+            }
+
+            await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
+            await authDbContext.Accounts.AddAsync(account);
+            await authDbContext.SaveChangesAsync();
+
+            var request = new CloseSessionsRequest(password);
+
+            var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
+
+            // Act
+            var response = await client.PostAsJsonAsync(_endpoint, request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+            authDbContext.ChangeTracker.Clear();
+
+            var sessionFromDb = await authDbContext.Sessions
+                .Where(s => s.AccountId == account.Id)
+                .ToListAsync();
+            Assert.Empty(sessionFromDb);
+        }
+    }
+}
