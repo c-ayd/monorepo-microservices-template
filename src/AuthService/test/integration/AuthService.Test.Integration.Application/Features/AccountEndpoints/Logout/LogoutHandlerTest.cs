@@ -15,6 +15,8 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
     [Collection(nameof(AuthApiCollection))]
     public class LogoutHandlerTest
     {
+        private const string _endpoint = "/accounts/logout";
+
         private readonly AuthApiCollectionCluster _collectionCluster;
 
         public LogoutHandlerTest(AuthApiCollectionCluster collectionCluster)
@@ -29,7 +31,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.DeleteAsync("/accounts/logout");
+            var response = await client.DeleteAsync(_endpoint);
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -50,7 +52,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClientWithCredentials(account.Id.ToString());
 
             // Act
-            var response = await client.DeleteAsync("/accounts/logout");
+            var response = await client.DeleteAsync(_endpoint);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -85,7 +87,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 });
             
             // Act
-            var response = await client.DeleteAsync("/accounts/logout");
+            var response = await client.DeleteAsync(_endpoint);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -126,7 +128,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 });
             
             // Act
-            var response = await client.DeleteAsync("/accounts/logout");
+            var response = await client.DeleteAsync(_endpoint);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -164,7 +166,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 });
 
             // Act
-            var response = await client.DeleteAsync("/accounts/logout");
+            var response = await client.DeleteAsync(_endpoint);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

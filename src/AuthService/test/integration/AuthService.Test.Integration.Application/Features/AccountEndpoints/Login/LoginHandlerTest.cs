@@ -18,6 +18,8 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
     [Collection(nameof(AuthApiCollection))]
     public class LoginHandlerTest
     {
+        private const string _endpoint = "/accounts/login";
+
         private readonly AuthApiCollectionCluster _collectionCluster;
 
         public LoginHandlerTest(AuthApiCollectionCluster collectionCluster)
@@ -36,7 +38,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -60,7 +62,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -90,7 +92,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Locked, response.StatusCode);
@@ -121,7 +123,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -159,7 +161,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.Locked, response.StatusCode);
@@ -206,7 +208,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
             var dto = await response.Content.ReadFromJsonAsync<Dto>();
 
             // Assert
@@ -264,7 +266,7 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             var client = _collectionCluster.AuthApiWebApp.CreateHttpClient();
 
             // Act
-            var response = await client.PostAsJsonAsync("/accounts/login", request);
+            var response = await client.PostAsJsonAsync(_endpoint, request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
