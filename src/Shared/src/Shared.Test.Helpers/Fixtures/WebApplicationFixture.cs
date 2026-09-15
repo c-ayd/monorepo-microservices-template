@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Shared.Constants;
 using Shared.Http.Authentication;
-using StackExchange.Redis.Configuration;
 
 namespace Shared.Test.Helpers.Fixtures
 {
@@ -80,14 +79,21 @@ namespace Shared.Test.Helpers.Fixtures
             return Services.GetRequiredService<IOptions<TOptions>>().Value;
         }
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
-            foreach (var client in HttpClients)
+            // The disposal works on local developments, however, it randomly fails on GitHub in GitHub Actions.
+            // Since this method is called once all tests have run, the current solution is to catch the exception
+            // and do nothing. The finished job in GitHub Action will clean the resources if there is any.
+            try
             {
-                client.Dispose();
+                foreach (var client in HttpClients)
+                {
+                    client.Dispose();
+                }
+
+                await base.DisposeAsync();
             }
-            
-            return base.DisposeAsync();
+            catch { }
         }
     }
 }

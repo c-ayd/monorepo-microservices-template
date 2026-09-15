@@ -61,7 +61,7 @@ namespace Shared.Test.Integration.Http.Authentication
         public async Task Invoke_WhenHeadersHaveUserContent_ShouldFillClaimPrincipalAndAuthorize()
         {
             // Arrange
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             var userId = Guid.NewGuid().ToString();
             client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
@@ -108,7 +108,7 @@ namespace Shared.Test.Integration.Http.Authentication
         public async Task Invoke_WhenHeadersHaveNoUserContent_ShouldLeftClaimPrincipalEmptyAndNotAuthorize()
         {
             // Arrange
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             // Act
             var responseUser = await client.GetFromJsonAsync<UserDto>("/api-gateway");

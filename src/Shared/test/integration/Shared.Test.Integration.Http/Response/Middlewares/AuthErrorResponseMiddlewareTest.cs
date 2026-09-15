@@ -42,7 +42,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         public async Task Invoke_WhenResponseIs401_ShouldReturn401ErrorItem()
         {
             // Arrange
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
             
             // Act
             var responseAnonymous = await client.GetAsync("/auth-error/anonymous");
@@ -59,7 +59,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         public async Task Invoke_WhenResponseIs403_ShouldReturn403ErrorItem()
         {
             // Arrange
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             var userId = Guid.NewGuid().ToString();
             client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
@@ -82,7 +82,7 @@ namespace Shared.Test.Integration.Http.Response.Middlewares
         public async Task Invoke_WhenResponseIsNotRelatedToAuth_ShouldDoNothing()
         {
             // Arrange
-            using var client = _testHostFixture.Host.GetTestClient();
+            using var client = _testHostFixture.CreateHttpClient();
 
             var userId = Guid.NewGuid().ToString();
             client.DefaultRequestHeaders.Add(ApiGatewayAuthKeys.Claims.Id.HeaderKey, userId);
