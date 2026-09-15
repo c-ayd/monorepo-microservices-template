@@ -1,3 +1,4 @@
+using AuthService.Application.Features.AccountEndpoints.CloseSession;
 using AuthService.Application.Features.AccountEndpoints.GetSessions;
 using AuthService.Application.Features.AccountEndpoints.Login;
 using AuthService.Application.Features.AccountEndpoints.Logout;
@@ -24,6 +25,9 @@ namespace AuthService.Application.Features.AccountEndpoints
 
             group.MapGet("/sessions", GetSessionsHandler.Handle)
                 .RequireAuthorization();
+            group.MapPost("/session/{sessionId}/close", CloseSessionHandler.Handle)
+                .RequireAuthorization()
+                .AddValidation<CloseSessionRequest>();
         }
     }
 }

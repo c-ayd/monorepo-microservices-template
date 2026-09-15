@@ -1,0 +1,83 @@
+using System.Net;
+using System.Security.Cryptography;
+using AuthService.Application.Abstractions.Crypto;
+using AuthService.Application.Abstractions.DbContexts;
+using AuthService.Application.Dtos.Crypto;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Shared.Http.Response;
+using Shared.Http.Response.Structures;
+
+namespace AuthService.Application.Features.AccountEndpoints.CloseSession
+{
+    public class CloseSessionHandler
+    {
+        public static async Task<IResult> Handle(
+            [FromRoute] Guid sessionId,
+            CloseSessionRequest request,
+            HttpContext context,
+            IAuthDbContext authDbContext,
+            IPasswordHasher passwordHasher,
+            ILogger<CloseSessionHandler> logger)
+        {
+            // First check the password
+            var accountId = Guid.Parse(context.User.Identity!.Name!);
+            var passwordHashed = await authDbContext.Accounts
+                .Where(a => a.Id == accountId)
+                .Select(a => a.PasswordHashed)
+                .FirstOrDefaultAsync();
+
+            var passwordVerificationResult = passwordHasher.Verify(passwordHashed!, request.Password!, out var version);
+            switch (passwordVerificationResult)
+            {
+                case EPasswordVerificationResult.Fail:
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.Forbidden,
+                        [
+                            new ErrorItem("auth_password_wrong", "The password is wrong.")
+                        ]
+                    );
+                case EPasswordVerificationResult.VersionNotFound:
+                    logger.LogError("The version of the hashed password could not be found. Version: {Version}",
+                        version);
+
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.InternalServerError,
+                        [
+                            new ErrorItem("internal_server_error", "Something went wrong.")
+                        ]
+                    );
+                case EPasswordVerificationResult.LengthMismatch:
+                    logger.LogError("The expected length of the hashed password does not match.");
+
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.InternalServerError,
+                        [
+                            new ErrorItem("internal_server_error", "Something went wrong.")
+                        ]
+                    );
+                case EPasswordVerificationResult.Success:
+                case EPasswordVerificationResult.SuccessRehashNeeded:
+                    // Delete the session
+                    await authDbContext.Sessions
+                        .Where(s => s.Id == sessionId &&
+                            s.AccountId == accountId)
+                        .ExecuteDeleteAsync();
+
+                    return JsonResponseBuilder.Success(HttpStatusCode.NoContent);
+                default:
+                    logger.LogError("The result of the password verification is out of the range. Result: {Result}",
+                        (int)passwordVerificationResult);
+
+                    return JsonResponseBuilder.Error(
+                        HttpStatusCode.InternalServerError,
+                        [
+                            new ErrorItem("internal_server_error", "Something went wrong.")
+                        ]
+                    );
+            }
+        }
+    }
+}
