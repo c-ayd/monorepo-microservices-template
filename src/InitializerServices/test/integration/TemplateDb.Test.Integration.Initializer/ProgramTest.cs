@@ -27,7 +27,7 @@ namespace TemplateDb.Test.Integration.Initializer
             // Arrange
             await _postgreSqlFixture.DropDatabaseAsync<TemplateDbContext>();
 
-            var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
+            var configuration = ConfigurationHelper.CreateConfigurationFromFile("appsettings.Test.json");
             var seedDataOptions = configuration.GetSection("Templates").Get<TemplateDbSeedDataOptions>()!;
 
             await using var templateDbContext = _postgreSqlFixture.CreateDbContext<TemplateDbContext>();
@@ -63,7 +63,7 @@ namespace TemplateDb.Test.Integration.Initializer
             // Arrange
             await _postgreSqlFixture.ClearDatabaseAsync<TemplateDbContext>();
 
-            var configuration = ConfigurationHelper.CreateConfigurationFromTestSettings();
+            var configuration = ConfigurationHelper.CreateConfigurationFromFile("appsettings.Test.json");
             var seedDataOptions = configuration.GetSection("Templates").Get<TemplateDbSeedDataOptions>()!;
 
             var firstTemplateId = seedDataOptions.Email[0].TemplateId;
