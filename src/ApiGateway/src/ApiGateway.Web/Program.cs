@@ -1,4 +1,5 @@
 using System.Reflection;
+using ApiGateway.Web.BackgroundServices;
 using ApiGateway.Web.Middlewares;
 using ApiGateway.Web.Options;
 using ApiGateway.Web.Services;
@@ -17,6 +18,8 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms<JwtBearerTransform>();
 
+builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
+
 builder.Services.AddSingleton<TokenBlacklist>();
 
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
@@ -30,7 +33,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Authority = jwtOptions.Authority;
+        options.RequireHttpsMetadata = false;   // TLS is terminated at the gateway since the Auth Service is in the K8S cluster with no public access.
 
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateIssuer = true,
@@ -39,6 +44,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             RequireSignedTokens = true,
             
+            ValidIssuer = jwtOptions.Authority,
             ValidAudience = jwtOptions.Audience,
             ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
 
