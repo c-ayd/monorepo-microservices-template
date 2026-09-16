@@ -21,8 +21,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\ApiGateway.Web\ApiGateway.Web.csproj" />
-    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
     <ProjectReference Include="..\..\..\..\Shared\src\Shared.Test.Helpers\Shared.Test.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\..\Shared\src\Shared.Redis\Shared.Redis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Keys/test_jwt_private.pem" Link="test_jwt_private.pem" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_public.pem" Link="test_jwt_public.pem" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

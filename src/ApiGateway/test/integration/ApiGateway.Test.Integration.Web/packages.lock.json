@@ -707,6 +707,7 @@
           "Shared.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
+          "Shared.Redis": "[1.0.0, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
@@ -725,8 +726,11 @@
       "shared.logging": {
         "type": "Project"
       },
-      "shared.test.generators": {
-        "type": "Project"
+      "shared.redis": {
+        "type": "Project",
+        "dependencies": {
+          "StackExchange.Redis": "[3.1.31, )"
+        }
       },
       "shared.test.helpers": {
         "type": "Project",
