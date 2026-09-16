@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Shared.Constants;
 using Shared.Http.Authentication.Constants;
+using Shared.Test.Helpers;
 using Shared.Test.Helpers.Fixtures;
 
 namespace ApiGateway.Test.Integration.Web.Collections
@@ -24,6 +25,8 @@ namespace ApiGateway.Test.Integration.Web.Collections
     {
         public RedisFixture TokenBlacklistRedisFixture { get; private set; }
         public TestHostFixture DownstreamServiceFixture { get; private set; }
+        public TestHostFixture ProtectedDownstreamServiceFixture { get; private set; }
+        public TestHostFixture AdminDownstreamServiceFixture { get; private set; }
 
         public ApiGatewayWebAppFactory ApiGatewayWebApp { get; private set; } = null!;
 
@@ -31,6 +34,8 @@ namespace ApiGateway.Test.Integration.Web.Collections
         {
             TokenBlacklistRedisFixture = new RedisFixture();
             DownstreamServiceFixture = new TestHostFixture();
+            ProtectedDownstreamServiceFixture = new TestHostFixture();
+            AdminDownstreamServiceFixture = new TestHostFixture();
         }
 
         public async Task InitializeAsync()
@@ -41,8 +46,26 @@ namespace ApiGateway.Test.Integration.Web.Collections
                     addConfiguration: null,
                     configureServices: null,
                     configureApp: null,
-                    configureEndpoints: ConfigureEndpoints,
-                    port: 5000)
+                    configureEndpoints: DownstreamServiceConfigureEndpoints,
+                    port: 5000),
+                ProtectedDownstreamServiceFixture.InitializeAsync(
+                    addConfiguration: null,
+                    configureServices: null,
+                    configureApp: null,
+                    configureEndpoints: (endpoints) =>
+                    {
+                        endpoints.MapGet("/", () => Results.NoContent());
+                    },
+                    port: 5001),
+                AdminDownstreamServiceFixture.InitializeAsync(
+                    addConfiguration: null,
+                    configureServices: null,
+                    configureApp: null,
+                    configureEndpoints: (endpoints) =>
+                    {
+                        endpoints.MapGet("/", () => Results.NoContent());
+                    },
+                    port: 5002)
             );
 
             ApiGatewayWebApp = new ApiGatewayWebAppFactory(
@@ -57,7 +80,9 @@ namespace ApiGateway.Test.Integration.Web.Collections
         {
             await Task.WhenAll(
                 TokenBlacklistRedisFixture.DisposeAsync(),
-                DownstreamServiceFixture.DisposeAsync()
+                DownstreamServiceFixture.DisposeAsync(),
+                ProtectedDownstreamServiceFixture.DisposeAsync(),
+                AdminDownstreamServiceFixture.DisposeAsync()
             );
 
             await ApiGatewayWebApp.DisposeAsync();
@@ -78,6 +103,8 @@ namespace ApiGateway.Test.Integration.Web.Collections
 
                 builder.ConfigureAppConfiguration((context, config) =>
                 {
+                    config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromFile("appsettings.Extra.json"));
+
                     config.AddInMemoryCollection([
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthTokenBlacklistRedis)}",
                             _connectionStringsOptions.AuthTokenBlacklistRedis)
@@ -86,7 +113,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
             }
         }
 
-        private void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        private void DownstreamServiceConfigureEndpoints(IEndpointRouteBuilder endpoints)
         {
             // Well known endpoints
             endpoints.MapGet("/.well-known/openid-configuration", async (context) =>

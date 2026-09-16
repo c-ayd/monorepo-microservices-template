@@ -165,6 +165,6 @@ namespace ApiGateway.Test.Integration.Web.Transforms.Request
             Assert.Equal(preferredLanguage, headers[ApiGatewayAuthKeys.Claims.PreferredLanguage.HeaderKey]);
             Assert.NotNull(headers[ApiGatewayAuthKeys.Claims.IssuedAt.HeaderKey]);
             Assert.Null(headers[HeaderNames.Authorization]);
-        }
+        }        
     }
 }

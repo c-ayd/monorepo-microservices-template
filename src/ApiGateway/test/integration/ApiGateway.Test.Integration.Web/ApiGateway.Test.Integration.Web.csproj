@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Collections/appsettings.Extra.json" Link="appsettings.Extra.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Keys/test_jwt_private.pem" Link="test_jwt_private.pem" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Keys/test_jwt_public.pem" Link="test_jwt_public.pem" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
