@@ -10,25 +10,27 @@ namespace AuthService.Infrastructure.Authentication
     {
         public RsaSecurityKey PrivateKey { get; private set; }
         public RsaSecurityKey PublicKey { get; private set; }
-        
+        public RSAParameters PublicKeyParameters { get; private set; }
+
         public JwtKeyService(IOptions<JwtOptions> jwtOptions)
         {
             var privatePem = File.ReadAllText(jwtOptions.Value.PrivateKeyPath);
-            PrivateKey = LoadKey(jwtOptions.Value.KeyId, privatePem, isPrivate: true);
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(privatePem);
+            PrivateKey = new RsaSecurityKey(rsa)
+            {
+                KeyId = jwtOptions.Value.KeyId
+            };
 
             var publicPem = File.ReadAllText(jwtOptions.Value.PublicKeyPath);
-            PublicKey = LoadKey(jwtOptions.Value.KeyId, publicPem, isPrivate: false);
-        }
-
-        private RsaSecurityKey LoadKey(string keyId, string pem, bool isPrivate)
-        {
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(pem);
-
-            return new RsaSecurityKey(rsa)
+            rsa = RSA.Create();
+            rsa.ImportFromPem(publicPem);
+            PublicKey = new RsaSecurityKey(rsa)
             {
-                KeyId = keyId
+                KeyId = jwtOptions.Value.KeyId
             };
+
+            PublicKeyParameters = rsa.ExportParameters(false);
         }
     }
 }

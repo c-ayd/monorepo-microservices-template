@@ -33,8 +33,8 @@ namespace AuthService.Api.WellKnown
                             kid = jwtKeyService.PublicKey.KeyId,
                             use = "sig",
                             alg = "RS256",
-                            n = Base64UrlEncoder.Encode(jwtKeyService.PublicKey.Parameters.Modulus),
-                            e = Base64UrlEncoder.Encode(jwtKeyService.PublicKey.Parameters.Exponent)
+                            n = Base64UrlEncoder.Encode(jwtKeyService.PublicKeyParameters.Modulus),
+                            e = Base64UrlEncoder.Encode(jwtKeyService.PublicKeyParameters.Exponent)
                         }
                     }
                 });
