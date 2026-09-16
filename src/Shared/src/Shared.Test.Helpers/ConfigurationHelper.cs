@@ -8,15 +8,6 @@ namespace Shared.Test.Helpers
     public static class ConfigurationHelper
     {
         /// <summary>
-        /// Creates configuration from 'appsettings.Test.json' file.
-        /// </summary>
-        /// <returns>Returns the created configuration.</returns>
-        public static IConfiguration CreateConfigurationFromTestSettings(bool optional = true)
-        {
-            return CreateConfigurationFromFile("appsettings.Test.json", optional);
-        }
-
-        /// <summary>
         /// Creates configuration from a given JSON file.
         /// </summary>
         /// <param name="fileName">Name of the JSON file</param>

@@ -20,12 +20,7 @@ namespace Shared.Test.Helpers.Fixtures
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseEnvironment("Test");
-
-            builder.ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromTestSettings());
-            });
+            builder.UseEnvironment("Development");
         }
 
         public HttpClient CreateHttpClient()
