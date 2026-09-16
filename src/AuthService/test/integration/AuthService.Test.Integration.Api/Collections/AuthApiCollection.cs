@@ -74,7 +74,7 @@ namespace AuthService.Test.Integration.Api.Collections
             await AuthApiWebApp.DisposeAsync();
         }
 
-        public class AuthApiWebAppFactory : WebApplicationFixture<Program>
+        public class AuthApiWebAppFactory : WebAppFactoryFixture<Program>
         {
             private readonly ConnectionStringsOptions _connectionStringsOptions;
             private readonly RabbitMqOptions _rabbitMqOptions;
