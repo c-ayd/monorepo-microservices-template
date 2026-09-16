@@ -28,6 +28,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
             Assert.NotNull(jwtKeyService.PublicKey);
             Assert.Equal(_jwtOptions.KeyId, jwtKeyService.PrivateKey.KeyId);
             Assert.Equal(_jwtOptions.KeyId, jwtKeyService.PublicKey.KeyId);
+            Assert.NotNull(jwtKeyService.PublicKeyParameters.Exponent);
+            Assert.NotNull(jwtKeyService.PublicKeyParameters.Modulus);
         }
     }
 }
