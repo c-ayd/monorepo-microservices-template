@@ -4,7 +4,7 @@ using AuthService.Api.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Shared.Constants;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 
 namespace AuthService.Test.Unit.Api.Middlewares
 {

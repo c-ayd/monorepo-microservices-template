@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using AuthService.Application.Validations.Constraints;
 using Shared.Constants;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 
 namespace AuthService.Api.Middlewares
 {

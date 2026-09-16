@@ -14,6 +14,7 @@ using AuthService.Application.Features.AccountEndpoints;
 using AuthService.Application;
 using Shared.Http.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
+using Shared.Http.Authentication.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 

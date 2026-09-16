@@ -4,7 +4,7 @@ using AuthService.Infrastructure.Authentication;
 using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Unit.Infrastructure.Authentication

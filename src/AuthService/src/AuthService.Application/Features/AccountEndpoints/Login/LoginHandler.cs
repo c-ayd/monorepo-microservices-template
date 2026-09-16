@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Shared.Crypto;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Http.Response;
 using Shared.Http.Response.Structures;
 

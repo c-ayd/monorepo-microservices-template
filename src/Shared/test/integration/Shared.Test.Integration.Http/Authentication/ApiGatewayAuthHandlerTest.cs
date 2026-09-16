@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Http.Authentication.Structures;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
