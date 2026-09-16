@@ -13,19 +13,14 @@ namespace Shared.Test.Helpers.Fixtures
     /// Is a web application factory to centralize common functionalities for test cases.
     /// </summary>
     /// <typeparam name="TEntryPoint">Entry point of the web application, usually the main Program.cs</typeparam>
-    public class WebApplicationFixture<TEntryPoint> : WebApplicationFactory<TEntryPoint>
+    public class WebAppFactoryFixture<TEntryPoint> : WebApplicationFactory<TEntryPoint>
         where TEntryPoint : class
     {
         protected List<HttpClient> HttpClients { get; private set; } = new List<HttpClient>();
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseEnvironment("Test");
-
-            builder.ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddConfiguration(ConfigurationHelper.CreateConfigurationFromTestSettings());
-            });
+            builder.UseEnvironment("Development");
         }
 
         public HttpClient CreateHttpClient()

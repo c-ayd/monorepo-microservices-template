@@ -77,7 +77,7 @@ namespace NotificationService.Test.Integration.Worker.Collections
             await NotificationWebApp.DisposeAsync();
         }
 
-        public class NotificationWebAppFactory : WebApplicationFixture<Program>
+        public class NotificationWebAppFactory : WebAppFactoryFixture<Program>
         {
             private readonly ConnectionStringsOptions _connectionStringsOptions;
             private readonly RabbitMqOptions _rabbitMqOptions;
