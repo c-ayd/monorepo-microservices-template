@@ -1,4 +1,4 @@
-namespace Shared.Http.Authentication
+namespace Shared.Http.Authentication.Constants
 {
     public static class CookieKeys
     {

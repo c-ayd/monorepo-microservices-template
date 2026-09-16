@@ -9,7 +9,7 @@ using AuthService.Persistence.DbContexts;
 using AuthService.Test.Integration.Application.Collections;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Http.Response;
 using Shared.Test.Generators;
 

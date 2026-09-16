@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Shared.Constants;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Test.Helpers.Fixtures;
 
 namespace ApiGateway.Test.Integration.Web.Collections

@@ -1,7 +1,7 @@
 using System.Reflection;
 using Shared.Http.Authentication.Structures;
 
-namespace Shared.Http.Authentication
+namespace Shared.Http.Authentication.Constants
 {
     public static class ApiGatewayAuthKeys
     {

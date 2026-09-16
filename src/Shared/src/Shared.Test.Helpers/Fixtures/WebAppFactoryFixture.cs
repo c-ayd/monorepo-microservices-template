@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Shared.Constants;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 
 namespace Shared.Test.Helpers.Fixtures
 {

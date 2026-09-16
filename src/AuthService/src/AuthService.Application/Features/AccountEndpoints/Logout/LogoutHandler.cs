@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Shared.Crypto;
 using Shared.Crypto.Exceptions;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Http.Response;
 
 namespace AuthService.Application.Features.AccountEndpoints.Logout

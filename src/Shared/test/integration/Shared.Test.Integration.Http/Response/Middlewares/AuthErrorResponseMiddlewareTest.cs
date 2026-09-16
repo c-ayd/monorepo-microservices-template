@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Http.Response.Middlewares;
 using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.Http.Collections;

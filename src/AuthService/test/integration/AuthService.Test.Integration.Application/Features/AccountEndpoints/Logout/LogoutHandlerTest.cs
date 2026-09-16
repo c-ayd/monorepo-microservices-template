@@ -7,7 +7,7 @@ using AuthService.Test.Integration.Application.Collections;
 using Microsoft.EntityFrameworkCore;
 using Shared.Constants;
 using Shared.Crypto;
-using Shared.Http.Authentication;
+using Shared.Http.Authentication.Constants;
 using Shared.Test.Generators;
 
 namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Logout

@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Shared.Http.Authentication
+namespace Shared.Http.Authentication.Constants
 {
     /// <summary>
     /// Centralizes and provides JWT claim types in the application
