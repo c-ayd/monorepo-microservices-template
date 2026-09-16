@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthService.Application.Abstractions.Authentication
@@ -9,5 +10,6 @@ namespace AuthService.Application.Abstractions.Authentication
     {
         RsaSecurityKey PrivateKey { get; }
         RsaSecurityKey PublicKey { get; }
+        RSAParameters PublicKeyParameters { get; }
     }
 }
