@@ -101,7 +101,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                     catch (Exception exception)
                     {
                         _logger.LogCritical(exception, "Someting went wrong while checking the connection and channels for {PublisherName}. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
-                            publisher.PublisherName,
+                            publisher.Name,
                             _retryPublishTime.TotalSeconds,
                             exception.Message);
                     }
@@ -186,7 +186,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                         exception.Message);
                 }
             }
-            
+
             foreach (var publisher in _publishers)
             {
                 if (publisher.Channel != null)
