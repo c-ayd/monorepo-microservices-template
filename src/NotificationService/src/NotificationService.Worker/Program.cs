@@ -8,7 +8,7 @@ using NotificationService.Worker.BackgroundServices;
 using Shared.AspNetCore.Helpers.DependencyInjection;
 using Shared.Logging.DependencyInjection;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
@@ -22,8 +22,14 @@ builder.Services.AddSingleton<ITemplateService, TemplateService>();
 builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
 
-builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
 
-var host = builder.Build();
+builder.Services.AddHealthChecks();
 
-host.Run();
+var app = builder.Build();
+
+app.MapHealthChecks("/health");
+
+app.Run();

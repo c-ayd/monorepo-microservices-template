@@ -46,7 +46,11 @@ builder.Services.AddDataProtection()
         "AuthDataProtection")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
+
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -61,5 +65,7 @@ app.UseMiddleware<AccountPreferenceMiddleware>();
 
 app.MapWellKnownEndpoints();
 app.MapAccountEndpoints();
+
+app.MapHealthChecks("/health");
 
 app.Run();

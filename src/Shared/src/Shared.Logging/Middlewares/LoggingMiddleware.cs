@@ -25,19 +25,23 @@ namespace Shared.Logging.Middlewares
                 await _next(context);
 
                 var elapsedTime = Stopwatch.GetElapsedTime(startTime);
-                LogMetrics(_logger, context.Response.StatusCode, elapsedTime.TotalMilliseconds);
+                LogMetrics(_logger, context.Request.Path, context.Response.StatusCode, elapsedTime.TotalMilliseconds);
             }
             catch
             {
                 var elapsedTime = Stopwatch.GetElapsedTime(startTime);
-                LogMetrics(_logger, StatusCodes.Status500InternalServerError, elapsedTime.TotalMilliseconds);
+                LogMetrics(_logger, context.Request.Path, StatusCodes.Status500InternalServerError, elapsedTime.TotalMilliseconds);
 
                 throw;
             }
         }
 
-        private void LogMetrics(ILogger<LoggingMiddleware> logger, int statusCode, double elapsedTimeMs)
+        private void LogMetrics(ILogger<LoggingMiddleware> logger, string endpoint, int statusCode, double elapsedTimeMs)
         {
+            if (LoggingOptions.HealthEndpoint != null &&
+                endpoint == LoggingOptions.HealthEndpoint)
+                return;
+
             logger.LogInformation("Status Code: {StatusCode} - Elapsed Time: {ElapsedTime} ms",
                 statusCode,
                 elapsedTimeMs);
