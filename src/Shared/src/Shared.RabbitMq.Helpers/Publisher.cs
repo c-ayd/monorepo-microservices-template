@@ -11,7 +11,7 @@ namespace Shared.RabbitMq.Helpers
     /// </summary>
     public abstract class Publisher
     {
-        public string PublisherName { get; private set; }
+        public string Name { get; private set; }
 
         public IChannel? Channel { get; private set; }
         private SemaphoreSlim _channelSemaphore = new SemaphoreSlim(1, 1);
@@ -21,9 +21,9 @@ namespace Shared.RabbitMq.Helpers
 
         internal int MaxRetry { get; private set; }
 
-        public Publisher(string publisherName, int maxRetryForMesages)
+        public Publisher(string name, int maxRetryForMesages)
         {
-            PublisherName = publisherName;
+            Name = name;
 
             Channel = null;
             PendingMessages = new ConcurrentDictionary<ulong, Message>();
@@ -88,7 +88,7 @@ namespace Shared.RabbitMq.Helpers
             byte[] body,
             CancellationToken cancellationToken = default)
         {
-            var message = new Message(PublisherName, exchangeName, routingKey, properties, body);
+            var message = new Message(Name, exchangeName, routingKey, properties, body);
 
             // To standardize the type of the header values for consumers, the header values are converted to
             // JSON strings. By doing this, when rejected messages are saved somewhere and are sent again later,
@@ -191,7 +191,7 @@ namespace Shared.RabbitMq.Helpers
         private async Task HandleReturnedMessages(object obj, BasicReturnEventArgs args)
         {
             var properties = new BasicProperties(args.BasicProperties);
-            var message = new Message(PublisherName, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
+            var message = new Message(Name, args.Exchange, args.RoutingKey, properties, args.Body.ToArray());
 
             DroppedMessages.TryAdd(message.GetHashCode(), message);
         }
