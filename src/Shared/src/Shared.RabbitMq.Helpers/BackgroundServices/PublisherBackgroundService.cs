@@ -188,6 +188,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                 }
             }
 
+            // Close channels and connection
             foreach (var publisher in _publishers)
             {
                 if (publisher.Channel != null)

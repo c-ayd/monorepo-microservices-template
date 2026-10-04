@@ -173,6 +173,7 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
             }
             await Task.Delay(_graceTime);
 
+            // Close channels and connection
             if (Channel != null)
             {
                 if (Channel.IsOpen)
