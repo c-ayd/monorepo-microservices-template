@@ -3,6 +3,23 @@ from send2trash import send2trash
 import json
 import re
 import subprocess
+import time
+
+def main():
+    src_folder = Path(__file__).resolve().parent.parent / 'src'
+    
+    for i in range(2):
+        try:
+            delete_lock_files(src_folder)
+            delete_bin_folders(src_folder)
+            rebuild_projects()
+            break
+        except:
+            if i == 1:
+                raise
+
+            print('Something went wrong. Retrying...')
+            time.sleep(1)
 
 def delete_lock_files(root_folder):
     for file in Path(root_folder).rglob("packages.lock.json"):
@@ -37,8 +54,4 @@ def rebuild_projects():
         subprocess.run(task['command'], shell=True, cwd=root_folder)
 
 if __name__ == '__main__':
-    src_folder = Path(__file__).resolve().parent.parent / 'src'
-
-    delete_lock_files(src_folder)
-    delete_bin_folders(src_folder)
-    rebuild_projects()
+    main()
