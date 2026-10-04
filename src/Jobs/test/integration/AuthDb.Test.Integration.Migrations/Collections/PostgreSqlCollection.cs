@@ -1,7 +1,7 @@
-using NotificationService.Worker.DbContexts;
+using AuthService.Persistence.DbContexts;
 using Shared.Test.Helpers.Fixtures;
 
-namespace TemplateDb.Test.Integration.Initializer.Collections
+namespace AuthDb.Test.Integration.Migrations.Collections
 {
     [CollectionDefinition(nameof(PostgreSqlCollection))]
     public class PostgreSqlCollection : ICollectionFixture<PostgreSqlCollectionCluster>
@@ -21,7 +21,7 @@ namespace TemplateDb.Test.Integration.Initializer.Collections
         {
             await PostgreSqlFixture.InitializeAsync(new Dictionary<string, Type>()
             {
-                { "template-db", typeof(TemplateDbContext) }
+                { "auth-db", typeof(AuthDbContext) }
             }, runMigrations: false);
         }
 

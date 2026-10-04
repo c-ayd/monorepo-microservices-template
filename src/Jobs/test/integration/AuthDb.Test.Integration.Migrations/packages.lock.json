@@ -667,18 +667,38 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "notificationservice.worker": {
+      "authdb.migrations": {
         "type": "Project",
         "dependencies": {
+          "AuthService.Persistence": "[1.0.0, )",
+          "Microsoft.Extensions.Configuration.UserSecrets": "[10.0.10, )",
+          "Shared.Constants": "[1.0.0, )"
+        }
+      },
+      "authservice.application": {
+        "type": "Project",
+        "dependencies": {
+          "AuthService.Domain": "[1.0.0, )",
           "Microsoft.EntityFrameworkCore": "[10.0.10, )",
-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
-          "Microsoft.Extensions.Hosting": "[10.0.10, )",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
           "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Constants": "[1.0.0, )",
-          "Shared.Logging": "[1.0.0, )",
+          "Shared.Crypto": "[1.0.0, )",
+          "Shared.Http": "[1.0.0, )",
           "Shared.RabbitMq.Helpers": "[1.0.0, )",
-          "Shared.RabbitMq.Notifications": "[1.0.0, )"
+          "Shared.RabbitMq.Notifications": "[1.0.0, )",
+          "Shared.Redis": "[1.0.0, )",
+          "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
+        }
+      },
+      "authservice.domain": {
+        "type": "Project"
+      },
+      "authservice.persistence": {
+        "type": "Project",
+        "dependencies": {
+          "AuthService.Application": "[1.0.0, )",
+          "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
         }
       },
       "shared.aspnetcore.helpers": {
@@ -687,14 +707,14 @@
       "shared.constants": {
         "type": "Project"
       },
+      "shared.crypto": {
+        "type": "Project"
+      },
       "shared.http": {
         "type": "Project",
         "dependencies": {
           "System.IdentityModel.Tokens.Jwt": "[8.19.2, )"
         }
-      },
-      "shared.logging": {
-        "type": "Project"
       },
       "shared.rabbitmq.helpers": {
         "type": "Project",
@@ -706,6 +726,12 @@
         "type": "Project",
         "dependencies": {
           "RabbitMQ.Client": "[7.2.1, )"
+        }
+      },
+      "shared.redis": {
+        "type": "Project",
+        "dependencies": {
+          "StackExchange.Redis": "[3.1.31, )"
         }
       },
       "shared.test.generators": {
@@ -724,13 +750,6 @@
           "Testcontainers.PostgreSql": "[4.14.0, )",
           "Testcontainers.RabbitMq": "[4.14.0, )",
           "Testcontainers.Redis": "[4.14.0, )"
-        }
-      },
-      "templatedb.initializer": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.Extensions.Configuration.UserSecrets": "[10.0.10, )",
-          "NotificationService.Worker": "[1.0.0, )"
         }
       }
     }

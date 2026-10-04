@@ -6,10 +6,10 @@ using NotificationService.Worker.Entities;
 using Shared.Test.Generators;
 using Shared.Test.Helpers;
 using Shared.Test.Helpers.Fixtures;
-using TemplateDb.Initializer.Options;
-using TemplateDb.Test.Integration.Initializer.Collections;
+using TemplateDb.Migrations.Options;
+using TemplateDb.Test.Integration.Migrations.Collections;
 
-namespace TemplateDb.Test.Integration.Initializer
+namespace TemplateDb.Test.Integration.Migrations
 {
     [Collection(nameof(PostgreSqlCollection))]
     public class ProgramTest
@@ -105,7 +105,7 @@ namespace TemplateDb.Test.Integration.Initializer
 
         private Task ProgramInitializeAsync(TemplateDbSeedDataOptions seedDataOptions, TemplateDbContext templateDbContext)
         {
-            var initializeMethodInfo = typeof(TemplateDb.Initializer.Program).GetMethod("InitializeAsync", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)!;
+            var initializeMethodInfo = typeof(TemplateDb.Migrations.Program).GetMethod("InitializeAsync", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance)!;
             return (Task)initializeMethodInfo.Invoke(null, [seedDataOptions, templateDbContext])!;
         }
     }

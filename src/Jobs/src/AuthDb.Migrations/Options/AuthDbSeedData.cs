@@ -1,4 +1,4 @@
-namespace AuthDb.Initializer.Options
+namespace AuthDb.Migrations.Options
 {
     public class AuthDbSeedDataOptions
     {

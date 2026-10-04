@@ -27,9 +27,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Build Initializer Services",
+      "label": "Build Jobs",
       "type": "shell",
-      "command": "dotnet build src/InitializerServices/InitializerServicesSolution.slnx",
+      "command": "dotnet build src/Jobs/JobsSolution.slnx",
       "problemMatcher": []
     },
 
@@ -110,9 +110,9 @@
     },
 
     {
-      "label": "Run AuthDb Initializer (Development)",
+      "label": "Run AuthDb Migrations (Development)",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Debug",
+      "command": "dotnet run --project src/Jobs/src/AuthDb.Migrations/AuthDb.Migrations.csproj -c Debug",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Development"
@@ -122,9 +122,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Run AuthDb Initializer (Development) --force",
+      "label": "Run AuthDb Migrations (Development) --force",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Debug --force",
+      "command": "dotnet run --project src/Jobs/src/AuthDb.Migrations/AuthDb.Migrations.csproj -c Debug --force",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Development"
@@ -134,9 +134,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Run AuthDb Initializer (Production)",
+      "label": "Run AuthDb Migrations (Production)",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Release",
+      "command": "dotnet run --project src/Jobs/src/AuthDb.Migrations/AuthDb.Migrations.csproj -c Release",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Production"
@@ -146,9 +146,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Run AuthDb Initializer (Production) --force",
+      "label": "Run AuthDb Migrations (Production) --force",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/AuthDb.Initializer/AuthDb.Initializer.csproj -c Release --force",
+      "command": "dotnet run --project src/Jobs/src/AuthDb.Migrations/AuthDb.Migrations.csproj -c Release --force",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Production"
@@ -159,9 +159,9 @@
     },
 
     {
-      "label": "Run TemplateDb Initializer (Development)",
+      "label": "Run TemplateDb Migrations (Development)",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/TemplateDb.Initializer/TemplateDb.Initializer.csproj -c Debug",
+      "command": "dotnet run --project src/Jobs/src/TemplateDb.Migrations/TemplateDb.Migrations.csproj -c Debug",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Development"
@@ -171,9 +171,9 @@
       "problemMatcher": []
     },
     {
-      "label": "Run TemplateDb Initializer (Production)",
+      "label": "Run TemplateDb Migrations (Production)",
       "type": "shell",
-      "command": "dotnet run --project src/InitializerServices/src/TemplateDb.Initializer/TemplateDb.Initializer.csproj -c Release",
+      "command": "dotnet run --project src/Jobs/src/TemplateDb.Migrations/TemplateDb.Migrations.csproj -c Release",
       "options": {
         "env": {
           "DOTNET_ENVIRONMENT": "Production"
