@@ -48,6 +48,8 @@ builder.Services.AddDataProtection()
 
 builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -61,5 +63,7 @@ app.UseMiddleware<AccountPreferenceMiddleware>();
 
 app.MapWellKnownEndpoints();
 app.MapAccountEndpoints();
+
+app.MapHealthChecks("/health");
 
 app.Run();
