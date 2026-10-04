@@ -136,7 +136,8 @@ namespace Shared.RabbitMq.Helpers.BackgroundServices
                         }
                         catch (Exception exception)
                         {
-                            _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
+                            _logger.LogCritical(exception, "Someting went wrong while saving the rejected messages for {PublisherName}. The process will rerun in {RetryPubishTime} seconds. Message: {Message}",
+                                publisher.Name,
                                 _retryPublishTime.TotalSeconds,
                                 exception.Message);
                         }
