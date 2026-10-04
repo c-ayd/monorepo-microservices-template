@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthService.Persistence.Migrations.AuthDb
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20260912103507_InitialMig")]
+    [Migration("20261004083431_InitialMig")]
     partial class InitialMig
     {
         /// <inheritdoc />
@@ -54,6 +54,7 @@ namespace AuthService.Persistence.Migrations.AuthDb
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 

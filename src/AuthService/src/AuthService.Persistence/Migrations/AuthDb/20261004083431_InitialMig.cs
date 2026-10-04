@@ -17,7 +17,7 @@ namespace AuthService.Persistence.Migrations.AuthDb
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     NewEmail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     PasswordHashed = table.Column<string>(type: "text", nullable: true),
                     PreferredLanguage = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: true),
