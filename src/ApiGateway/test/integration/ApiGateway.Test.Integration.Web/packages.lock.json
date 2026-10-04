@@ -704,17 +704,17 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.10, )",
-          "Shared.Helpers": "[1.0.0, )",
+          "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Http": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
           "Shared.Redis": "[1.0.0, )",
           "Yarp.ReverseProxy": "[2.3.0, )"
         }
       },
-      "shared.constants": {
+      "shared.aspnetcore.helpers": {
         "type": "Project"
       },
-      "shared.helpers": {
+      "shared.constants": {
         "type": "Project"
       },
       "shared.http": {

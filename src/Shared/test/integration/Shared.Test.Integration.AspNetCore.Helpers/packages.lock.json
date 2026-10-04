@@ -667,10 +667,10 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "shared.constants": {
+      "shared.aspnetcore.helpers": {
         "type": "Project"
       },
-      "shared.helpers": {
+      "shared.constants": {
         "type": "Project"
       },
       "shared.http": {

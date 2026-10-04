@@ -171,13 +171,13 @@
       "authservice.domain": {
         "type": "Project"
       },
+      "shared.aspnetcore.helpers": {
+        "type": "Project"
+      },
       "shared.constants": {
         "type": "Project"
       },
       "shared.crypto": {
-        "type": "Project"
-      },
-      "shared.helpers": {
         "type": "Project"
       },
       "shared.http": {

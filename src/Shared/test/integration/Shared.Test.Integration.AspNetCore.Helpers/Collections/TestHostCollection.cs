@@ -1,7 +1,7 @@
 using Shared.Test.Helpers.Fixtures;
-using Shared.Test.Integration.Helpers.Options;
+using Shared.Test.Integration.AspNetCore.Helpers.Options;
 
-namespace Shared.Test.Integration.Helpers.Collections
+namespace Shared.Test.Integration.AspNetCore.Helpers.Collections
 {
     [CollectionDefinition(nameof(TestHostCollection))]
     public class TestHostCollection : ICollectionFixture<TestHostCollectionCluster>
