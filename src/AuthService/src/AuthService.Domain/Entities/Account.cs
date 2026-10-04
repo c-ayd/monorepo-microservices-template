@@ -1,10 +1,12 @@
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+
 using AuthService.Domain.SeedWork;
 
 namespace AuthService.Domain.Entities
 {
     public class Account : EntityBase<Guid>, ISoftDelete, IUpdateable
     {
-        public string? Email { get; set; }
+        public string Email { get; set; }
         public string? NewEmail { get; set; }
         public string? PasswordHashed { get; set; }
 
@@ -43,11 +45,9 @@ namespace AuthService.Domain.Entities
 
         public void SoftDelete()
         {
-            Email = null;
             NewEmail = null;
             PasswordHashed = null;
             PreferredLanguage = null;
-            IsEmailVerified = false;
             IsBanned = false;
             IsLocked = false;
             FailedLoginAttempts = 0;
