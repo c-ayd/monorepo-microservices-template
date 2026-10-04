@@ -1,4 +1,4 @@
-namespace TemplateDb.Initializer.Options
+namespace TemplateDb.Migrations.Options
 {
     public class TemplateDbSeedDataOptions
     {

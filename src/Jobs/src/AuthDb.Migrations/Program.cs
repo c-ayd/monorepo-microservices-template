@@ -1,12 +1,12 @@
-﻿using AuthDb.Initializer.Exceptions;
-using AuthDb.Initializer.Options;
+﻿using AuthDb.Migrations.Exceptions;
+using AuthDb.Migrations.Options;
 using AuthService.Domain.Entities;
 using AuthService.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Shared.Constants;
 
-namespace AuthDb.Initializer
+namespace AuthDb.Migrations
 {
     public class Program
     {

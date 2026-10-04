@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using NotificationService.Worker.DbContexts;
 using NotificationService.Worker.Entities;
-using TemplateDb.Initializer.Options;
+using TemplateDb.Migrations.Options;
 
-namespace TemplateDb.Initializer
+namespace TemplateDb.Migrations
 {
     public class Program
     {

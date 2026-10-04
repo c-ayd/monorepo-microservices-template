@@ -1,4 +1,4 @@
-namespace AuthDb.Initializer.Exceptions
+namespace AuthDb.Migrations.Exceptions
 {
     public class RoleNotFoundException : Exception
     {
