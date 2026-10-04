@@ -24,9 +24,7 @@ builder.Services.AddSingleton<TokenBlacklist>();
 
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
-builder.Logging.AddStructuredConsoleLogging(
-    "API Gateway",
-    builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Key).Get<JwtOptions>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -68,8 +66,8 @@ builder.Services.AddAuthorization(config =>
 
 var app = builder.Build();
 
-app.UseMiddleware<LoggingScopeMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<LoggingMiddleware>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
 app.UseAuthentication();

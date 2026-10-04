@@ -5,10 +5,8 @@ namespace Shared.Logging.DependencyInjection
 {
     public static partial class DependencyInjection
     {
-        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, string appName, bool isProduction)
+        public static void AddStructuredConsoleLogging(this ILoggingBuilder logging, bool isProduction)
         {
-            LoggingOptions.ApplicationName = appName;
-
             logging.ClearProviders();
             logging.AddJsonConsole(config =>
             {
