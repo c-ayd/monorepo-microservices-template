@@ -10,23 +10,20 @@ using Shared.Logging.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
-
-builder.Services.AddDbContext<TemplateDbContext>(_ => 
-    _.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ConnectionStringsOptions.TemplateDb))));
-
 builder.Services.AddSingleton<IEmailService, SmtpService>();
-
 builder.Services.AddSingleton<ITemplateService, TemplateService>();
+builder.Services.AddDbContext<TemplateDbContext>(_ =>
+    _.UseNpgsql(builder.Configuration.GetConnectionString(nameof(ConnectionStringsOptions.TemplateDb))));
+builder.Services.AddHealthChecks();
 
 builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
 
+builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
+
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.IsProduction(),
     healthEndpoint: "/health");
-
-builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
