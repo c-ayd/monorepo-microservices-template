@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Shared.Test.Structures;
 
 namespace Shared.Test.Helpers.Fixtures
 {
@@ -9,6 +10,9 @@ namespace Shared.Test.Helpers.Fixtures
     public class LoggerFixture<T> : ILogger<T>
         where T : class
     {
+        private List<Log> _logs = new List<Log>();
+        public IReadOnlyList<Log> Logs => _logs.AsReadOnly();
+
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
         {
@@ -22,6 +26,12 @@ namespace Shared.Test.Helpers.Fixtures
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
+            _logs.Add(new Log(
+                logLevel,
+                eventId,
+                formatter(state, exception),
+                exception
+            ));
         }
     }
 }
