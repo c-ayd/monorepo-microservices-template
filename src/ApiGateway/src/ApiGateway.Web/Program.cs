@@ -64,6 +64,8 @@ builder.Services.AddAuthorization(config =>
     config.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -74,5 +76,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapReverseProxy();
+
+app.MapHealthChecks("/health");
 
 app.Run();
