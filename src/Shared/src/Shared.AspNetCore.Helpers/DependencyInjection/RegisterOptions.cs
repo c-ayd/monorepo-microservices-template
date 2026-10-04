@@ -1,11 +1,11 @@
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Shared.Helpers.Exceptions;
-using Shared.Helpers.Options;
+using Shared.AspNetCore.Helpers.Exceptions;
+using Shared.AspNetCore.Helpers.Options;
 using Microsoft.Extensions.Configuration;
 
-namespace Shared.Helpers.DependencyInjection
+namespace Shared.AspNetCore.Helpers.DependencyInjection
 {
     public static class DependencyInjection
     {

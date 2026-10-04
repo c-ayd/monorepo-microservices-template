@@ -2,12 +2,12 @@ using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Shared.Helpers.DependencyInjection;
-using Shared.Helpers.Options;
+using Shared.AspNetCore.Helpers.DependencyInjection;
+using Shared.AspNetCore.Helpers.Options;
 using Shared.Test.Helpers.Fixtures;
-using Shared.Test.Integration.Helpers.Collections;
+using Shared.Test.Integration.AspNetCore.Helpers.Collections;
 
-namespace Shared.Test.Integration.Helpers.Options
+namespace Shared.Test.Integration.AspNetCore.Helpers.Options
 {
     [Collection(nameof(TestHostCollection))]
     public class AddOptionsTest

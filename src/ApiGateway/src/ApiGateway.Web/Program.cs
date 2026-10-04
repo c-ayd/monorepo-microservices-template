@@ -6,7 +6,7 @@ using ApiGateway.Web.Services;
 using ApiGateway.Web.Transforms.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Shared.Helpers.DependencyInjection;
+using Shared.AspNetCore.Helpers.DependencyInjection;
 using Shared.Http.Authentication.Constants;
 using Shared.Http.Response.Middlewares;
 using Shared.Logging.DependencyInjection;

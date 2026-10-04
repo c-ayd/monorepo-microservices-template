@@ -377,17 +377,17 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.10, )",
           "Microsoft.Extensions.Hosting": "[10.0.10, )",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )",
+          "Shared.AspNetCore.Helpers": "[1.0.0, )",
           "Shared.Constants": "[1.0.0, )",
-          "Shared.Helpers": "[1.0.0, )",
           "Shared.Logging": "[1.0.0, )",
           "Shared.RabbitMq.Helpers": "[1.0.0, )",
           "Shared.RabbitMq.Notifications": "[1.0.0, )"
         }
       },
-      "shared.constants": {
+      "shared.aspnetcore.helpers": {
         "type": "Project"
       },
-      "shared.helpers": {
+      "shared.constants": {
         "type": "Project"
       },
       "shared.logging": {

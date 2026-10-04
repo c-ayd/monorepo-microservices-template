@@ -3,7 +3,7 @@ using AuthService.Api.BackgroundServices;
 using AuthService.Infrastructure;
 using AuthService.Persistence;
 using Shared.Logging.DependencyInjection;
-using Shared.Helpers.DependencyInjection;
+using Shared.AspNetCore.Helpers.DependencyInjection;
 using AuthService.Api.WellKnown;
 using Shared.Http.Authentication;
 using Shared.Http.Response.Middlewares;
