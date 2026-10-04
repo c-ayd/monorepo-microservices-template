@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Shared.Logging\Shared.Logging.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.Test.Helpers\Shared.Test.Helpers.csproj" />
+    <ProjectReference Include="..\..\..\src\Shared.Test.Generators\Shared.Test.Generators.csproj" />
   </ItemGroup>
 
 </Project>
