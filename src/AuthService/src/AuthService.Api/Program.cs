@@ -18,11 +18,11 @@ using Shared.Http.Authentication.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//~ Begin - Register services from layers
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
-//~ End
+
+builder.Services.AddHealthChecks();
 
 builder.Services.AddHostedService<RabbitMqPublisherBackgroundService>();
 builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
@@ -49,8 +49,6 @@ builder.Services.AddDataProtection()
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.IsProduction(),
     healthEndpoint: "/health");
-
-builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 

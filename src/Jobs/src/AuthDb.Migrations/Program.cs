@@ -12,7 +12,7 @@ namespace AuthDb.Migrations
     {
         public static async Task<int> Main(string[] args)
         {
-            System.Console.WriteLine("AuthDB Initializer started.");
+            System.Console.WriteLine("Auth DB migration(s) started.");
 
             bool force = args.Contains("--force") || args.Contains("-f");  // If true, it will try to seed data whether there is data or not in the DB.
 
@@ -35,7 +35,7 @@ namespace AuthDb.Migrations
             // Migrate
             await authDbContext.Database.MigrateAsync();
 
-            System.Console.WriteLine("Migration completed.");
+            System.Console.WriteLine("Migration(s) completed.");
 
             // Seed data
             await using var transaction = await authDbContext.Database.BeginTransactionAsync();

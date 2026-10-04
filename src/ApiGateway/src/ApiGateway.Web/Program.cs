@@ -14,19 +14,15 @@ using Shared.Logging.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<TokenBlacklist>();
+builder.Services.AddHealthChecks();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms<JwtBearerTransform>();
 
 builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
 
-builder.Services.AddSingleton<TokenBlacklist>();
-
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
-
-builder.Logging.AddStructuredConsoleLogging(
-    builder.Environment.IsProduction(),
-    healthEndpoint: "/health");
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Key).Get<JwtOptions>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -62,11 +58,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(config =>
 {
     config.AddPolicy("Authenticated", policy => policy.RequireAuthenticatedUser());
-
     config.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
-builder.Services.AddHealthChecks();
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
 
 var app = builder.Build();
 

@@ -10,7 +10,7 @@ namespace TemplateDb.Migrations
     {
         public static async Task<int> Main(string[] args)
         {
-            System.Console.WriteLine("TemplateDB Initializer started.");
+            System.Console.WriteLine("Template DB migration(s) started.");
 
             var configuration = new ConfigurationBuilder()
                 .AddUserSecrets<Program>()
@@ -33,7 +33,7 @@ namespace TemplateDb.Migrations
             // Migrate
             await templateDbContext.Database.MigrateAsync();
 
-            System.Console.WriteLine("Migration completed.");
+            System.Console.WriteLine("Migration(s) completed.");
 
             // Seed data
             await using var transaction = await templateDbContext.Database.BeginTransactionAsync();
