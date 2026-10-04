@@ -24,7 +24,9 @@ builder.Services.AddSingleton<TokenBlacklist>();
 
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 
-builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.Key).Get<JwtOptions>()!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

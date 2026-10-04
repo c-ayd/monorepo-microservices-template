@@ -46,7 +46,9 @@ builder.Services.AddDataProtection()
         "AuthDataProtection")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
 
 builder.Services.AddHealthChecks();
 

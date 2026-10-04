@@ -22,7 +22,9 @@ builder.Services.AddSingleton<ITemplateService, TemplateService>();
 builder.Services.AddHostedService<TemplateBackgroundService>();
 builder.Services.AddHostedService<EmailBackgroundService>();
 
-builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(
+    builder.Environment.IsProduction(),
+    healthEndpoint: "/health");
 
 builder.Services.AddHealthChecks();
 

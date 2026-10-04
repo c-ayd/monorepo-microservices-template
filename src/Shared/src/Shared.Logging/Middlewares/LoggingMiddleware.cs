@@ -38,7 +38,8 @@ namespace Shared.Logging.Middlewares
 
         private void LogMetrics(ILogger<LoggingMiddleware> logger, string endpoint, int statusCode, double elapsedTimeMs)
         {
-            if (endpoint == LoggingOptions.HealthEndpoint)
+            if (LoggingOptions.HealthEndpoint != null &&
+                endpoint == LoggingOptions.HealthEndpoint)
                 return;
 
             logger.LogInformation("Status Code: {StatusCode} - Elapsed Time: {ElapsedTime} ms",
