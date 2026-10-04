@@ -46,14 +46,12 @@ builder.Services.AddDataProtection()
         "AuthDataProtection")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
-builder.Logging.AddStructuredConsoleLogging(
-    "Auth Service",
-    builder.Environment.IsProduction());
+builder.Logging.AddStructuredConsoleLogging(builder.Environment.IsProduction());
 
 var app = builder.Build();
 
-app.UseMiddleware<LoggingScopeMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<LoggingMiddleware>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
 app.UseAuthentication();
