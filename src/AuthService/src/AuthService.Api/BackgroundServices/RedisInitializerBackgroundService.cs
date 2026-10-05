@@ -1,23 +1,17 @@
 using AuthService.Application.Abstractions.DistributedCaches;
-using AuthService.Application.Options;
 using AuthService.Persistence.DistributedCaches;
-using Microsoft.Extensions.Options;
-using StackExchange.Redis;
 
 namespace AuthService.Api.BackgroundServices
 {
     public class RedisInitializerBackgroundServices : IHostedService
     {
-        private readonly ConnectionStringsOptions _connectionStrings;
         private readonly ITokenBlacklist _tokenBlacklist;
         private readonly ILogger<RedisInitializerBackgroundServices> _logger;
 
         public RedisInitializerBackgroundServices(
-            IOptions<ConnectionStringsOptions> connectionStrings,
             ITokenBlacklist tokenBlacklist,
             ILogger<RedisInitializerBackgroundServices> logger)
         {
-            _connectionStrings = connectionStrings.Value;
             _tokenBlacklist = tokenBlacklist;
             _logger = logger;
         }
@@ -26,7 +20,6 @@ namespace AuthService.Api.BackgroundServices
         {
             try
             {
-                DataProtection.Connection = await ConnectionMultiplexer.ConnectAsync(_connectionStrings.AuthDataProtectionRedis);
                 await ((TokenBlacklist)_tokenBlacklist).ConnectAsync(cancellationToken);
             }
             catch (Exception exception)
@@ -40,20 +33,6 @@ namespace AuthService.Api.BackgroundServices
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (DataProtection.Connection != null)
-            {
-                await DataProtection.Connection.CloseAsync();
-                await DataProtection.Connection.DisposeAsync();
-            }
-        }
-        
-        /// <summary>
-        /// Microsoft's data protection extension methods do not have any overload allowing dependency injection.
-        /// Therefore, the connection is defined as a static variable and the Redis DB is given in the implementation.
-        /// </summary>
-        public static class DataProtection
-        {
-            public static ConnectionMultiplexer? Connection;
         }
     }
 }

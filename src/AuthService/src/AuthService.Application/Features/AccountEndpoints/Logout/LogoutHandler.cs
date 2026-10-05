@@ -15,27 +15,15 @@ namespace AuthService.Application.Features.AccountEndpoints.Logout
     {
         public static async Task<IResult> Handle(
             HttpContext context,
-            IDataProtectionService dataProtectionService,
             IHashVersions hashVersions,
             IAuthDbContext authDbContext)
         {
             // If the user does not have the cookie values, the session data is lost on the client side.
             // In this case, a response with the OK code is still returned, so that the client can log out on the frontend.
-            if (context.Request.Cookies[CookieKeys.SessionId] == null || context.Request.Cookies[CookieKeys.RefreshToken] == null)
+            var sessionId = context.Request.Cookies[CookieKeys.SessionId];
+            var refreshToken = context.Request.Cookies[CookieKeys.RefreshToken];
+            if (sessionId == null || refreshToken == null)
                 return JsonResponseBuilder.Success(HttpStatusCode.NoContent);
-
-            string sessionId, refreshToken;
-            try
-            {
-                sessionId = dataProtectionService.Unprotect(dataProtectionService.CookieProtector, context.Request.Cookies[CookieKeys.SessionId]!);
-                refreshToken = dataProtectionService.Unprotect(dataProtectionService.CookieProtector, context.Request.Cookies[CookieKeys.RefreshToken]!);
-            }
-            catch (CryptographicException)
-            {
-                // If the decryption throws an error, it means the values are altered. In this case, no session data should be deleted.
-                // A response with the OK code is still returned, so that the client can log out on the frontend.
-                return JsonResponseBuilder.Success(HttpStatusCode.NoContent);
-            }
             
             var sessionIdGuid = Guid.Parse(sessionId);
             var session = await authDbContext.Sessions
@@ -64,6 +52,7 @@ namespace AuthService.Application.Features.AccountEndpoints.Logout
                 return JsonResponseBuilder.Success(HttpStatusCode.NoContent);
             }
 
+            // Delete the current session
             await authDbContext.Sessions
                 .Where(s => s.Id == sessionIdGuid)
                 .ExecuteDeleteAsync();

@@ -13,7 +13,6 @@ using Shared.Logging.Middlewares;
 using AuthService.Application.Features.AccountEndpoints;
 using AuthService.Application;
 using Shared.Http.DependencyInjection;
-using Microsoft.AspNetCore.DataProtection;
 using Shared.Http.Authentication.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,13 +37,6 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetAssembly(typeof(AuthServi
 builder.Services.AddAuthentication(ApiGatewayAuthKeys.AuthenticationScheme)
     .AddScheme<AuthenticationSchemeOptions, ApiGatewayAuthHandler>(ApiGatewayAuthKeys.AuthenticationScheme, options => { });
 builder.Services.AddAuthorization();
-
-builder.Services.AddDataProtection()
-    .SetApplicationName("AuthService")
-    .PersistKeysToStackExchangeRedis(
-        () => RedisInitializerBackgroundServices.DataProtection.Connection!.GetDatabase(),
-        "AuthDataProtection")
-    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 
 builder.Logging.AddStructuredConsoleLogging(
     builder.Environment.IsProduction(),
