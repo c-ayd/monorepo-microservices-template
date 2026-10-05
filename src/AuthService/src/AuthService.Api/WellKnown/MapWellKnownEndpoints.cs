@@ -16,8 +16,7 @@ namespace AuthService.Api.WellKnown
                 return Results.Ok(new
                 {
                     issuer = jwtOptions.Value.Issuer,
-                    jwks_uri = $"{jwtOptions.Value.Issuer}/.well-known/jwks.json",
-                    id_token_signing_alg_values_supported = new[] { "RS256" }
+                    jwks_uri = $"{jwtOptions.Value.Issuer}/.well-known/jwks.json"
                 });
             });
 
@@ -25,18 +24,15 @@ namespace AuthService.Api.WellKnown
             {
                 return Results.Ok(new
                 {
-                    keys = new[]
+                    keys = jwtKeyService.GetAllPublicKeys().Select(k => new
                     {
-                        new
-                        {
-                            kty = "RSA",
-                            kid = jwtKeyService.PublicKey.KeyId,
-                            use = "sig",
-                            alg = "RS256",
-                            n = Base64UrlEncoder.Encode(jwtKeyService.PublicKeyParameters.Modulus),
-                            e = Base64UrlEncoder.Encode(jwtKeyService.PublicKeyParameters.Exponent)
-                        }
-                    }
+                        kty = "RSA",
+                        kid = k.Id,
+                        use = "sig",
+                        alg = "RS256",
+                        n = Base64UrlEncoder.Encode(k.Parameters!.Value.Modulus),
+                        e = Base64UrlEncoder.Encode(k.Parameters.Value.Exponent)
+                    }).ToList()
                 });
             });
         }

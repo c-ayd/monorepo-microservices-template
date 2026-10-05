@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using Microsoft.IdentityModel.Tokens;
+using AuthService.Application.Dtos.Authentication;
 
 namespace AuthService.Application.Abstractions.Authentication
 {
@@ -8,8 +7,11 @@ namespace AuthService.Application.Abstractions.Authentication
     /// </summary>
     public interface IJwtKeyService
     {
-        RsaSecurityKey PrivateKey { get; }
-        RsaSecurityKey PublicKey { get; }
-        RSAParameters PublicKeyParameters { get; }
+        string CurrentKeyId { get; }
+
+        JwtKeyDto? GetPublicKey(string keyId);
+        JwtKeyDto? GetPrivateKey(string keyId);
+        IReadOnlyCollection<JwtKeyDto> GetAllPublicKeys();
+        IReadOnlyCollection<JwtKeyDto> GetAllPrivateKeys();
     }
 }
