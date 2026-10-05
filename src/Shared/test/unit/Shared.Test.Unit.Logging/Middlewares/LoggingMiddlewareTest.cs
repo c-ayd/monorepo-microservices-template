@@ -74,5 +74,34 @@ namespace Shared.Test.Unit.Logging.Middlewares
             // Assert
             Assert.Empty(_loggerFixture.Logs);
         }
+
+        [Theory]
+        [InlineData("/.well-known/openid-configuration")]
+        [InlineData("/.well-known/jwks.json")]
+        public async Task Invoke_WhenRequestIsWellKnownEndpoint_ShouldNotLog(string endpoint)
+        {
+            // Arrange
+            _loggerFixture.Logs.Clear();
+
+            var middleware = new LoggingMiddleware(
+                async (context) => { },
+                _loggerFixture);
+
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddOptions<JsonOptions>();
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider()
+            };
+
+            httpContext.Request.Path = endpoint;
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            Assert.Empty(_loggerFixture.Logs);
+        }
     }
 }
