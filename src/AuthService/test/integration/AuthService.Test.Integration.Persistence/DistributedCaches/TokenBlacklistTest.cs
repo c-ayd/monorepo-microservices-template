@@ -21,7 +21,6 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             {
                 AuthDb = "",
                 AuthRejectedMessagesDb = "",
-                AuthDataProtectionRedis = "",
                 AuthTokenBlacklistRedis = _tokenBlacklistRedisFixture.GetConnectionString()
             };
 

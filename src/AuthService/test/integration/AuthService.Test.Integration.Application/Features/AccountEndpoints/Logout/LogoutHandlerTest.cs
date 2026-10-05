@@ -109,7 +109,6 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
             var hashVersions = _collectionCluster.AuthApiWebApp.GetService<IHashVersions>();
-            var dataProtectionService = _collectionCluster.AuthApiWebApp.GetService<IDataProtectionService>();
 
             var refreshToken = StringGenerator.GenerateAlphanumeric();
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
@@ -123,8 +122,8 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 SupportedLanguages.DefaultLanguage,
                 new Dictionary<string, string>()
                 {
-                    { CookieKeys.SessionId, dataProtectionService.Protect(dataProtectionService.CookieProtector, matchSessionId ? account.Sessions.ElementAt(0).Id.ToString() : Guid.NewGuid().ToString()) },
-                    { CookieKeys.RefreshToken, dataProtectionService.Protect(dataProtectionService.CookieProtector, matchRefreshToken ? refreshToken : StringGenerator.GenerateAlphanumeric()) }
+                    { CookieKeys.SessionId, matchSessionId ? account.Sessions.ElementAt(0).Id.ToString() : Guid.NewGuid().ToString() },
+                    { CookieKeys.RefreshToken, matchRefreshToken ? refreshToken : StringGenerator.GenerateAlphanumeric() }
                 });
             
             // Act
@@ -147,7 +146,6 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
             // Arrange
             await using var authDbContext = _collectionCluster.PostgreSqlFixture.CreateDbContext<AuthDbContext>();
             var hashVersions = _collectionCluster.AuthApiWebApp.GetService<IHashVersions>();
-            var dataProtectionService = _collectionCluster.AuthApiWebApp.GetService<IDataProtectionService>();
 
             var refreshToken = StringGenerator.GenerateAlphanumeric();
             var account = new Account(EmailGenerator.Generate(), PasswordGenerator.Generate(), SupportedLanguages.DefaultLanguage);
@@ -161,8 +159,8 @@ namespace AuthService.Test.Integration.Application.Features.AccountEndpoints.Log
                 SupportedLanguages.DefaultLanguage,
                 new Dictionary<string, string>()
                 {
-                    { CookieKeys.SessionId, dataProtectionService.Protect(dataProtectionService.CookieProtector, account.Sessions.ElementAt(0).Id.ToString()) },
-                    { CookieKeys.RefreshToken, dataProtectionService.Protect(dataProtectionService.CookieProtector, refreshToken) }
+                    { CookieKeys.SessionId, account.Sessions.ElementAt(0).Id.ToString() },
+                    { CookieKeys.RefreshToken, refreshToken }
                 });
 
             // Act

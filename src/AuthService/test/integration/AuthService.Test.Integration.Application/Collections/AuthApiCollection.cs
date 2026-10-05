@@ -53,7 +53,6 @@ namespace AuthService.Test.Integration.Application.Collections
                 {
                     AuthDb = PostgreSqlFixture.GetConnectionString(AuthDbName),
                     AuthRejectedMessagesDb = PostgreSqlFixture.GetConnectionString(AuthRejectedMessagesDbName),
-                    AuthDataProtectionRedis = DataProtectionRedisFixture.GetConnectionString(),
                     AuthTokenBlacklistRedis = TokenBlacklistRedisFixture.GetConnectionString()
                 },
                 new RabbitMqOptions()
@@ -123,8 +122,6 @@ namespace AuthService.Test.Integration.Application.Collections
                             _connectionStringsOptions.AuthDb),
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthRejectedMessagesDb)}",
                             _connectionStringsOptions.AuthRejectedMessagesDb),
-                        new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthDataProtectionRedis)}",
-                            _connectionStringsOptions.AuthDataProtectionRedis),
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthTokenBlacklistRedis)}",
                             _connectionStringsOptions.AuthTokenBlacklistRedis),
                         
