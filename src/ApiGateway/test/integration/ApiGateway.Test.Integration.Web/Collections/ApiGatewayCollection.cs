@@ -121,16 +121,20 @@ namespace ApiGateway.Test.Integration.Web.Collections
                 await Results.Ok(new
                 {
                     issuer = "http://localhost:5000",
-                    jwks_uri = "http://localhost:5000/.well-known/jwks.json",
-                    id_token_signing_alg_values_supported = new[] { "RS256" }
+                    jwks_uri = "http://localhost:5000/.well-known/jwks.json"
                 }).ExecuteAsync(context);
             });
             endpoints.MapGet("/.well-known/jwks.json", async (context) =>
             {
-                var publicPem = await File.ReadAllTextAsync("test_jwt_public.pem");
+                var publicPem = await File.ReadAllTextAsync("./test_jwt_k1_public.txt");
                 var rsa = RSA.Create();
                 rsa.ImportFromPem(publicPem);
-                var parameters = rsa.ExportParameters(false);
+                var k1Parameters = rsa.ExportParameters(false);
+
+                publicPem = await File.ReadAllTextAsync("./test_jwt_k2_public.txt");
+                rsa = RSA.Create();
+                rsa.ImportFromPem(publicPem);
+                var k2Parameters = rsa.ExportParameters(false);
 
                 await Results.Ok(new
                 {
@@ -139,11 +143,20 @@ namespace ApiGateway.Test.Integration.Web.Collections
                         new
                         {
                             kty = "RSA",
-                            kid = "v1",
+                            kid = "k1",
                             use = "sig",
                             alg = "RS256",
-                            n = Base64UrlEncoder.Encode(parameters.Modulus),
-                            e = Base64UrlEncoder.Encode(parameters.Exponent)
+                            n = Base64UrlEncoder.Encode(k1Parameters.Modulus),
+                            e = Base64UrlEncoder.Encode(k1Parameters.Exponent)
+                        },
+                        new
+                        {
+                            kty = "RSA",
+                            kid = "k2",
+                            use = "sig",
+                            alg = "RS256",
+                            n = Base64UrlEncoder.Encode(k2Parameters.Modulus),
+                            e = Base64UrlEncoder.Encode(k2Parameters.Exponent)
                         }
                     }
                 }).ExecuteAsync(context);
@@ -177,12 +190,12 @@ namespace ApiGateway.Test.Integration.Web.Collections
                     }
                 }
 
-                var privatePem = await File.ReadAllTextAsync("test_jwt_private.pem");
+                var privatePem = await File.ReadAllTextAsync("./test_jwt_k2_private.txt");
                 var rsa = RSA.Create();
                 rsa.ImportFromPem(privatePem);
                 var key = new RsaSecurityKey(rsa)
                 {
-                    KeyId = "v1"
+                    KeyId = "k2"
                 };
 
                 var token = new JwtSecurityToken(
@@ -192,6 +205,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
                     expires: expired.HasValue && expired.Value ? DateTimeOffset.UtcNow.AddDays(-1).UtcDateTime : DateTimeOffset.UtcNow.AddDays(1).UtcDateTime,
                     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
                 );
+                token.Header["kid"] = "k2";
 
                 await Results.Content(new JwtSecurityTokenHandler().WriteToken(token), "text/plain")
                     .ExecuteAsync(context);
