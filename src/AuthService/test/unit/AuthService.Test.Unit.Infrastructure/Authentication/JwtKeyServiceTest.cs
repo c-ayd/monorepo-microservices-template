@@ -6,30 +6,54 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
     public class JwtKeyServiceTest
     {
-        private readonly JwtOptions _jwtOptions = new JwtOptions()
+        public static readonly JwtKeysOptions _jwtKeysOptions = new JwtKeysOptions()
         {
-            KeyId = "v1",
-            PrivateKeyPath = "./test_jwt_private.pem",
-            PublicKeyPath = "./test_jwt_public.pem",
-            Issuer = "https://localhost:7000",
-            Audience = "https://localhost:6000",
-            AccessTokenLifespanInMinutes = 5,
-            RefreshTokenLifespanInDays = 2
+            CurrentKeyId = "k2",
+            Keys = new List<JwtKeysOptions.KeyInfo>()
+            {
+                new JwtKeysOptions.KeyInfo()
+                {
+                    KeyId = "k1",
+                    PrivateKey = File.ReadAllText("./test_jwt_k1_private.txt"),
+                    PublicKey = File.ReadAllText("./test_jwt_k1_public.txt")
+                },
+                new JwtKeysOptions.KeyInfo()
+                {
+                    KeyId = "k2",
+                    PrivateKey = File.ReadAllText("./test_jwt_k2_private.txt"),
+                    PublicKey = File.ReadAllText("./test_jwt_k2_public.txt")
+                }
+            }
         };
 
         [Fact]
         public void Constructor_WhenServiceIsInstantiated_ShouldLoadKeys()
         {
             // Act
-            var jwtKeyService = new JwtKeyService(Options.Create(_jwtOptions));
+            var jwtKeyService = new JwtKeyService(Options.Create(_jwtKeysOptions));
 
             // Assert
-            Assert.NotNull(jwtKeyService.PrivateKey);
-            Assert.NotNull(jwtKeyService.PublicKey);
-            Assert.Equal(_jwtOptions.KeyId, jwtKeyService.PrivateKey.KeyId);
-            Assert.Equal(_jwtOptions.KeyId, jwtKeyService.PublicKey.KeyId);
-            Assert.NotNull(jwtKeyService.PublicKeyParameters.Exponent);
-            Assert.NotNull(jwtKeyService.PublicKeyParameters.Modulus);
+            var privateKeys = jwtKeyService.GetAllPrivateKeys();
+            var publicKeys = jwtKeyService.GetAllPublicKeys();
+
+            Assert.Equal(2, privateKeys.Count);
+            Assert.Equal(2, publicKeys.Count);
+
+            foreach (var privateKey in privateKeys)
+            {
+                Assert.NotNull(privateKey.Id);
+                Assert.NotNull(privateKey.Key);
+                Assert.Null(privateKey.Parameters);
+            }
+
+            foreach (var publicKey in publicKeys)
+            {
+                Assert.NotNull(publicKey.Id);
+                Assert.NotNull(publicKey.Key);
+                Assert.NotNull(publicKey.Parameters);
+                Assert.NotNull(publicKey.Parameters.Value.Modulus);
+                Assert.NotNull(publicKey.Parameters.Value.Exponent);
+            }
         }
     }
 }

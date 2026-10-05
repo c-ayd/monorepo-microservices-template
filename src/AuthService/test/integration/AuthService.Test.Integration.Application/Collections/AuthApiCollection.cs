@@ -1,7 +1,10 @@
 using AuthService.Application.Options;
+using AuthService.Infrastructure.Authentication;
 using AuthService.Persistence.DbContexts;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Integration.Application.Collections
@@ -59,6 +62,25 @@ namespace AuthService.Test.Integration.Application.Collections
                     Password = rabbitMqOptions.Password,
                     Host = rabbitMqOptions.Host,
                     Port = rabbitMqOptions.Port
+                },
+                new JwtKeysOptions()
+                {
+                    CurrentKeyId = "k2",
+                    Keys = new List<JwtKeysOptions.KeyInfo>()
+                    {
+                        new JwtKeysOptions.KeyInfo()
+                        {
+                            KeyId = "k1",
+                            PrivateKey = File.ReadAllText("./test_jwt_k1_private.txt"),
+                            PublicKey = File.ReadAllText("./test_jwt_k1_public.txt")
+                        },
+                        new JwtKeysOptions.KeyInfo()
+                        {
+                            KeyId = "k2",
+                            PrivateKey = File.ReadAllText("./test_jwt_k2_private.txt"),
+                            PublicKey = File.ReadAllText("./test_jwt_k2_public.txt")
+                        }
+                    }
                 });
         }
 
@@ -78,13 +100,16 @@ namespace AuthService.Test.Integration.Application.Collections
         {
             private readonly ConnectionStringsOptions _connectionStringsOptions;
             private readonly RabbitMqOptions _rabbitMqOptions;
+            private readonly JwtKeysOptions _jwtKeysOptions;
 
             public AuthApiWebAppFactory(
                 ConnectionStringsOptions connectionStringsOptions,
-                RabbitMqOptions rabbitMqOptions)
+                RabbitMqOptions rabbitMqOptions,
+                JwtKeysOptions jwtKeysOptions)
             {
                 _connectionStringsOptions = connectionStringsOptions;
                 _rabbitMqOptions = rabbitMqOptions;
+                _jwtKeysOptions = jwtKeysOptions;
             }
 
             protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -111,6 +136,15 @@ namespace AuthService.Test.Integration.Application.Collections
                             _rabbitMqOptions.Host),
                         new KeyValuePair<string, string?>($"{RabbitMqOptions.Key}:{nameof(RabbitMqOptions.Port)}",
                             _rabbitMqOptions.Port.ToString()),
+
+                        new KeyValuePair<string, string?>($"{JwtKeysOptions.Key}:{nameof(JwtKeysOptions.CurrentKeyId)}",
+                            _jwtKeysOptions.CurrentKeyId),
+                        .._jwtKeysOptions.Keys.Select((k, i) => new KeyValuePair<string, string?>($"{JwtKeysOptions.Key}:{nameof(JwtKeysOptions.Keys)}:{i}:{nameof(JwtKeysOptions.KeyInfo.KeyId)}",
+                            k.KeyId)),
+                        .._jwtKeysOptions.Keys.Select((k, i) => new KeyValuePair<string, string?>($"{JwtKeysOptions.Key}:{nameof(JwtKeysOptions.Keys)}:{i}:{nameof(JwtKeysOptions.KeyInfo.PrivateKey)}",
+                            k.PrivateKey)),
+                        .._jwtKeysOptions.Keys.Select((k, i) => new KeyValuePair<string, string?>($"{JwtKeysOptions.Key}:{nameof(JwtKeysOptions.Keys)}:{i}:{nameof(JwtKeysOptions.KeyInfo.PublicKey)}",
+                            k.PublicKey))
                     ]);
                 });
             }
