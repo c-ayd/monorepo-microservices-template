@@ -197,14 +197,14 @@ namespace AuthService.Application.Features.AccountEndpoints.Login
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.Lax,
                 Expires = jwt.RefreshTokenExpirationDate
             });
             context.Response.Cookies.Append(CookieKeys.RefreshToken, jwt.RefreshToken, new CookieOptions()
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.Lax,
                 Expires = jwt.RefreshTokenExpirationDate
             });
 
