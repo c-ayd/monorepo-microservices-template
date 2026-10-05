@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using AuthService.Application.Abstractions.Authentication;
+using AuthService.Application.Dtos.Authentication;
 using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -8,29 +9,55 @@ namespace AuthService.Infrastructure.Authentication
 {
     public class JwtKeyService : IJwtKeyService
     {
-        public RsaSecurityKey PrivateKey { get; private set; }
-        public RsaSecurityKey PublicKey { get; private set; }
-        public RSAParameters PublicKeyParameters { get; private set; }
+        public string CurrentKeyId { get; private set; }
 
-        public JwtKeyService(IOptions<JwtOptions> jwtOptions)
+        private List<JwtKeyDto> _privateKeys = new List<JwtKeyDto>();
+        private List<JwtKeyDto> _publicKeys = new List<JwtKeyDto>();
+
+        public JwtKeyService(IOptions<JwtKeysOptions> jwtKeysOptions)
         {
-            var privatePem = File.ReadAllText(jwtOptions.Value.PrivateKeyPath);
-            var rsa = RSA.Create();
-            rsa.ImportFromPem(privatePem);
-            PrivateKey = new RsaSecurityKey(rsa)
-            {
-                KeyId = jwtOptions.Value.KeyId
-            };
+            CurrentKeyId = jwtKeysOptions.Value.CurrentKeyId;
 
-            var publicPem = File.ReadAllText(jwtOptions.Value.PublicKeyPath);
-            rsa = RSA.Create();
-            rsa.ImportFromPem(publicPem);
-            PublicKey = new RsaSecurityKey(rsa)
+            foreach (var keyInfo in jwtKeysOptions.Value.Keys)
             {
-                KeyId = jwtOptions.Value.KeyId
-            };
+                var rsa = RSA.Create();
+                rsa.ImportFromPem(keyInfo.PrivateKey);
+                _privateKeys.Add(new JwtKeyDto()
+                {
+                    Id = keyInfo.KeyId,
+                    Key = new RsaSecurityKey(rsa) { KeyId = keyInfo.KeyId },
+                    Parameters = null
+                });
 
-            PublicKeyParameters = rsa.ExportParameters(false);
+                rsa = RSA.Create();
+                rsa.ImportFromPem(keyInfo.PublicKey);
+                _publicKeys.Add(new JwtKeyDto()
+                {
+                    Id = keyInfo.KeyId,
+                    Key = new RsaSecurityKey(rsa) { KeyId = keyInfo.KeyId },
+                    Parameters = rsa.ExportParameters(false)
+                });
+            }
+        }
+
+        public JwtKeyDto? GetPublicKey(string keyId)
+        {
+            return _publicKeys.FirstOrDefault(k => k.Id == keyId);
+        }
+
+        public JwtKeyDto? GetPrivateKey(string keyId)
+        {
+            return _privateKeys.FirstOrDefault(k => k.Id == keyId);
+        }
+
+        public IReadOnlyCollection<JwtKeyDto> GetAllPublicKeys()
+        {
+            return _publicKeys.AsReadOnly();
+        }
+
+        public IReadOnlyCollection<JwtKeyDto> GetAllPrivateKeys()
+        {
+            return _privateKeys.AsReadOnly();
         }
     }
 }

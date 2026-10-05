@@ -118,7 +118,7 @@ namespace ApiGateway.Test.Integration.Web.Transforms.Request
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ApplyTransform_WhenTokenIsValid_ShouldAddNothingToHeadersAndRemoveTokenFromHeaders(bool hasRoles)
+        public async Task ApplyTransform_WhenTokenIsValid_ShouldAddClaimsToHeadersAndRemoveTokenFromHeaders(bool hasRoles)
         {
             // Arrange
             var accountId = Guid.NewGuid().ToString();

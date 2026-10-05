@@ -11,11 +11,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 {
     public class JwtServiceTest
     {
-        private readonly JwtOptions _jwtOptions = new JwtOptions()
+        public static readonly JwtOptions _jwtOptions = new JwtOptions()
         {
-            KeyId = "v1",
-            PrivateKeyPath = "./test_jwt_private.pem",
-            PublicKeyPath = "./test_jwt_public.pem",
             Issuer = "https://localhost:7000",
             Audience = "https://localhost:6000",
             AccessTokenLifespanInMinutes = 5,
@@ -27,9 +24,8 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
         public JwtServiceTest()
         {
-            var jwtOptionsPattern = Options.Create(_jwtOptions);
-            _jwtKeyService = new JwtKeyService(jwtOptionsPattern);
-            _jwtService = new JwtService(jwtOptionsPattern, _jwtKeyService);
+            _jwtKeyService = new JwtKeyService(Options.Create(JwtKeyServiceTest._jwtKeysOptions));
+            _jwtService = new JwtService(Options.Create(_jwtOptions), _jwtKeyService);
         }
 
         private (List<Claim>?, DateTime?, DateTime?) DecodeAccessToken(string accessToken)
@@ -44,7 +40,7 @@ namespace AuthService.Test.Unit.Infrastructure.Authentication
 
                 ValidAudience = _jwtOptions.Audience,
                 ValidIssuer = _jwtOptions.Issuer,
-                IssuerSigningKey = _jwtKeyService.PublicKey,
+                IssuerSigningKey = _jwtKeyService.GetPublicKey(_jwtKeyService.CurrentKeyId)!.Key,
 
                 NameClaimType = ApiGatewayAuthKeys.Claims.Id.ClaimType,
                 RoleClaimType = ApiGatewayAuthKeys.Claims.Roles.ClaimType

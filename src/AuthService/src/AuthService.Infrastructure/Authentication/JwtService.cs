@@ -6,7 +6,6 @@ using AuthService.Application.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Crypto;
-using Shared.Http.Authentication;
 
 namespace AuthService.Infrastructure.Authentication
 {
@@ -35,8 +34,11 @@ namespace AuthService.Infrastructure.Authentication
                 claims: claims ?? Enumerable.Empty<Claim>(),
                 notBefore: notBefore?.UtcDateTime,
                 expires: accessTokenExpirationDate.UtcDateTime,
-                signingCredentials: new SigningCredentials(_jwtKeyService.PrivateKey, SecurityAlgorithms.RsaSha256)
+                signingCredentials: new SigningCredentials(
+                    _jwtKeyService.GetPrivateKey(_jwtKeyService.CurrentKeyId)!.Key,
+                    SecurityAlgorithms.RsaSha256)
             );
+            token.Header["kid"] = _jwtKeyService.CurrentKeyId;
 
             return new JwtDto(
                 AccessToken: new JwtSecurityTokenHandler().WriteToken(token),

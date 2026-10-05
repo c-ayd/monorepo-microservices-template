@@ -27,8 +27,10 @@
 
   <ItemGroup>
     <None Include="Collections/appsettings.Extra.json" Link="appsettings.Extra.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Keys/test_jwt_private.pem" Link="test_jwt_private.pem" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="Keys/test_jwt_public.pem" Link="test_jwt_public.pem" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_k1_private.txt" Link="test_jwt_k1_private.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_k1_public.txt" Link="test_jwt_k1_public.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_k2_private.txt" Link="test_jwt_k2_private.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Keys/test_jwt_k2_public.txt" Link="test_jwt_k2_public.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
