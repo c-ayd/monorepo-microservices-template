@@ -145,7 +145,7 @@ namespace NotificationService.Worker.BackgroundServices
             }
             catch (Exception exception)
             {
-                _logger.LogError("Something went wrong while deserializing the message. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}, Message: {Message}",
+                _logger.LogError(exception, "Something went wrong while deserializing the message. Correlation ID: {CorrelationId}, Timestamp: {Timestamp}, User ID: {UserId}, Message: {Message}",
                     args.BasicProperties.CorrelationId,
                     args.BasicProperties.Timestamp,
                     args.BasicProperties.Headers != null && args.BasicProperties.Headers.TryGetValue("UserId", out var userId) ?
