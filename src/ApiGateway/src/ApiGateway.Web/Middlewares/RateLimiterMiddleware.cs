@@ -36,13 +36,13 @@ namespace ApiGateway.Web.Middlewares
             }
             else if (isAuthenticated)
             {
-                key = $"user:{context.User.Identity!.Name}";
+                key = $"auth:{context.User.Identity!.Name}";
                 limit = 100;
                 window = TimeSpan.FromMinutes(1);
             }
             else
             {
-                key = $"non-user:{context.Connection.RemoteIpAddress?.ToString() ??
+                key = $"not-auth:{context.Connection.RemoteIpAddress?.ToString() ??
                     (context.Request.Headers.TryGetValue("X-Forwarded-For", out var ip) ? ip : "unknown")}";
                 limit = 30;
                 window = TimeSpan.FromMinutes(1);
