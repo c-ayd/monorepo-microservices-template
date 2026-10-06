@@ -21,6 +21,16 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms<ClearReservedHeadersTransform>()
     .AddTransforms<JwtBearerTransform>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularWeb", policy =>
+    {
+        policy.WithOrigins(builder.Configuration.GetValue<string>("CorsOrigins:AngularWeb")!)
+            .AllowCredentials()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 builder.Services.AddHostedService<RedisBackgroundServices>();
 
@@ -70,6 +80,9 @@ builder.Logging.AddStructuredConsoleLogging(
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+app.UseCors("AllowAngularWeb");
+
 app.UseMiddleware<LoggingMiddleware>();
 
 app.UseMiddleware<AuthErrorResponseMiddleware>();
