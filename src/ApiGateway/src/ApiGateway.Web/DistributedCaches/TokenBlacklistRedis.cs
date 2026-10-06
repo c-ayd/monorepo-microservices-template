@@ -3,11 +3,11 @@ using Microsoft.Extensions.Options;
 using Shared.Redis;
 using Shared.Redis.Extensions;
 
-namespace ApiGateway.Web.Services
+namespace ApiGateway.Web.DistributedCaches
 {
-    public class TokenBlacklist : RedisConnection
+    public class TokenBlacklistRedis : RedisConnection
     {
-        public TokenBlacklist(
+        public TokenBlacklistRedis(
             IOptions<ConnectionStringsOptions> connectionStrings)
             : base(connectionStrings.Value.AuthTokenBlacklistRedis)
         {

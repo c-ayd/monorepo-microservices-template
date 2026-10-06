@@ -11,7 +11,7 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
     {
         private readonly RedisFixture _redisFixture;
 
-        private TokenBlacklist? _tokenBlacklist;
+        private TokenBlacklistRedis? _tokenBlacklist;
 
         public TokenBlacklistTest(RedisFixture redisFixture)
         {
@@ -29,7 +29,7 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
                 AuthTokenBlacklistRedis = _redisFixture.GetConnectionString()
             };
 
-            _tokenBlacklist = new TokenBlacklist(Options.Create(connStrings));
+            _tokenBlacklist = new TokenBlacklistRedis(Options.Create(connStrings));
 
             var connectAsyncMethod = typeof(RedisConnection).GetMethod("ConnectAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
             await (Task)connectAsyncMethod.Invoke(_tokenBlacklist, [default])!;

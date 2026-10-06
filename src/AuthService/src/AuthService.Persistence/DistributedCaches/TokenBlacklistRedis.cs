@@ -6,9 +6,9 @@ using Shared.Redis.Extensions;
 
 namespace AuthService.Persistence.DistributedCaches
 {
-    public class TokenBlacklist : RedisConnection, ITokenBlacklist
+    public class TokenBlacklistRedis : RedisConnection, ITokenBlacklistRedis
     {
-        public TokenBlacklist(
+        public TokenBlacklistRedis(
             IOptions<ConnectionStringsOptions> connectionStrings)
             : base(connectionStrings.Value.AuthTokenBlacklistRedis)
         {

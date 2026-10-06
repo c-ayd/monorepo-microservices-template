@@ -3,7 +3,6 @@ using ApiGateway.Web.BackgroundServices;
 using ApiGateway.Web.DistributedCaches;
 using ApiGateway.Web.Middlewares;
 using ApiGateway.Web.Options;
-using ApiGateway.Web.Services;
 using ApiGateway.Web.Transforms.Request;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -15,7 +14,7 @@ using Shared.Logging.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<TokenBlacklist>();
+builder.Services.AddSingleton<TokenBlacklistRedis>();
 builder.Services.AddSingleton<RateLimiterRedis>();
 builder.Services.AddHealthChecks();
 builder.Services.AddReverseProxy()

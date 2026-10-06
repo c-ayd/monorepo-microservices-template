@@ -20,7 +20,7 @@ namespace AuthService.Persistence
             services.AddDbContext<AuthRejectedMessagesDbContext>(_ =>
                 _.UseNpgsql(configuration.GetConnectionString(nameof(ConnectionStringsOptions.AuthRejectedMessagesDb))));
 
-            services.AddSingleton<ITokenBlacklist, TokenBlacklist>();
+            services.AddSingleton<ITokenBlacklistRedis, TokenBlacklistRedis>();
         }
     }
 }

@@ -3,7 +3,7 @@ namespace AuthService.Application.Abstractions.DistributedCaches
     /// <summary>
     /// Provides methods to blacklist access tokens.
     /// </summary>
-    public interface ITokenBlacklist
+    public interface ITokenBlacklistRedis
     {
         /// <summary>
         /// Adds all currently active access tokens of a specific account to the blacklist.
