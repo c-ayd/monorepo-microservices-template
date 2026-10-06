@@ -7,7 +7,7 @@ namespace AuthService.Api.BackgroundServices
     public class RedisBackgroundServices : RedisConnectionBackgroundService
     {
         public RedisBackgroundServices(
-            ITokenBlacklist tokenBlacklist,
+            ITokenBlacklistRedis tokenBlacklist,
             ILogger<RedisBackgroundServices> logger)
             : base(
             redisConnections: new List<RedisConnection>()

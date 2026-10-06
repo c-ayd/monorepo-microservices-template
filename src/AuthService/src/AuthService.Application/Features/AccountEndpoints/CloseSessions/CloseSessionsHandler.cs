@@ -20,7 +20,7 @@ namespace AuthService.Application.Features.AccountEndpoints.CloseSessions
             HttpContext context,
             IAuthDbContext authDbContext,
             IPasswordHasher passwordHasher,
-            ITokenBlacklist tokenBlacklist,
+            ITokenBlacklistRedis tokenBlacklist,
             IOptions<JwtOptions> jwtOptions,
             ILogger<CloseSessionsHandler> logger)
         {
