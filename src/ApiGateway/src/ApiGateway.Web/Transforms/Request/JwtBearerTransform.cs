@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using ApiGateway.Web.Services;
+using ApiGateway.Web.DistributedCaches;
 using Microsoft.Net.Http.Headers;
 using Shared.Http.Authentication.Constants;
 using Yarp.ReverseProxy.Transforms;
@@ -9,9 +9,9 @@ namespace ApiGateway.Web.Transforms.Request
 {
     public class JwtBearerTransform : ITransformProvider
     {
-        private readonly TokenBlacklist _tokenBlacklist;
+        private readonly TokenBlacklistRedis _tokenBlacklist;
 
-        public JwtBearerTransform(TokenBlacklist tokenBlacklist)
+        public JwtBearerTransform(TokenBlacklistRedis tokenBlacklist)
         {
             _tokenBlacklist = tokenBlacklist;
         }
