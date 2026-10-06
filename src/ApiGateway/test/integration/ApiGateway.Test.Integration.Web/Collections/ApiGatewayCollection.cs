@@ -24,6 +24,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
     public class ApiGatewayCollectionCluster : IAsyncLifetime
     {
         public RedisFixture TokenBlacklistRedisFixture { get; private set; }
+        public RedisFixture RateLimiterRedis { get; private set; }
         public TestHostFixture DownstreamServiceFixture { get; private set; }
         public TestHostFixture ProtectedDownstreamServiceFixture { get; private set; }
         public TestHostFixture AdminDownstreamServiceFixture { get; private set; }
@@ -33,6 +34,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
         public ApiGatewayCollectionCluster()
         {
             TokenBlacklistRedisFixture = new RedisFixture();
+            RateLimiterRedis = new RedisFixture();
             DownstreamServiceFixture = new TestHostFixture();
             ProtectedDownstreamServiceFixture = new TestHostFixture();
             AdminDownstreamServiceFixture = new TestHostFixture();
@@ -42,6 +44,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
         {
             await Task.WhenAll(
                 TokenBlacklistRedisFixture.InitializeAsync(),
+                RateLimiterRedis.InitializeAsync(),
                 DownstreamServiceFixture.InitializeAsync(
                     addConfiguration: null,
                     configureServices: null,
@@ -71,7 +74,8 @@ namespace ApiGateway.Test.Integration.Web.Collections
             ApiGatewayWebApp = new ApiGatewayWebAppFactory(
                 new ConnectionStringsOptions()
                 {
-                    AuthTokenBlacklistRedis = TokenBlacklistRedisFixture.GetConnectionString()
+                    AuthTokenBlacklistRedis = TokenBlacklistRedisFixture.GetConnectionString(),
+                    ApiGatewayRateLimiterRedis = RateLimiterRedis.GetConnectionString()
                 });
             ApiGatewayWebApp.StartServer();
         }
@@ -80,6 +84,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
         {
             await Task.WhenAll(
                 TokenBlacklistRedisFixture.DisposeAsync(),
+                RateLimiterRedis.DisposeAsync(),
                 DownstreamServiceFixture.DisposeAsync(),
                 ProtectedDownstreamServiceFixture.DisposeAsync(),
                 AdminDownstreamServiceFixture.DisposeAsync()
@@ -107,7 +112,9 @@ namespace ApiGateway.Test.Integration.Web.Collections
 
                     config.AddInMemoryCollection([
                         new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.AuthTokenBlacklistRedis)}",
-                            _connectionStringsOptions.AuthTokenBlacklistRedis)
+                            _connectionStringsOptions.AuthTokenBlacklistRedis),
+                        new KeyValuePair<string, string?>($"{ConnectionStringsOptions.Key}:{nameof(ConnectionStringsOptions.ApiGatewayRateLimiterRedis)}",
+                            _connectionStringsOptions.ApiGatewayRateLimiterRedis)
                     ]);
                 });
             }
@@ -236,6 +243,7 @@ namespace ApiGateway.Test.Integration.Web.Collections
 
                 await Results.Ok(headers).ExecuteAsync(context);
             });
+            endpoints.MapGet("/", () => Results.NoContent());
         }
     }
 }
