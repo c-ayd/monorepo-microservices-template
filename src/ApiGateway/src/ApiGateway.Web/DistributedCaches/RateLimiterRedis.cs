@@ -26,7 +26,7 @@ namespace ApiGateway.Web.DistributedCaches
                 response = await GetDatabase().ScriptEvaluateAsync(
                     _luaScript,
                     [
-                        (RedisKey)$"yarp:rate-limiter:{key}"
+                        (RedisKey)key
                     ],
                     [
                         limit,
