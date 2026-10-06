@@ -19,6 +19,7 @@ builder.Services.AddSingleton<RateLimiterRedis>();
 builder.Services.AddHealthChecks();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms<ClearReservedHeadersTransform>()
     .AddTransforms<JwtBearerTransform>();
 
 builder.Services.AddHostedService<RedisBackgroundServices>();
