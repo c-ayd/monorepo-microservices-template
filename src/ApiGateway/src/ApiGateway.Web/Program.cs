@@ -20,7 +20,7 @@ builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms<JwtBearerTransform>();
 
-builder.Services.AddHostedService<RedisInitializerBackgroundServices>();
+builder.Services.AddHostedService<RedisBackgroundServices>();
 
 builder.RegisterOptionsFromAssembly(Assembly.GetExecutingAssembly());
 

@@ -1,18 +1,18 @@
-using ApiGateway.Web.Services;
+using AuthService.Application.Abstractions.DistributedCaches;
 using Shared.Redis;
 using Shared.Redis.BackgroundService;
 
-namespace ApiGateway.Web.BackgroundServices
+namespace AuthService.Api.BackgroundServices
 {
     public class RedisBackgroundServices : RedisConnectionBackgroundService
     {
         public RedisBackgroundServices(
-            TokenBlacklist tokenBlacklist,
+            ITokenBlacklist tokenBlacklist,
             ILogger<RedisBackgroundServices> logger)
             : base(
             redisConnections: new List<RedisConnection>()
             {
-                tokenBlacklist
+                (RedisConnection)tokenBlacklist
             },
             logger)
         {
