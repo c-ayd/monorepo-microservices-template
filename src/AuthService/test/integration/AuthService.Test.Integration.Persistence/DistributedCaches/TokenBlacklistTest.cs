@@ -40,11 +40,6 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             await _redisFixture.DisposeAsync();
         }
 
-        public async Task DisposeAsync()
-        {
-            await _redisFixture.DisposeAsync();
-        }
-
         [Fact]
         public async Task AddAsync_WhenEntryWithAccountIdDoesNotExist_ShouldCreateNewEntry()
         {
