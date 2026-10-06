@@ -2,18 +2,26 @@ using System.Reflection;
 using Shared.Redis.Extensions;
 using Shared.Test.Generators;
 using Shared.Test.Helpers.Fixtures;
-using Shared.Test.Integration.Redis.Collections;
 
 namespace Shared.Test.Integration.Redis.Extensions
 {
-    [Collection(nameof(RedisCollection))]
-    public class StringExtensionsTest
+    public class StringExtensionsTest : IClassFixture<RedisFixture>, IAsyncLifetime
     {
         private readonly RedisFixture _redisFixture;
 
-        public StringExtensionsTest(RedisCollectionCluster collectionCluster)
+        public StringExtensionsTest(RedisFixture redisFixture)
         {
-            _redisFixture = collectionCluster.RedisFixture;
+            _redisFixture = redisFixture;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _redisFixture.InitializeAsync();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _redisFixture.DisposeAsync();
         }
 
         public static TheoryData<int, Type, object> Values()
