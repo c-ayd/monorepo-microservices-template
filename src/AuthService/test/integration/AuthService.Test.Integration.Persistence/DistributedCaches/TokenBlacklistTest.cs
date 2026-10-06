@@ -1,31 +1,39 @@
 using AuthService.Application.Options;
 using AuthService.Persistence.DistributedCaches;
-using AuthService.Test.Integration.Persistence.Collections;
 using Microsoft.Extensions.Options;
 using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Integration.Persistence.DistributedCaches
 {
-    [Collection(nameof(TokenBlacklistCollection))]
-    public class TokenBlacklistTest
+    public class TokenBlacklistTest : IClassFixture<RedisFixture>, IAsyncLifetime
     {
-        private readonly RedisFixture _tokenBlacklistRedisFixture;
+        private readonly RedisFixture _redisFixture;
 
-        private readonly TokenBlacklist _tokenBlacklist;
+        private TokenBlacklist? _tokenBlacklist;
 
-        public TokenBlacklistTest(TokenBlacklistCollectionCluster collectionCluster)
+        public TokenBlacklistTest(RedisFixture redisFixture)
         {
-            _tokenBlacklistRedisFixture = collectionCluster.TokenBlacklistRedisFixture;
+            _redisFixture = redisFixture;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _redisFixture.InitializeAsync();
 
             var connStrings = new ConnectionStringsOptions()
             {
                 AuthDb = "",
                 AuthRejectedMessagesDb = "",
-                AuthTokenBlacklistRedis = _tokenBlacklistRedisFixture.GetConnectionString()
+                AuthTokenBlacklistRedis = _redisFixture.GetConnectionString()
             };
 
             _tokenBlacklist = new TokenBlacklist(Options.Create(connStrings));
             _tokenBlacklist.ConnectAsync(default).GetAwaiter().GetResult();
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _redisFixture.DisposeAsync();
         }
 
         [Fact]
@@ -37,10 +45,10 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             var now = DateTimeOffset.UtcNow;
 
             // Act
-            await _tokenBlacklist.AddAsync(accountId, expirationTime);
+            await _tokenBlacklist!.AddAsync(accountId, expirationTime);
 
             // Assert
-            var db = _tokenBlacklistRedisFixture.GetDatabase();
+            var db = _redisFixture.GetDatabase();
             var result = await db.StringGetAsync(accountId);
             var remainingTime = await db.KeyTimeToLiveAsync(accountId);
 
@@ -59,14 +67,14 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             var expirationTime = TimeSpan.FromMinutes(5);
             var now = DateTimeOffset.UtcNow;
 
-            await _tokenBlacklistRedisFixture.GetDatabase().StringSetAsync(accountId, DateTimeOffset.UtcNow.AddMonths(-1).ToUnixTimeSeconds(), TimeSpan.FromHours(1));
+            await _redisFixture.GetDatabase().StringSetAsync(accountId, DateTimeOffset.UtcNow.AddMonths(-1).ToUnixTimeSeconds(), TimeSpan.FromHours(1));
 
             // Act
-            await _tokenBlacklist.AddAsync(accountId, expirationTime);
+            await _tokenBlacklist!.AddAsync(accountId, expirationTime);
 
             // Assert
-            var result = await _tokenBlacklistRedisFixture.GetDatabase().StringGetAsync(accountId);
-            var remainingTime = await _tokenBlacklistRedisFixture.GetDatabase().KeyTimeToLiveAsync(accountId);
+            var result = await _redisFixture.GetDatabase().StringGetAsync(accountId);
+            var remainingTime = await _redisFixture.GetDatabase().KeyTimeToLiveAsync(accountId);
 
             Assert.True(result.HasValue, "An entry with a given account ID is not found.");
             Assert.InRange((expirationTime - remainingTime!).Value.TotalMinutes, -1, 1);
@@ -79,7 +87,7 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
         public async Task DeleteAsync_WhenEntryWithAccountIdDoesNotExist_Should()
         {
             // Act
-            await _tokenBlacklist.DeleteAsync(Guid.NewGuid().ToString());
+            await _tokenBlacklist!.DeleteAsync(Guid.NewGuid().ToString());
         }
 
         [Fact]
@@ -88,13 +96,13 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             // Arrange
             var accountId = Guid.NewGuid().ToString();
 
-            await _tokenBlacklistRedisFixture.GetDatabase().StringSetAsync(accountId, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), TimeSpan.FromMinutes(5));
+            await _redisFixture.GetDatabase().StringSetAsync(accountId, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), TimeSpan.FromMinutes(5));
 
             // Act
-            await _tokenBlacklist.DeleteAsync(accountId);
+            await _tokenBlacklist!.DeleteAsync(accountId);
 
             // Assert
-            var result = await _tokenBlacklistRedisFixture.GetDatabase().StringGetAsync(accountId);
+            var result = await _redisFixture.GetDatabase().StringGetAsync(accountId);
             Assert.False(result.HasValue, "An entry with a given account ID exists.");
         }
     }
