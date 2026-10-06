@@ -1,5 +1,6 @@
 using System.Reflection;
 using ApiGateway.Web.BackgroundServices;
+using ApiGateway.Web.DistributedCaches;
 using ApiGateway.Web.Middlewares;
 using ApiGateway.Web.Options;
 using ApiGateway.Web.Services;
@@ -15,6 +16,7 @@ using Shared.Logging.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<TokenBlacklist>();
+builder.Services.AddSingleton<RateLimiterRedis>();
 builder.Services.AddHealthChecks();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
@@ -73,6 +75,8 @@ app.UseMiddleware<LoggingMiddleware>();
 app.UseMiddleware<AuthErrorResponseMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<RateLimiterMiddleware>();
 
 app.MapReverseProxy();
 

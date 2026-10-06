@@ -7,5 +7,6 @@ namespace ApiGateway.Web.Options
         public static string Key => "ConnectionStrings";
 
         public required string AuthTokenBlacklistRedis { get; set; }
+        public required string ApiGatewayRateLimiterRedis { get; set; }
     }
 }
