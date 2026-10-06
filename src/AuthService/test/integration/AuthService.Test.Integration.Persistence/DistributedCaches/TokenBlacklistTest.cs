@@ -1,6 +1,8 @@
+using System.Reflection;
 using AuthService.Application.Options;
 using AuthService.Persistence.DistributedCaches;
 using Microsoft.Extensions.Options;
+using Shared.Redis;
 using Shared.Test.Helpers.Fixtures;
 
 namespace AuthService.Test.Integration.Persistence.DistributedCaches
@@ -28,7 +30,9 @@ namespace AuthService.Test.Integration.Persistence.DistributedCaches
             };
 
             _tokenBlacklist = new TokenBlacklist(Options.Create(connStrings));
-            _tokenBlacklist.ConnectAsync(default).GetAwaiter().GetResult();
+
+            var connectAsyncMethod = typeof(RedisConnection).GetMethod("ConnectAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            await (Task)connectAsyncMethod.Invoke(_tokenBlacklist, [default])!;
         }
 
         public async Task DisposeAsync()
