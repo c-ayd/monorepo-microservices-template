@@ -1,4 +1,4 @@
-namespace Shared.AspNetCore.Helpers.Options
+namespace Shared.AspNetCore.Helpers
 {
     /// <summary>
     /// Marks options classes for automatic registration in the dependency injection.

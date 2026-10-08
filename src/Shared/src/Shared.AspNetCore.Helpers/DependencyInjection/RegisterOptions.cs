@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.AspNetCore.Helpers.Exceptions;
-using Shared.AspNetCore.Helpers.Options;
+using Shared.AspNetCore.Helpers;
 using Microsoft.Extensions.Configuration;
 
 namespace Shared.AspNetCore.Helpers.DependencyInjection

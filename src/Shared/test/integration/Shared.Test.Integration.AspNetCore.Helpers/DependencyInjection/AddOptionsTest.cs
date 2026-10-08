@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Shared.AspNetCore.Helpers.DependencyInjection;
-using Shared.AspNetCore.Helpers.Options;
+using Shared.AspNetCore.Helpers;
 using Shared.Test.Helpers.Fixtures;
 using Shared.Test.Integration.AspNetCore.Helpers.Collections;
 
