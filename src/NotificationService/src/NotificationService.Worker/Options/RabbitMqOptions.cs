@@ -1,4 +1,4 @@
-using Shared.AspNetCore.Helpers.Options;
+using Shared.AspNetCore.Helpers;
 
 namespace NotificationService.Worker.Options
 {
